@@ -2,6 +2,7 @@ import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface EventCardProps {
   id: string;
@@ -17,6 +18,7 @@ interface EventCardProps {
 }
 
 const EventCard = ({ 
+  id,
   title, 
   date, 
   time, 
@@ -27,6 +29,16 @@ const EventCard = ({
   availableTickets, 
   category 
 }: EventCardProps) => {
+  const navigate = useNavigate();
+
+  const handleViewEvent = () => {
+    navigate(`/events/${id}`);
+  };
+
+  const handleRegisterNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/events/${id}#register`);
+  };
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
@@ -37,7 +49,10 @@ const EventCard = ({
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card">
+    <Card 
+      className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card cursor-pointer" 
+      onClick={handleViewEvent}
+    >
       <div className="relative overflow-hidden">
         <img 
           src={image} 
@@ -95,7 +110,10 @@ const EventCard = ({
           </div>
           
           <div className="pt-2">
-            <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+            <Button 
+              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+              onClick={handleRegisterNow}
+            >
               Register Now
             </Button>
           </div>
