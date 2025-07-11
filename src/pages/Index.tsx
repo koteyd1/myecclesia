@@ -16,7 +16,7 @@ const sampleEvents = [
     time: "10:00 AM",
     location: "Main Sanctuary",
     description: "Join us for our weekly worship service featuring inspiring music, prayer, and a message of hope.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 150,
     category: "Worship"
@@ -28,7 +28,7 @@ const sampleEvents = [
     time: "7:00 PM",
     location: "Youth Center",
     description: "An evening of games, discussion, and fellowship for teens and young adults.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=800&h=400&fit=crop",
     price: 5,
     availableTickets: 50,
     category: "Fellowship"
@@ -40,7 +40,7 @@ const sampleEvents = [
     time: "6:30 PM", 
     location: "Fellowship Hall",
     description: "A monthly community dinner bringing together families for food and fellowship.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop",
     price: 10,
     availableTickets: 80,
     category: "Community"
@@ -52,7 +52,7 @@ const sampleEvents = [
     time: "7:00 PM",
     location: "Conference Room",
     description: "Deep dive into scripture with guided discussion and study materials provided.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 25,
     category: "Education"
@@ -64,7 +64,7 @@ const sampleEvents = [
     time: "9:00 AM",
     location: "Main Sanctuary",
     description: "Celebrate the resurrection with special music, baptisms, and a message of new life.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1460904577954-8fadb262612c?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 200,
     category: "Special Event"
@@ -76,7 +76,7 @@ const sampleEvents = [
     time: "9:00 AM",
     location: "Mountain View Retreat Center",
     description: "A weekend retreat focused on strengthening marriages through workshops and prayer.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=400&fit=crop",
     price: 75,
     availableTickets: 30,
     category: "Retreat"

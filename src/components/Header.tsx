@@ -21,8 +21,13 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <Calendar className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">ChurchEvents</span>
+            <button 
+              onClick={() => navigate("/")}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
+              <Calendar className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold text-foreground">ChurchEvents</span>
+            </button>
           </div>
 
           {/* Navigation */}

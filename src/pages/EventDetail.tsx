@@ -31,7 +31,7 @@ const EventDetail = () => {
     time: "10:00 AM",
     location: "Main Sanctuary",
     description: "Join us for our weekly worship service with inspiring music and meaningful messages. This service includes contemporary worship, prayer time, and an inspiring message from our pastor. All are welcome to join us in fellowship and worship as we come together as a community of faith.",
-    image: "/placeholder.svg",
+    image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1200&h=600&fit=crop",
     price: 0,
     availableTickets: 200,
     category: "Worship",
