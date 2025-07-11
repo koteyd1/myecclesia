@@ -1,0 +1,108 @@
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+interface EventCardProps {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  image: string;
+  price: number;
+  availableTickets: number;
+  category: string;
+}
+
+const EventCard = ({ 
+  title, 
+  date, 
+  time, 
+  location, 
+  description, 
+  image, 
+  price, 
+  availableTickets, 
+  category 
+}: EventCardProps) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  return (
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card">
+      <div className="relative overflow-hidden">
+        <img 
+          src={image} 
+          alt={title}
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <div className="absolute top-3 left-3">
+          <Badge variant="secondary" className="bg-white/90 text-foreground">
+            {category}
+          </Badge>
+        </div>
+        {price === 0 ? (
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-success text-success-foreground">
+              Free
+            </Badge>
+          </div>
+        ) : (
+          <div className="absolute top-3 right-3">
+            <Badge variant="outline" className="bg-white/90 text-foreground">
+              ${price}
+            </Badge>
+          </div>
+        )}
+      </div>
+      
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="text-muted-foreground text-sm line-clamp-2">
+              {description}
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-2 text-primary" />
+              {formatDate(date)}
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 mr-2 text-primary" />
+              {time}
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 mr-2 text-primary" />
+              {location}
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Users className="h-4 w-4 mr-2 text-primary" />
+              {availableTickets} tickets available
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+              Register Now
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default EventCard;
