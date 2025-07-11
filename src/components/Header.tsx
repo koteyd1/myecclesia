@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleAuthAction = () => {
@@ -61,8 +61,12 @@ const Header = () => {
                 </>
               )}
             </Button>
-            {user && (
-              <Button variant="outline" size="sm">
+            {user && isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/admin")}
+              >
                 <Settings className="h-4 w-4 mr-2" />
                 Admin
               </Button>
