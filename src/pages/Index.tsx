@@ -4,6 +4,8 @@ import EventCard from "@/components/EventCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 // Sample events data
 const sampleEvents = [
@@ -82,13 +84,22 @@ const sampleEvents = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState("All Events");
+
+  const categories = ["All Events", "Worship", "Fellowship", "Community", "Education", "Special Event", "Retreat"];
+
+  const filteredEvents = selectedCategory === "All Events" 
+    ? sampleEvents 
+    : sampleEvents.filter(event => event.category === selectedCategory);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <Hero />
       
       {/* Events Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section id="events" className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -101,32 +112,31 @@ const Index = () => {
           
           {/* Event Categories Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-8">
-            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-              All Events
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-              Worship
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-              Fellowship
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-              Community
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-              Education
-            </Badge>
+            {categories.map((category) => (
+              <Badge 
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"} 
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Badge>
+            ))}
           </div>
           
           {/* Events Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {sampleEvents.map((event) => (
+            {filteredEvents.map((event) => (
               <EventCard key={event.id} {...event} />
             ))}
           </div>
           
           <div className="text-center">
-            <Button variant="outline" size="lg">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => navigate("/events")}
+            >
               View All Events
             </Button>
           </div>
@@ -198,19 +208,80 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-primary transition-colors">Upcoming Events</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Past Events</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Calendar</a></li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/events")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Upcoming Events
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/blog")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Church Blog
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/contact")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Contact Us
+                  </button>
+                </li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Categories</h4>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-primary transition-colors">Worship Services</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Fellowship</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Community Events</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Education</a></li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory("Worship");
+                      document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Worship Services
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory("Fellowship");
+                      document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Fellowship
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory("Community");
+                      document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Community Events
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory("Education");
+                      document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Education
+                  </button>
+                </li>
               </ul>
             </div>
             

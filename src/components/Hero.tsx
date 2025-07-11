@@ -1,8 +1,11 @@
 import { Calendar, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-church.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -41,6 +44,7 @@ const Hero = () => {
             <Button 
               size="lg" 
               className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3"
+              onClick={() => navigate("/events")}
             >
               Browse Events
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -49,6 +53,7 @@ const Hero = () => {
               variant="outline" 
               size="lg"
               className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-3"
+              onClick={() => navigate("/about")}
             >
               Learn More
             </Button>
