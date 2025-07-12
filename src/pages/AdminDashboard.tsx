@@ -33,7 +33,8 @@ const AdminDashboard = () => {
     category: "",
     organizer: "",
     duration: "",
-    requirements: ""
+    requirements: "",
+    external_url: ""
   });
 
   useEffect(() => {
@@ -141,7 +142,8 @@ const AdminDashboard = () => {
         category: "",
         organizer: "",
         duration: "",
-        requirements: ""
+        requirements: "",
+        external_url: ""
       });
       fetchEvents();
     } catch (error) {
@@ -170,7 +172,8 @@ const AdminDashboard = () => {
       category: event.category || "",
       organizer: event.organizer || "",
       duration: event.duration || "",
-      requirements: event.requirements || ""
+      requirements: event.requirements || "",
+      external_url: event.external_url || ""
     });
     setShowCreateForm(true);
   };
@@ -405,6 +408,21 @@ const AdminDashboard = () => {
                     onChange={handleChange}
                     placeholder="https://example.com/image.jpg"
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="external_url">Event Website Link</Label>
+                  <Input
+                    id="external_url"
+                    name="external_url"
+                    type="url"
+                    value={formData.external_url}
+                    onChange={handleChange}
+                    placeholder="https://example.com/event-registration"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Users will be redirected to this link after signing up
+                  </p>
                 </div>
                 
                 <div className="flex gap-2">
