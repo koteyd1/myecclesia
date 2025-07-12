@@ -41,7 +41,10 @@ const BlogCard = ({
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card">
+    <Card 
+      className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card cursor-pointer"
+      onClick={handleReadMore}
+    >
       <div className="relative overflow-hidden">
         <img 
           src={image} 
