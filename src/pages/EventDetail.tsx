@@ -1,38 +1,108 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Mail, Phone, User } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const EventDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  
+  const [event, setEvent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registering, setRegistering] = useState(false);
 
-  // Mock event data - this will come from Supabase later
-  const event = {
-    id: id,
-    title: "Sunday Worship Service",
-    date: "2024-01-21",
-    time: "10:00 AM",
-    location: "Main Sanctuary",
-    description: "Join us for our weekly worship service with inspiring music and meaningful messages. This service includes contemporary worship, prayer time, and an inspiring message from our pastor. All are welcome to join us in fellowship and worship as we come together as a community of faith.",
-    image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1200&h=600&fit=crop",
-    price: 0,
-    availableTickets: 200,
-    category: "Worship",
-    organizer: "Pastor John Smith",
-    duration: "1.5 hours",
-    requirements: "None - All ages welcome",
-    external_url: "https://example.com/sunday-worship-registration"
+  useEffect(() => {
+    if (id) {
+      fetchEvent();
+      if (user) {
+        checkRegistrationStatus();
+      }
+    }
+  }, [id, user]);
+
+  const fetchEvent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      setEvent(data);
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load event details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkRegistrationStatus = async () => {
+    if (!user || !id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("event_id", id)
+        .eq("status", "registered")
+        .single();
+
+      setIsRegistered(!!data);
+    } catch (error) {
+      // No registration found, which is fine
+      setIsRegistered(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!user || !event) {
+      navigate("/auth");
+      return;
+    }
+
+    setRegistering(true);
+    try {
+      const { error } = await supabase
+        .from("event_registrations")
+        .insert([
+          {
+            user_id: user.id,
+            event_id: event.id,
+          },
+        ]);
+
+      if (error) throw error;
+
+      setIsRegistered(true);
+      toast({
+        title: "Registration Successful!",
+        description: "You have successfully registered for this event.",
+      });
+    } catch (error: any) {
+      console.error("Error registering for event:", error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to register for event",
+        variant: "destructive",
+      });
+    } finally {
+      setRegistering(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -45,6 +115,17 @@ const EventDetail = () => {
     });
   };
 
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8 text-center">
+          <div className="text-lg">Loading event details...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -128,21 +209,24 @@ const EventDetail = () => {
                 </div>
               </div>
 
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p><strong>Organizer:</strong> {event.organizer}</p>
-                  <p><strong>Requirements:</strong> {event.requirements}</p>
+              {(event.organizer || event.requirements) && (
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    {event.organizer && <p><strong>Organizer:</strong> {event.organizer}</p>}
+                    {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
+                    {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Event Access */}
+          {/* Event Registration */}
           <div className="lg:col-span-1">
             <Card className="sticky top-8">
               <CardHeader>
-                <CardTitle>Event Access</CardTitle>
+                <CardTitle>Event Registration</CardTitle>
                 <CardDescription>
                   {event.price === 0 ? "This event is free to attend" : `Event fee: $${event.price}`}
                 </CardDescription>
@@ -150,30 +234,52 @@ const EventDetail = () => {
               <CardContent>
                 {user ? (
                   <div className="space-y-4">
-                    <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
-                      <h4 className="font-semibold text-success mb-2">Access Granted!</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        You're signed in and can now access the event registration.
-                      </p>
-                      <Button 
-                        className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                        onClick={() => window.open(event.external_url, '_blank')}
-                      >
-                        Join Event
-                      </Button>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      <p>
-                        Clicking "Join Event" will open the event registration page in a new tab.
-                      </p>
-                    </div>
+                    {isRegistered ? (
+                      <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="h-5 w-5 text-success" />
+                          <h4 className="font-semibold text-success">Registered!</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          You're registered for this event. Check your dashboard for details.
+                        </p>
+                        <Button 
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => navigate("/dashboard")}
+                        >
+                          View in Dashboard
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                          <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Click below to register for this event.
+                          </p>
+                          <Button 
+                            className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                            onClick={handleRegister}
+                            disabled={registering}
+                          >
+                            {registering ? "Registering..." : "Register Now"}
+                          </Button>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          <p>
+                            Registration is instant and you can manage your registrations from your dashboard.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="p-4 bg-muted/50 border border-muted rounded-lg">
                       <h4 className="font-semibold mb-2">Sign Up Required</h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Please create an account to access event registration links.
+                        Please create an account to register for events.
                       </p>
                       <Button 
                         className="w-full"
