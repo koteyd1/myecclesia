@@ -96,8 +96,29 @@ const EventDetail = () => {
       return;
     }
 
+    // Prevent multiple clicks while processing
+    if (registering || isRegistered) return;
+
     setRegistering(true);
     try {
+      // Check if already registered before attempting insert
+      const { data: existingRegistration } = await supabase
+        .from("event_registrations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("event_id", event.id)
+        .eq("status", "registered")
+        .single();
+
+      if (existingRegistration) {
+        setIsRegistered(true);
+        toast({
+          title: "Already Registered",
+          description: "You are already registered for this event.",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("event_registrations")
         .insert([
@@ -107,7 +128,18 @@ const EventDetail = () => {
           },
         ]);
 
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key constraint specifically
+        if (error.code === "23505") {
+          setIsRegistered(true);
+          toast({
+            title: "Already Registered",
+            description: "You are already registered for this event.",
+          });
+          return;
+        }
+        throw error;
+      }
 
       setIsRegistered(true);
       toast({
