@@ -28,8 +28,8 @@ const Hero = () => {
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Bringing Our
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight overflow-visible">
+            <span className="block">Bringing Our</span>
             <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
               Community Together
             </span>

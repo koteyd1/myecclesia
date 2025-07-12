@@ -165,8 +165,8 @@ const Index = () => {
             </div>
             
             <div className="text-center group">
-              <div className="bg-secondary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary/20 transition-colors">
-                <Users className="h-8 w-8 text-secondary" />
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <Users className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Community</h3>
               <p className="text-muted-foreground">Connect with fellow believers and build lasting friendships</p>
