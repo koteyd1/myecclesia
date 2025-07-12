@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from "lucide-react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Event {
   id: string;
@@ -16,19 +17,26 @@ interface Event {
   time: string;
   category: string;
   location: string;
+  isPersonal?: boolean; // Flag to distinguish personal calendar events
+  calendarId?: string; // Store the user_calendar ID for deletion
 }
 
 const Calendar = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
+  const [personalEvents, setPersonalEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEvents();
+    if (user) {
+      fetchPersonalCalendarEvents();
+    }
     
     // Check for highlighted event from URL params
     const highlightEventId = searchParams.get('highlight');
@@ -49,7 +57,7 @@ const Calendar = () => {
         description: "The event is highlighted below and has been downloaded to your device.",
       });
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, user]);
 
   useEffect(() => {
     if (!searchParams.get('highlight')) {
@@ -78,6 +86,68 @@ const Calendar = () => {
     }
   };
 
+  const fetchPersonalCalendarEvents = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("user_calendar")
+        .select(`
+          id,
+          events (
+            id,
+            title,
+            date,
+            time,
+            category,
+            location
+          )
+        `)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      const personalEventsData = data?.map(item => ({
+        ...item.events,
+        isPersonal: true,
+        calendarId: item.id // Store the user_calendar ID for deletion
+      })) || [];
+
+      setPersonalEvents(personalEventsData);
+    } catch (error) {
+      console.error("Error fetching personal calendar events:", error);
+    }
+  };
+
+  const removeFromPersonalCalendar = async (eventId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("user_calendar")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("event_id", eventId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setPersonalEvents(prev => prev.filter(event => event.id !== eventId));
+      
+      toast({
+        title: "Removed from Calendar",
+        description: "Event has been removed from your personal calendar.",
+      });
+    } catch (error) {
+      console.error("Error removing from calendar:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove event from calendar",
+        variant: "destructive",
+      });
+    }
+  };
+
   const goToPreviousMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
   };
@@ -91,12 +161,20 @@ const Calendar = () => {
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getEventsForDay = (day: Date) => {
-    return events.filter(event => 
+    const regularEvents = events.filter(event => 
       isSameDay(parseISO(event.date), day)
     );
+    const personalEventsForDay = personalEvents.filter(event => 
+      isSameDay(parseISO(event.date), day)
+    );
+    return [...regularEvents, ...personalEventsForDay];
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: string, isPersonal?: boolean) => {
+    if (isPersonal) {
+      return 'bg-primary/20 text-primary border border-primary/30';
+    }
+    
     const colors: { [key: string]: string } = {
       'Worship': 'bg-blue-100 text-blue-800',
       'Youth': 'bg-green-100 text-green-800',
@@ -184,17 +262,29 @@ const Calendar = () => {
                       {dayEvents.slice(0, 2).map((event) => (
                         <div
                           key={event.id}
-                          onClick={() => navigate(`/events/${event.id}`)}
-                          className="cursor-pointer"
+                          className="cursor-pointer relative group"
                         >
                           <Badge 
                             variant="secondary" 
-                            className={`text-xs p-1 w-full text-center truncate ${getCategoryColor(event.category)} ${
+                            className={`text-xs p-1 w-full text-center truncate ${getCategoryColor(event.category, event.isPersonal)} ${
                               event.id === highlightedEventId ? 'ring-2 ring-green-500 animate-pulse' : ''
                             }`}
+                            onClick={() => navigate(`/events/${event.id}`)}
                           >
+                            {event.isPersonal && <span className="mr-1">📅</span>}
                             {event.title}
                           </Badge>
+                          {event.isPersonal && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFromPersonalCalendar(event.id);
+                              }}
+                              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-2 w-2" />
+                            </button>
+                          )}
                         </div>
                       ))}
                       {dayEvents.length > 2 && (
@@ -238,6 +328,51 @@ const Calendar = () => {
             ))}
           </div>
         </div>
+
+        {/* Personal Calendar Events */}
+        {user && personalEvents.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <span>📅</span>
+              My Calendar Events ({personalEvents.length})
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {personalEvents.map((event) => (
+                <Card 
+                  key={event.id} 
+                  className={`cursor-pointer hover:shadow-lg transition-shadow border-primary/30 ${
+                    event.id === highlightedEventId ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20 animate-pulse' : 'bg-primary/5'
+                  }`}
+                  onClick={() => navigate(`/events/${event.id}`)}
+                >
+                  <CardContent className="p-4 relative">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getCategoryColor(event.category, true)}>
+                          {event.category}
+                        </Badge>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromPersonalCalendar(event.id);
+                          }}
+                          className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {format(parseISO(event.date), "MMM dd, yyyy")} at {event.time}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{event.location}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
