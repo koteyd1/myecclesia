@@ -52,6 +52,9 @@ const Header = () => {
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
+            <Link to="/donate" className="text-foreground hover:text-primary transition-colors">
+              Donate
+            </Link>
           </nav>
 
           {/* Auth Buttons */}
