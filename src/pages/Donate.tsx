@@ -161,11 +161,11 @@ const Donate = () => {
                           key={option.amount}
                           type="button"
                           variant={selectedAmount === option.amount ? "default" : "outline"}
-                          className="h-auto p-4 flex flex-col items-center"
+                          className="h-20 p-3 flex flex-col items-center justify-center text-center"
                           onClick={() => handleAmountSelect(option.amount)}
                         >
-                          <span className="text-lg font-bold">{option.label}</span>
-                          <span className="text-xs text-center mt-1 opacity-80">
+                          <span className="text-lg font-bold mb-1">{option.label}</span>
+                          <span className="text-xs leading-tight opacity-80 line-clamp-2">
                             {option.description}
                           </span>
                         </Button>

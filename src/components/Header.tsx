@@ -31,18 +31,83 @@ const Header = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6">
+            <div className="flex items-center space-x-6 border-r border-border pr-6">
+              <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Events
+              </Link>
+              <Link to="/calendar" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Calendar
+              </Link>
+              <Link to="/blog" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Blog
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-6 border-r border-border pr-6">
+              <Link to="/about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                About
+              </Link>
+              <Link to="/contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Contact
+              </Link>
+            </div>
+            
+            <Link 
+              to="/donate" 
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Donate
+            </Link>
+          </nav>
+
+          {/* Mobile Navigation Toggle & Auth Buttons */}
+          <div className="flex items-center space-x-3">
+            {/* Dashboard link for authenticated users */}
+            {user && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hidden md:flex">
+                Dashboard
+              </Button>
+            )}
+            
+            {/* Auth Button */}
+            <Button variant="ghost" size="sm" onClick={handleAuthAction}>
+              {user ? (
+                <>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </>
+              ) : (
+                <>
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Login</span>
+                </>
+              )}
+            </Button>
+            
+            {/* Admin Button */}
+            {user && isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/admin")}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Mobile Navigation */}
+        <div className="lg:hidden border-t border-border">
+          <div className="py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <Link to="/events" className="text-foreground hover:text-primary transition-colors">
               Events
             </Link>
             <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
               Calendar
             </Link>
-            {user && (
-              <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
-                Dashboard
-              </Link>
-            )}
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
               Blog
             </Link>
@@ -52,35 +117,13 @@ const Header = () => {
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
-            <Link to="/donate" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/donate" className="bg-primary text-primary-foreground px-3 py-1 rounded text-sm font-medium">
               Donate
             </Link>
-          </nav>
-
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={handleAuthAction}>
-              {user ? (
-                <>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </>
-              ) : (
-                <>
-                  <User className="h-4 w-4 mr-2" />
-                  Login
-                </>
-              )}
-            </Button>
-            {user && isAdmin && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate("/admin")}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Admin
-              </Button>
+            {user && (
+              <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
+                Dashboard
+              </Link>
             )}
           </div>
         </div>
