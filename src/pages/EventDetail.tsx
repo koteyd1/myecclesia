@@ -16,12 +16,6 @@ const EventDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [registrationData, setRegistrationData] = useState({
-    fullName: user?.user_metadata?.full_name || "",
-    email: user?.email || "",
-    phone: ""
-  });
 
   // Mock event data - this will come from Supabase later
   const event = {
@@ -37,7 +31,8 @@ const EventDetail = () => {
     category: "Worship",
     organizer: "Pastor John Smith",
     duration: "1.5 hours",
-    requirements: "None - All ages welcome"
+    requirements: "None - All ages welcome",
+    external_url: "https://example.com/sunday-worship-registration"
   };
 
   const formatDate = (dateStr: string) => {
@@ -50,37 +45,6 @@ const EventDetail = () => {
     });
   };
 
-  const handleRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsRegistering(true);
-
-    try {
-      // TODO: Implement actual registration logic with Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      toast({
-        title: "Registration Successful!",
-        description: `You've been registered for ${event.title}. A confirmation email will be sent shortly.`,
-      });
-      
-      navigate("/events");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Registration Failed",
-        description: "There was an error registering for this event. Please try again.",
-      });
-    } finally {
-      setIsRegistering(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRegistrationData({
-      ...registrationData,
-      [e.target.name]: e.target.value
-    });
-  };
 
   if (!event) {
     return (
@@ -174,69 +138,57 @@ const EventDetail = () => {
             </div>
           </div>
 
-          {/* Registration Form */}
+          {/* Event Access */}
           <div className="lg:col-span-1">
             <Card className="sticky top-8">
               <CardHeader>
-                <CardTitle>Register for Event</CardTitle>
+                <CardTitle>Event Access</CardTitle>
                 <CardDescription>
-                  {event.price === 0 ? "This event is free to attend" : `Registration fee: $${event.price}`}
+                  {event.price === 0 ? "This event is free to attend" : `Event fee: $${event.price}`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleRegistration} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={registrationData.fullName}
-                      onChange={handleChange}
-                      required
-                    />
+                {user ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                      <h4 className="font-semibold text-success mb-2">Access Granted!</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        You're signed in and can now access the event registration.
+                      </p>
+                      <Button 
+                        className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(event.external_url, '_blank')}
+                      >
+                        Join Event
+                      </Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <p>
+                        Clicking "Join Event" will open the event registration page in a new tab.
+                      </p>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={registrationData.email}
-                      onChange={handleChange}
-                      required
-                    />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted/50 border border-muted rounded-lg">
+                      <h4 className="font-semibold mb-2">Sign Up Required</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Please create an account to access event registration links.
+                      </p>
+                      <Button 
+                        className="w-full"
+                        onClick={() => navigate("/auth")}
+                      >
+                        Sign Up / Sign In
+                      </Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <p>
+                        Creating an account is quick and gives you access to all our events.
+                      </p>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone (Optional)</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="Enter your phone number"
-                      value={registrationData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                    disabled={isRegistering}
-                  >
-                    {isRegistering ? "Registering..." : "Complete Registration"}
-                  </Button>
-                </form>
-
-                <div className="mt-4 pt-4 border-t text-xs text-muted-foreground">
-                  <p>
-                    By registering, you agree to receive event updates and confirmations via email.
-                  </p>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
