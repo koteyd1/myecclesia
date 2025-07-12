@@ -31,7 +31,7 @@ const Header = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          <nav className="hidden lg:flex items-center space-x-6 ml-16">
             <div className="flex items-center space-x-6 border-r border-border pr-6">
               <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Events
