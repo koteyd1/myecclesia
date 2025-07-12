@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +103,47 @@ const EventDetail = () => {
     } finally {
       setRegistering(false);
     }
+  };
+
+  const generateCalendarFile = () => {
+    if (!event) return;
+
+    const startDate = new Date(`${event.date}T${event.time}`);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
+
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ChurchEvents//Event//EN',
+      'BEGIN:VEVENT',
+      `UID:${event.id}@churchevents.com`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:${event.title}`,
+      `DESCRIPTION:${event.description}`,
+      `LOCATION:${event.location}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Calendar Event Created",
+      description: "Event has been downloaded. Add it to your calendar app.",
+    });
   };
 
   const formatDate = (dateStr: string) => {
@@ -258,19 +299,27 @@ const EventDetail = () => {
                           <p className="text-sm text-muted-foreground mb-4">
                             Click below to register for this event.
                           </p>
-                          <Button 
-                            className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                            onClick={handleRegister}
-                            disabled={registering}
-                          >
-                            {registering ? "Registering..." : "Register Now"}
-                          </Button>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          <p>
-                            Registration is instant and you can manage your registrations from your dashboard.
-                          </p>
-                        </div>
+                        <Button 
+                          className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                          onClick={handleRegister}
+                          disabled={registering}
+                        >
+                          {registering ? "Registering..." : "Register Now"}
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          className="w-full"
+                          onClick={generateCalendarFile}
+                        >
+                          <CalendarPlus className="h-4 w-4 mr-2" />
+                          Add to Calendar
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <p>
+                          Registration is instant and you can manage your registrations from your dashboard.
+                        </p>
+                      </div>
                       </div>
                     )}
                   </div>

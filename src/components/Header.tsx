@@ -35,6 +35,9 @@ const Header = () => {
             <Link to="/events" className="text-foreground hover:text-primary transition-colors">
               Events
             </Link>
+            <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
+              Calendar
+            </Link>
             {user && (
               <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
                 Dashboard
