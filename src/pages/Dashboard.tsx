@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,17 +14,18 @@ interface EventRegistration {
   event_id: string;
   registered_at: string;
   status: string;
-  events: {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    image: string;
-    category: string;
-    organizer: string;
-  };
+    events: {
+      id: string;
+      title: string;
+      description: string;
+      date: string;
+      time: string;
+      location: string;
+      image: string;
+      category: string;
+      organizer: string;
+      ticket_url: string;
+    };
 }
 
 const Dashboard = () => {
@@ -57,7 +58,8 @@ const Dashboard = () => {
             location,
             image,
             category,
-            organizer
+            organizer,
+            ticket_url
           )
         `)
         .eq("user_id", user?.id)
@@ -184,13 +186,25 @@ const Dashboard = () => {
                             </Badge>
                           )}
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => cancelRegistration(registration.id)}
-                        >
-                          Cancel Registration
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => cancelRegistration(registration.id)}
+                          >
+                            Cancel Registration
+                          </Button>
+                          {registration.events.ticket_url && (
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              onClick={() => window.open(registration.events.ticket_url, '_blank')}
+                            >
+                              <Ticket className="h-4 w-4 mr-2" />
+                              Collect Ticket
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>

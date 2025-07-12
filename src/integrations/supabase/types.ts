@@ -68,6 +68,7 @@ export type Database = {
           organizer: string | null
           price: number | null
           requirements: string | null
+          ticket_url: string | null
           time: string
           title: string
           updated_at: string
@@ -87,6 +88,7 @@ export type Database = {
           organizer?: string | null
           price?: number | null
           requirements?: string | null
+          ticket_url?: string | null
           time: string
           title: string
           updated_at?: string
@@ -106,6 +108,7 @@ export type Database = {
           organizer?: string | null
           price?: number | null
           requirements?: string | null
+          ticket_url?: string | null
           time?: string
           title?: string
           updated_at?: string
