@@ -105,9 +105,10 @@ const EventDetail = () => {
     }
   };
 
-  const generateCalendarFile = () => {
+  const handleAddToCalendar = () => {
     if (!event) return;
 
+    // Generate and download calendar file
     const startDate = new Date(`${event.date}T${event.time}`);
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
 
@@ -141,9 +142,14 @@ const EventDetail = () => {
     URL.revokeObjectURL(url);
 
     toast({
-      title: "Calendar Event Created",
-      description: "Event has been downloaded. Add it to your calendar app.",
+      title: "Calendar Event Downloaded",
+      description: "Opening calendar to show event date...",
     });
+
+    // Navigate to calendar page with event highlighted
+    setTimeout(() => {
+      navigate(`/calendar?highlight=${event.id}&date=${event.date}`);
+    }, 500);
   };
 
   const formatDate = (dateStr: string) => {
@@ -309,7 +315,7 @@ const EventDetail = () => {
                         <Button 
                           variant="outline"
                           className="w-full"
-                          onClick={generateCalendarFile}
+                          onClick={handleAddToCalendar}
                         >
                           <CalendarPlus className="h-4 w-4 mr-2" />
                           Add to Calendar

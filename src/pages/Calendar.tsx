@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Event {
   id: string;
@@ -21,13 +21,41 @@ interface Event {
 const Calendar = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+    
+    // Check for highlighted event from URL params
+    const highlightEventId = searchParams.get('highlight');
+    const eventDate = searchParams.get('date');
+    
+    if (highlightEventId) {
+      setHighlightedEventId(highlightEventId);
+      
+      // Set the calendar to show the month of the highlighted event
+      if (eventDate) {
+        const parsedDate = parseISO(eventDate);
+        setCurrentMonth(parsedDate);
+      }
+      
+      // Show success message
+      toast({
+        title: "Event Added to Calendar",
+        description: "The event is highlighted below and has been downloaded to your device.",
+      });
+    }
+  }, [searchParams, toast]);
+
+  useEffect(() => {
+    if (!searchParams.get('highlight')) {
+      fetchEvents();
+    }
+  }, [searchParams]);
 
   const fetchEvents = async () => {
     try {
@@ -136,13 +164,16 @@ const Calendar = () => {
               {calendarDays.map((day) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
+                const hasHighlightedEvent = dayEvents.some(event => event.id === highlightedEventId);
                 
                 return (
                   <div
                     key={day.toISOString()}
                     className={`min-h-24 p-2 border border-border ${
                       isCurrentMonth ? 'bg-card' : 'bg-muted/30'
-                    } ${isSameDay(day, new Date()) ? 'ring-2 ring-primary' : ''}`}
+                    } ${isSameDay(day, new Date()) ? 'ring-2 ring-primary' : ''} ${
+                      hasHighlightedEvent ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20' : ''
+                    }`}
                   >
                     <div className={`text-sm mb-1 ${
                       isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
@@ -158,7 +189,9 @@ const Calendar = () => {
                         >
                           <Badge 
                             variant="secondary" 
-                            className={`text-xs p-1 w-full text-center truncate ${getCategoryColor(event.category)}`}
+                            className={`text-xs p-1 w-full text-center truncate ${getCategoryColor(event.category)} ${
+                              event.id === highlightedEventId ? 'ring-2 ring-green-500 animate-pulse' : ''
+                            }`}
                           >
                             {event.title}
                           </Badge>
@@ -184,7 +217,9 @@ const Calendar = () => {
             {events.slice(0, 6).map((event) => (
               <Card 
                 key={event.id} 
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className={`cursor-pointer hover:shadow-lg transition-shadow ${
+                  event.id === highlightedEventId ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20 animate-pulse' : ''
+                }`}
                 onClick={() => navigate(`/events/${event.id}`)}
               >
                 <CardContent className="p-4">
