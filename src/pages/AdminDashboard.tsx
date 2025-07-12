@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, Calendar, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, BookOpen } from "lucide-react";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -18,9 +20,12 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [events, setEvents] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [editingBlogPost, setEditingBlogPost] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -37,6 +42,16 @@ const AdminDashboard = () => {
     external_url: ""
   });
 
+  const [blogFormData, setBlogFormData] = useState({
+    title: "",
+    content: "",
+    excerpt: "",
+    author: "",
+    category: "",
+    image: "",
+    published: false
+  });
+
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -44,6 +59,7 @@ const AdminDashboard = () => {
     }
     checkAdminRole();
     fetchEvents();
+    fetchBlogPosts();
   }, [user, navigate]);
 
   const checkAdminRole = async () => {
@@ -93,6 +109,25 @@ const AdminDashboard = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to load events.",
+      });
+    }
+  };
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setBlogPosts(data || []);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load blog posts.",
       });
     }
   };
@@ -213,6 +248,108 @@ const AdminDashboard = () => {
     }));
   };
 
+  const handleBlogSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const blogData = {
+        ...blogFormData,
+        created_by: user.id
+      };
+
+      let result;
+      if (editingBlogPost) {
+        result = await supabase
+          .from("blog_posts")
+          .update(blogData)
+          .eq("id", editingBlogPost.id);
+      } else {
+        result = await supabase
+          .from("blog_posts")
+          .insert(blogData);
+      }
+
+      if (result.error) throw result.error;
+
+      toast({
+        title: "Success!",
+        description: `Blog post ${editingBlogPost ? "updated" : "created"} successfully.`,
+      });
+
+      setShowCreateBlogForm(false);
+      setEditingBlogPost(null);
+      setBlogFormData({
+        title: "",
+        content: "",
+        excerpt: "",
+        author: "",
+        category: "",
+        image: "",
+        published: false
+      });
+      fetchBlogPosts();
+    } catch (error) {
+      console.error("Error saving blog post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save blog post.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBlogEdit = (blogPost) => {
+    setEditingBlogPost(blogPost);
+    setBlogFormData({
+      title: blogPost.title,
+      content: blogPost.content,
+      excerpt: blogPost.excerpt || "",
+      author: blogPost.author,
+      category: blogPost.category || "",
+      image: blogPost.image || "",
+      published: blogPost.published
+    });
+    setShowCreateBlogForm(true);
+  };
+
+  const handleBlogDelete = async (blogPostId) => {
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("blog_posts")
+        .delete()
+        .eq("id", blogPostId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Blog post deleted successfully.",
+      });
+
+      fetchBlogPosts();
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete blog post.",
+      });
+    }
+  };
+
+  const handleBlogChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setBlogFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -244,16 +381,12 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage church events and registrations</p>
+            <p className="text-muted-foreground">Manage church events, blog posts and registrations</p>
           </div>
-          <Button onClick={() => setShowCreateForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Event
-          </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -261,6 +394,18 @@ const AdminDashboard = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Total Events</p>
                   <p className="text-2xl font-bold">{events.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <BookOpen className="h-8 w-8 text-primary" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Blog Posts</p>
+                  <p className="text-2xl font-bold">{blogPosts.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -285,9 +430,9 @@ const AdminDashboard = () => {
               <div className="flex items-center">
                 <Badge className="h-8 w-8 text-primary" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Categories</p>
+                  <p className="text-sm font-medium text-muted-foreground">Published Blogs</p>
                   <p className="text-2xl font-bold">
-                    {new Set(events.map(e => e.category).filter(Boolean)).size}
+                    {blogPosts.filter(post => post.published).length}
                   </p>
                 </div>
               </div>
@@ -295,8 +440,24 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Create/Edit Form */}
-        {showCreateForm && (
+        {/* Management Tabs */}
+        <Tabs defaultValue="events" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="blogs">Blog Posts</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="events" className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Event Management</h2>
+              <Button onClick={() => setShowCreateForm(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Event
+              </Button>
+            </div>
+
+            {/* Create/Edit Event Form */}
+            {showCreateForm && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>{editingEvent ? "Edit Event" : "Create New Event"}</CardTitle>
@@ -442,57 +603,230 @@ const AdminDashboard = () => {
                 </div>
               </form>
             </CardContent>
-          </Card>
-        )}
-
-        {/* Events List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Manage Events</CardTitle>
-            <CardDescription>View, edit, or delete existing events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {events.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No events created yet. Create your first event!
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {events.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{event.title}</h3>
-                      <div className="text-sm text-muted-foreground">
-                        {event.date} at {event.time} • {event.location}
-                      </div>
-                      {event.category && (
-                        <Badge variant="outline" className="mt-1">
-                          {event.category}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(event)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(event.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            </Card>
             )}
-          </CardContent>
-        </Card>
+
+            {/* Events List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Events</CardTitle>
+                <CardDescription>View, edit, or delete existing events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {events.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No events created yet. Create your first event!
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {events.map((event) => (
+                      <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{event.title}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            {event.date} at {event.time} • {event.location}
+                          </div>
+                          {event.category && (
+                            <Badge variant="outline" className="mt-1">
+                              {event.category}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(event)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(event.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="blogs" className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Blog Management</h2>
+              <Button onClick={() => setShowCreateBlogForm(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Blog Post
+              </Button>
+            </div>
+
+            {/* Create/Edit Blog Form */}
+            {showCreateBlogForm && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{editingBlogPost ? "Edit Blog Post" : "Create New Blog Post"}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleBlogSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="title">Title *</Label>
+                        <Input
+                          id="title"
+                          name="title"
+                          value={blogFormData.title}
+                          onChange={handleBlogChange}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="author">Author *</Label>
+                        <Input
+                          id="author"
+                          name="author"
+                          value={blogFormData.author}
+                          onChange={handleBlogChange}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Input
+                          id="category"
+                          name="category"
+                          value={blogFormData.category}
+                          onChange={handleBlogChange}
+                          placeholder="Faith, Service, Family, etc."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="image">Featured Image URL</Label>
+                        <Input
+                          id="image"
+                          name="image"
+                          type="url"
+                          value={blogFormData.image}
+                          onChange={handleBlogChange}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="excerpt">Excerpt</Label>
+                      <Textarea
+                        id="excerpt"
+                        name="excerpt"
+                        value={blogFormData.excerpt}
+                        onChange={handleBlogChange}
+                        rows={2}
+                        placeholder="A brief summary of the blog post..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="content">Content *</Label>
+                      <Textarea
+                        id="content"
+                        name="content"
+                        value={blogFormData.content}
+                        onChange={handleBlogChange}
+                        rows={10}
+                        required
+                        placeholder="Write your blog post content here..."
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="published"
+                        name="published"
+                        checked={blogFormData.published}
+                        onCheckedChange={(checked) => setBlogFormData(prev => ({ ...prev, published: checked }))}
+                      />
+                      <Label htmlFor="published">Publish immediately</Label>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Saving..." : editingBlogPost ? "Update Blog Post" : "Create Blog Post"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowCreateBlogForm(false);
+                          setEditingBlogPost(null);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Blog Posts List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Manage Blog Posts</CardTitle>
+                <CardDescription>View, edit, or delete existing blog posts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {blogPosts.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No blog posts created yet. Create your first blog post!
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {blogPosts.map((blogPost) => (
+                      <div key={blogPost.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{blogPost.title}</h3>
+                          <div className="text-sm text-muted-foreground">
+                            By {blogPost.author} • {new Date(blogPost.created_at).toLocaleDateString()}
+                          </div>
+                          <div className="flex gap-2 mt-1">
+                            {blogPost.category && (
+                              <Badge variant="outline">
+                                {blogPost.category}
+                              </Badge>
+                            )}
+                            <Badge variant={blogPost.published ? "default" : "secondary"}>
+                              {blogPost.published ? "Published" : "Draft"}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleBlogEdit(blogPost)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleBlogDelete(blogPost.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

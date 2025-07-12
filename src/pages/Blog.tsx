@@ -4,14 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock blog data - this will come from Supabase later
-  const blogPosts = [
+  // Fallback blog data in case database is empty
+  const fallbackBlogPosts = [
     {
       id: "1",
       title: "Finding Hope in Difficult Times",
@@ -74,11 +77,39 @@ const Blog = () => {
     }
   ];
 
-  const categories = ["All", "Faith", "Service", "Family", "Youth", "Worship"];
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      // Use database posts if available, otherwise use fallback
+      setBlogPosts(data && data.length > 0 ? data : fallbackBlogPosts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      // Use fallback data on error
+      setBlogPosts(fallbackBlogPosts);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Get unique categories from both database and fallback posts
+  const allPosts = [...blogPosts, ...fallbackBlogPosts];
+  const categories = ["All", ...new Set(allPosts.map(post => post.category).filter(Boolean))];
 
   const filteredPosts = blogPosts.filter(post => {
+    const searchContent = post.excerpt || post.content || "";
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+                         searchContent.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -123,10 +154,19 @@ const Blog = () => {
         </div>
 
         {/* Blog Posts Grid */}
-        {filteredPosts.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">Loading blog posts...</p>
+          </div>
+        ) : filteredPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPosts.map((post) => (
-              <BlogCard key={post.id} {...post} />
+              <BlogCard 
+                key={post.id} 
+                {...post} 
+                readTime={`${Math.ceil((post.content?.length || 0) / 200)} min read`}
+                date={new Date(post.created_at || post.date).toISOString().split('T')[0]}
+              />
             ))}
           </div>
         ) : (
@@ -148,7 +188,7 @@ const Blog = () => {
               >
                 <h3 className="font-medium text-foreground">{category}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {blogPosts.filter(post => post.category === category).length} posts
+                  {allPosts.filter(post => post.category === category).length} posts
                 </p>
               </div>
             ))}
