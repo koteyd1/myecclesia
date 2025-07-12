@@ -17,11 +17,11 @@ All colors MUST be HSL for proper theming.
     --popover: 0 0% 100%;
     --popover-foreground: 240 15% 15%;
 
-    /* Primary: Warm church blue */
-    --primary: 217 91% 60%;
+    /* Primary: Warm church green */
+    --primary: 142 76% 45%;
     --primary-foreground: 0 0% 98%;
-    --primary-light: 217 91% 70%;
-    --primary-dark: 217 91% 50%;
+    --primary-light: 142 76% 55%;
+    --primary-dark: 142 76% 35%;
 
     /* Secondary: Soft purple for accents */
     --secondary: 260 60% 65%;
@@ -45,14 +45,14 @@ All colors MUST be HSL for proper theming.
 
     --border: 240 20% 90%;
     --input: 240 20% 95%;
-    --ring: 217 91% 60%;
+    --ring: 142 76% 45%;
 
     --radius: 0.75rem;
 
     /* Custom gradients for hero sections */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(260 60% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(260 60% 65%), hsl(217 91% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60% / 0.9), hsl(260 60% 65% / 0.8));
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 45%), hsl(260 60% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(260 60% 65%), hsl(142 76% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 45% / 0.9), hsl(260 60% 65% / 0.8));
     
     /* Elegant shadows */
     --shadow-sm: 0 2px 4px hsl(240 15% 15% / 0.05);
@@ -78,7 +78,7 @@ All colors MUST be HSL for proper theming.
 
     --sidebar-border: 220 13% 91%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 142 76% 45%;
   }
 
   .dark {
@@ -116,7 +116,7 @@ All colors MUST be HSL for proper theming.
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 142 76% 45%;
   }
 }
 
