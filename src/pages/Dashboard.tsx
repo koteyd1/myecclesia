@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
@@ -29,6 +30,7 @@ interface EventRegistration {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
@@ -165,18 +167,24 @@ const Dashboard = () => {
               <Card key={registration.id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   {registration.events.image && (
-                    <div className="md:w-48 h-48 md:h-auto">
+                    <div 
+                      className="md:w-48 h-48 md:h-auto cursor-pointer"
+                      onClick={() => navigate(`/events/${registration.events.id}`)}
+                    >
                       <img
                         src={registration.events.image}
                         alt={registration.events.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                       />
                     </div>
                   )}
                   <div className="flex-1">
                     <CardHeader>
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div 
+                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => navigate(`/events/${registration.events.id}`)}
+                        >
                           <CardTitle className="text-xl mb-2">
                             {registration.events.title}
                           </CardTitle>
@@ -207,7 +215,10 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent 
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => navigate(`/events/${registration.events.id}`)}
+                    >
                       <p className="text-muted-foreground mb-4 line-clamp-2">
                         {registration.events.description}
                       </p>
