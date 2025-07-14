@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,67 +46,7 @@ const Contact = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground mb-6">Get in Touch</h2>
-            
-            <div className="space-y-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-4">
-                    <MapPin className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold text-foreground">Address</h3>
-                      <p className="text-muted-foreground">123 Faith Street<br />Springfield, ST 12345</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-4">
-                    <Phone className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">(555) 123-4567</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-4">
-                    <Mail className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">info@churchevents.com</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center space-x-4">
-                    <Clock className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold text-foreground">Office Hours</h3>
-                      <div className="text-muted-foreground">
-                        <p>Monday - Friday: 9:00 AM - 5:00 PM</p>
-                        <p>Saturday: 9:00 AM - 2:00 PM</p>
-                        <p>Sunday: Closed (Services at 10:00 AM)</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Contact Form */}
+        <div className="max-w-2xl mx-auto">
           <div>
             <Card>
               <CardHeader>
