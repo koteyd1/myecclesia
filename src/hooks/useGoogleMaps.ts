@@ -52,28 +52,44 @@ export const useGoogleMaps = () => {
       // Create map
       const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London
       
+      // Create map with explicit dimensions
+      console.log('📏 Container dimensions:', {
+        width: container.offsetWidth,
+        height: container.offsetHeight,
+        clientWidth: container.clientWidth,
+        clientHeight: container.clientHeight
+      });
+
+      if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+        throw new Error('Container has zero dimensions');
+      }
+
       map.current = new google.maps.Map(container, {
         center: center,
         zoom: userLocation ? 12 : 10,
         mapTypeControl: true,
         streetViewControl: true,
         fullscreenControl: true,
+        backgroundColor: '#f0f0f0', // Make sure we see something
       });
 
       console.log('✅ Google Maps instance created');
       
-      // Ensure map renders properly
-      google.maps.event.addListenerOnce(map.current, 'tilesloaded', () => {
-        console.log('✅ Map tiles loaded successfully');
+      // Wait for map to be ready before marking as loaded
+      google.maps.event.addListenerOnce(map.current, 'idle', () => {
+        console.log('✅ Map is idle and ready');
+        setIsLoaded(true);
+        setIsLoading(false);
       });
       
       // Force immediate resize
-      google.maps.event.trigger(map.current, 'resize');
-      map.current.setCenter(center);
-      console.log('✅ Map resized and centered immediately');
-      
-      setIsLoaded(true);
-      setIsLoading(false);
+      setTimeout(() => {
+        if (map.current) {
+          google.maps.event.trigger(map.current, 'resize');
+          map.current.setCenter(center);
+          console.log('✅ Map resized and centered');
+        }
+      }, 200);
 
     } catch (error) {
       console.error('❌ Google Maps initialization failed:', error);
