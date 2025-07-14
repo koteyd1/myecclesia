@@ -30,12 +30,23 @@ export const useGoogleMaps = () => {
       
       console.log('🔑 Response from get-google-maps-key:', { secretData, secretError });
       
-      if (secretError || !secretData?.key) {
-        console.error('❌ Could not get Google Maps API key from secrets:', secretError);
+      if (secretError) {
+        console.error('❌ Supabase function error:', secretError);
         setIsLoading(false);
         toast({
           title: "API Key Error",
-          description: "Could not retrieve Google Maps API key from server",
+          description: `Could not retrieve Google Maps API key: ${secretError.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!secretData?.key) {
+        console.error('❌ No API key in response:', secretData);
+        setIsLoading(false);
+        toast({
+          title: "API Key Missing",
+          description: "Google Maps API key not found in response",
           variant: "destructive",
         });
         return;
