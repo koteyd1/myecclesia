@@ -60,7 +60,18 @@ const EventsMap: React.FC<EventsMapProps> = ({
   // Initialize Google Maps directly
   useEffect(() => {
     const initMap = async () => {
-      if (!mapContainer.current || isLoading || isLoaded) return;
+      console.log('🎯 Checking map container:', !!mapContainer.current);
+      
+      if (!mapContainer.current) {
+        console.log('❌ Map container ref is null, retrying...');
+        setTimeout(initMap, 100);
+        return;
+      }
+      
+      if (isLoading || isLoaded) {
+        console.log('⏭️ Already loading or loaded, skipping...');
+        return;
+      }
       
       setIsLoading(true);
       console.log('🗺️ Starting direct Google Maps initialization...');
@@ -85,9 +96,15 @@ const EventsMap: React.FC<EventsMapProps> = ({
         await loader.load();
         console.log('✅ Google Maps API loaded');
 
+        // Double-check container exists before creating map
+        if (!mapContainer.current) {
+          throw new Error('Map container disappeared during initialization');
+        }
+
         // Create map directly
         const center = userLocation || { lat: 51.5074, lng: -0.1278 };
         
+        console.log('🗺️ Creating Google Maps instance...');
         const googleMap = new google.maps.Map(mapContainer.current, {
           center: center,
           zoom: userLocation ? 12 : 10,
@@ -136,9 +153,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
       }
     };
 
-    // Wait a moment for container to be ready
-    const timer = setTimeout(initMap, 200);
-    return () => clearTimeout(timer);
+    // Start initialization after a delay to ensure DOM is ready
+    setTimeout(initMap, 300);
   }, [events, userLocation, onEventSelect, isLoading, isLoaded, toast]);
 
   if (isLoading) {
