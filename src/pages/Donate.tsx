@@ -127,8 +127,8 @@ const Donate = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-secondary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Target className="h-8 w-8 text-secondary" />
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Target className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Youth Development</h3>
               <p className="text-muted-foreground">
