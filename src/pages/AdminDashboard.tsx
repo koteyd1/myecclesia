@@ -179,17 +179,31 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("*, user_roles(role)")
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setUsers(data || []);
+      if (profilesError) throw profilesError;
+
+      // Fetch user roles separately
+      const { data: roles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("*");
+
+      if (rolesError) throw rolesError;
+
+      // Combine profiles with roles
+      const usersWithRoles = profiles?.map(profile => ({
+        ...profile,
+        user_roles: roles?.find(role => role.user_id === profile.user_id)
+      })) || [];
+
+      setUsers(usersWithRoles);
       
       // Calculate user stats
-      const totalUsers = data?.length || 0;
-      const recentUsers = data?.filter(user => {
+      const totalUsers = profiles?.length || 0;
+      const recentUsers = profiles?.filter(user => {
         const createdAt = new Date(user.created_at);
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -209,16 +223,37 @@ const AdminDashboard = () => {
 
   const fetchRegistrations = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: registrations, error: registrationsError } = await supabase
         .from("event_registrations")
-        .select("*, events(title), profiles(full_name, email)")
+        .select("*")
         .order("registered_at", { ascending: false });
 
-      if (error) throw error;
-      setRegistrations(data || []);
+      if (registrationsError) throw registrationsError;
+
+      // Fetch events and profiles separately
+      const { data: events, error: eventsError } = await supabase
+        .from("events")
+        .select("id, title");
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email");
+
+      if (eventsError || profilesError) {
+        throw eventsError || profilesError;
+      }
+
+      // Combine registrations with events and profiles
+      const registrationsWithDetails = registrations?.map(registration => ({
+        ...registration,
+        events: events?.find(event => event.id === registration.event_id),
+        profiles: profiles?.find(profile => profile.user_id === registration.user_id)
+      })) || [];
+
+      setRegistrations(registrationsWithDetails);
       
       // Update user stats with total registrations
-      setUserStats(prev => ({ ...prev, totalRegistrations: data?.length || 0 }));
+      setUserStats(prev => ({ ...prev, totalRegistrations: registrations?.length || 0 }));
     } catch (error) {
       console.error("Error fetching registrations:", error);
       toast({
