@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Input } from '@/components/ui/input';
+import { Loader } from '@googlemaps/js-api-loader';
 import { Button } from '@/components/ui/button';
 import { MapPin, Navigation } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+
+/// <reference types="@types/google.maps" />
 
 interface Event {
   id: string;
@@ -30,10 +30,10 @@ const EventsMap: React.FC<EventsMapProps> = ({
   onLocationUpdate 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(true);
+  const map = useRef<google.maps.Map | null>(null);
+  const markers = useRef<google.maps.Marker[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Google Geocoding through Supabase Edge Function
@@ -56,7 +56,6 @@ const EventsMap: React.FC<EventsMapProps> = ({
       }
     } catch (error) {
       console.error('Geocoding error:', error);
-      // Fallback to mock geocoding for demo purposes
       return getMockCoordinates(location);
     }
   };
@@ -104,10 +103,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
         onLocationUpdate?.(location);
         
         if (map.current) {
-          map.current.flyTo({
-            center: [location.lng, location.lat],
-            zoom: 12
-          });
+          map.current.setCenter(location);
+          map.current.setZoom(12);
         }
 
         toast({
@@ -126,42 +123,88 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
+  const initializeMap = async () => {
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: userLocation ? [userLocation.lng, userLocation.lat] : [-74.0060, 40.7128],
-      zoom: userLocation ? 12 : 10,
-    });
+    try {
+      // Get Google Maps API key from Supabase secrets
+      const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
+      
+      let apiKey = '';
+      if (secretError || !secretData?.key) {
+        // Fallback - you might want to handle this differently
+        console.warn('Could not get Google Maps API key from secrets');
+        return;
+      } else {
+        apiKey = secretData.key;
+      }
 
-    map.current.addControl(
-      new mapboxgl.NavigationControl(),
-      'top-right'
-    );
+      const loader = new Loader({
+        apiKey: apiKey,
+        version: 'weekly',
+        libraries: ['marker']
+      });
 
-    map.current.on('load', () => {
+      await loader.load();
+
+      const center = userLocation || { lat: 40.7128, lng: -74.0060 };
+      
+      map.current = new google.maps.Map(mapContainer.current, {
+        center: center,
+        zoom: userLocation ? 12 : 10,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+      });
+
+      setIsLoaded(true);
+      setIsLoading(false);
+      
+      // Add markers after map is initialized
       addEventMarkers();
-    });
+
+    } catch (error) {
+      console.error('Error loading Google Maps:', error);
+      setIsLoading(false);
+      toast({
+        title: "Map loading error",
+        description: "Could not load Google Maps. Please check your API key.",
+        variant: "destructive",
+      });
+    }
   };
 
   const addEventMarkers = async () => {
-    if (!map.current) return;
+    if (!map.current || !isLoaded) return;
 
     // Clear existing markers
-    markers.current.forEach(marker => marker.remove());
+    markers.current.forEach(marker => marker.setMap(null));
     markers.current = [];
 
     // Add user location marker if available
     if (userLocation) {
-      const userMarker = new mapboxgl.Marker({ color: '#3b82f6' })
-        .setLngLat([userLocation.lng, userLocation.lat])
-        .setPopup(new mapboxgl.Popup().setHTML('<div class="p-2"><strong>Your Location</strong></div>'))
-        .addTo(map.current);
-      
+      const userMarker = new google.maps.Marker({
+        position: userLocation,
+        map: map.current,
+        title: 'Your Location',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: '#3b82f6',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 2,
+        }
+      });
+
+      const userInfoWindow = new google.maps.InfoWindow({
+        content: '<div class="p-2"><strong>Your Location</strong></div>'
+      });
+
+      userMarker.addListener('click', () => {
+        userInfoWindow.open(map.current, userMarker);
+      });
+
       markers.current.push(userMarker);
     }
 
@@ -170,42 +213,37 @@ const EventsMap: React.FC<EventsMapProps> = ({
       try {
         const coords = await geocodeLocation(event.location);
         if (coords && map.current) {
-          const el = document.createElement('div');
-          el.className = 'custom-marker';
-          el.style.cssText = `
-            background-color: #ef4444;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          `;
-          el.innerHTML = '<div style="color: white; font-size: 12px; font-weight: bold;">📅</div>';
-          
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([coords.lng, coords.lat])
-            .setPopup(
-              new mapboxgl.Popup()
-                .setHTML(`
-                  <div class="p-3 max-w-xs">
-                    <h3 class="font-semibold text-sm mb-1">${event.title}</h3>
-                    <p class="text-xs text-gray-600 mb-1">${event.location}</p>
-                    <p class="text-xs text-gray-600 mb-2">${event.date} at ${event.time}</p>
-                    ${event.category ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${event.category}</span>` : ''}
-                  </div>
-                `)
-            )
-            .addTo(map.current);
+          const eventMarker = new google.maps.Marker({
+            position: coords,
+            map: map.current,
+            title: event.title,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: '#ef4444',
+              fillOpacity: 1,
+              strokeColor: '#ffffff',
+              strokeWeight: 2,
+            }
+          });
 
-          el.addEventListener('click', () => {
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div class="p-3 max-w-xs">
+                <h3 class="font-semibold text-sm mb-1">${event.title}</h3>
+                <p class="text-xs text-gray-600 mb-1">${event.location}</p>
+                <p class="text-xs text-gray-600 mb-2">${event.date} at ${event.time}</p>
+                ${event.category ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${event.category}</span>` : ''}
+              </div>
+            `
+          });
+
+          eventMarker.addListener('click', () => {
+            infoWindow.open(map.current, eventMarker);
             onEventSelect?.(event.id);
           });
 
-          markers.current.push(marker);
+          markers.current.push(eventMarker);
         }
       } catch (error) {
         console.error(`Error geocoding location for event ${event.title}:`, error);
@@ -214,51 +252,23 @@ const EventsMap: React.FC<EventsMapProps> = ({
   };
 
   useEffect(() => {
-    if (mapboxToken && !showTokenInput) {
-      initializeMap();
-    }
-
-    return () => {
-      map.current?.remove();
-    };
-  }, [mapboxToken, showTokenInput]);
+    initializeMap();
+  }, []);
 
   useEffect(() => {
-    if (map.current && !showTokenInput) {
+    if (isLoaded) {
       addEventMarkers();
     }
-  }, [events, userLocation]);
+  }, [events, userLocation, isLoaded]);
 
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      setShowTokenInput(false);
-      toast({
-        title: "Map initialized",
-        description: "Loading events on map...",
-      });
-    }
-  };
-
-  if (showTokenInput) {
+  if (isLoading) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-4 bg-muted/20 rounded-lg">
-        <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Setup Map</h3>
-        <p className="text-sm text-muted-foreground mb-4 text-center">
-          Enter your Mapbox public token to display event locations on the map.
-          Get your token from <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline">mapbox.com</a>
+        <MapPin className="h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
+        <h3 className="text-lg font-semibold mb-2">Loading Map...</h3>
+        <p className="text-sm text-muted-foreground text-center">
+          Initializing Google Maps and loading event locations
         </p>
-        <div className="w-full max-w-md space-y-3">
-          <Input
-            placeholder="Mapbox public token (pk.ey...)"
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            type="password"
-          />
-          <Button onClick={handleTokenSubmit} className="w-full">
-            Initialize Map
-          </Button>
-        </div>
       </div>
     );
   }
