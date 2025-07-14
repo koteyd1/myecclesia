@@ -12,9 +12,9 @@ const EventsMap: React.FC<EventsMapProps> = ({
   onLocationUpdate 
 }) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null);
 
   console.log('🎯 EventsMap component rendering...');
-  const mapContainer = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const {
     isLoaded,
@@ -26,7 +26,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
     centerMapOnLocation
   } = useGoogleMaps();
 
-  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapContainer.current, isMounted });
+  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapElement, isMounted });
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -71,16 +71,16 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
   // Effect to initialize map once DOM is ready
   useEffect(() => {
-    console.log('🎯 Map initialization effect - isMounted:', isMounted, 'hasContainer:', !!mapContainer.current);
+    console.log('🎯 Map initialization effect - isMounted:', isMounted, 'hasContainer:', !!mapElement);
     
-    if (!isMounted || !mapContainer.current) {
+    if (!isMounted || !mapElement) {
       console.log('⏳ Waiting for component to mount and container to be available...');
       return;
     }
 
     console.log('✅ Everything ready - initializing map');
-    initializeMap(mapContainer.current, userLocation);
-  }, [isMounted, initializeMap, userLocation]);
+    initializeMap(mapElement, userLocation);
+  }, [isMounted, mapElement, initializeMap, userLocation]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -112,7 +112,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
     <div className="h-full flex flex-col">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
-        ref={mapContainer} 
+        ref={setMapElement} 
         className="flex-1 min-h-[500px]" 
         style={{ height: 'calc(100% - 60px)' }}
       />
