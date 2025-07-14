@@ -13,8 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity, Search, Filter } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -62,7 +65,13 @@ const AdminDashboard = () => {
   const [blogPosts, setBlogPosts] = useState([]);
   const [users, setUsers] = useState([]);
   const [registrations, setRegistrations] = useState([]);
+  const [filteredRegistrations, setFilteredRegistrations] = useState([]);
   const [userStats, setUserStats] = useState({ totalUsers: 0, recentUsers: 0, totalRegistrations: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
@@ -251,6 +260,7 @@ const AdminDashboard = () => {
       })) || [];
 
       setRegistrations(registrationsWithDetails);
+      setFilteredRegistrations(registrationsWithDetails);
       
       // Update user stats with total registrations
       setUserStats(prev => ({ ...prev, totalRegistrations: registrations?.length || 0 }));
@@ -262,6 +272,58 @@ const AdminDashboard = () => {
         description: "Failed to load registrations.",
       });
     }
+  };
+
+  // Filter registrations based on search and filter criteria
+  const applyFilters = () => {
+    let filtered = registrations;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(registration => 
+        registration.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        registration.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Event filter
+    if (selectedEvent) {
+      filtered = filtered.filter(registration => registration.event_id === selectedEvent);
+    }
+
+    // Status filter
+    if (selectedStatus) {
+      filtered = filtered.filter(registration => registration.status === selectedStatus);
+    }
+
+    // Date range filter
+    if (dateFrom) {
+      filtered = filtered.filter(registration => 
+        new Date(registration.registered_at) >= dateFrom
+      );
+    }
+
+    if (dateTo) {
+      filtered = filtered.filter(registration => 
+        new Date(registration.registered_at) <= dateTo
+      );
+    }
+
+    setFilteredRegistrations(filtered);
+  };
+
+  // Apply filters whenever filter criteria change
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, selectedEvent, selectedStatus, dateFrom, dateTo, registrations]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedEvent("");
+    setSelectedStatus("");
+    setDateFrom(undefined);
+    setDateTo(undefined);
   };
 
   const handleRemoveUser = async (userId) => {
@@ -279,6 +341,7 @@ const AdminDashboard = () => {
       });
 
       fetchUsers();
+      fetchRegistrations();
       fetchRegistrations();
     } catch (error) {
       console.error("Error removing user:", error);
@@ -1108,9 +1171,100 @@ const AdminDashboard = () => {
                 <CardDescription>View all event registrations and attendance</CardDescription>
               </CardHeader>
               <CardContent>
-                {registrations.length === 0 ? (
+                {/* Search and Filter Controls */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Events</SelectItem>
+                        {events.map((event) => (
+                          <SelectItem key={event.id} value={event.id}>
+                            {event.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Status</SelectItem>
+                        <SelectItem value="registered">Registered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                        <SelectItem value="attended">Attended</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-[140px] justify-start">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Date From
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={dateFrom}
+                          onSelect={setDateFrom}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-[140px] justify-start">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Date To
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={dateTo}
+                          onSelect={setDateTo}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <Button variant="outline" onClick={clearFilters}>
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Results Summary */}
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {filteredRegistrations.length} of {registrations.length} registrations
+                    {searchTerm && ` matching "${searchTerm}"`}
+                  </p>
+                </div>
+
+                {filteredRegistrations.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No event registrations yet.
+                    {registrations.length === 0 ? "No event registrations yet." : "No registrations match your filters."}
                   </p>
                 ) : (
                   <Table>
@@ -1123,7 +1277,7 @@ const AdminDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {registrations.map((registration) => (
+                      {filteredRegistrations.map((registration) => (
                         <TableRow key={registration.id}>
                           <TableCell>
                             <div>
