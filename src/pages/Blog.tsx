@@ -13,69 +13,6 @@ const Blog = () => {
   const [blogPosts, setBlogPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fallback blog data in case database is empty
-  const fallbackBlogPosts = [
-    {
-      id: "1",
-      title: "Finding Hope in Difficult Times",
-      excerpt: "Life can be challenging, and we all face moments when hope seems distant. In this post, we explore how faith can be an anchor during storms and how our community can support one another through prayer and fellowship.",
-      author: "Pastor John Smith",
-      date: "2024-01-15",
-      readTime: "5 min read",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop",
-      category: "Faith"
-    },
-    {
-      id: "2",
-      title: "The Power of Community Service",
-      excerpt: "Discover how serving others transforms not only the lives we touch but our own hearts as well. Learn about our recent community outreach programs and how you can get involved in making a difference.",
-      author: "Sarah Johnson",
-      date: "2024-01-10",
-      readTime: "7 min read",
-      image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop",
-      category: "Service"
-    },
-    {
-      id: "3",
-      title: "Building Strong Family Foundations",
-      excerpt: "Strong families are the cornerstone of our community. Explore practical ways to strengthen family bonds through faith-based principles, communication, and shared values that last a lifetime.",
-      author: "Michael Davis",
-      date: "2024-01-08",
-      readTime: "6 min read",
-      image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=400&fit=crop",
-      category: "Family"
-    },
-    {
-      id: "4",
-      title: "Youth Ministry: Nurturing the Next Generation",
-      excerpt: "Our youth are the future of our church and community. Learn about our youth programs, upcoming events, and how we're helping young people develop their faith and leadership skills.",
-      author: "Emily Roberts",
-      date: "2024-01-05",
-      readTime: "4 min read",
-      image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=800&h=400&fit=crop",
-      category: "Youth"
-    },
-    {
-      id: "5",
-      title: "The Art of Worship: Music and Praise",
-      excerpt: "Music has always been a powerful way to connect with God and express our faith. Discover the history and meaning behind our worship songs and how music ministry enriches our spiritual journey.",
-      author: "David Wilson",
-      date: "2024-01-03",
-      readTime: "5 min read",
-      image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop",
-      category: "Worship"
-    },
-    {
-      id: "6",
-      title: "Preparing for Easter: A Season of Reflection",
-      excerpt: "As we approach the Easter season, it's time to prepare our hearts for reflection and renewal. Join us in exploring the significance of this holy time and how we can make the most of this spiritual journey.",
-      author: "Pastor John Smith",
-      date: "2024-01-01",
-      readTime: "8 min read",
-      image: "https://images.unsplash.com/photo-1460904577954-8fadb262612c?w=800&h=400&fit=crop",
-      category: "Faith"
-    }
-  ];
 
   useEffect(() => {
     fetchBlogPosts();
@@ -91,20 +28,20 @@ const Blog = () => {
 
       if (error) throw error;
       
-      // Use database posts if available, otherwise use fallback
-      setBlogPosts(data && data.length > 0 ? data : fallbackBlogPosts);
+      // Only use database posts to showcase active blogs
+      setBlogPosts(data || []);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
-      // Use fallback data on error
-      setBlogPosts(fallbackBlogPosts);
+      // Show empty state on error instead of fallback
+      setBlogPosts([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Get unique categories from both database and fallback posts
-  const allPosts = [...blogPosts, ...fallbackBlogPosts];
-  const categories = ["All", ...new Set(allPosts.map(post => post.category).filter(Boolean))];
+  // Get unique categories from published blog posts only
+  const publishedPosts = blogPosts.filter(post => post.published !== false);
+  const categories = ["All", ...new Set(publishedPosts.map(post => post.category).filter(Boolean))];
 
   const filteredPosts = blogPosts.filter(post => {
     const searchContent = post.excerpt || post.content || "";
@@ -176,24 +113,56 @@ const Blog = () => {
           </div>
         )}
 
-        {/* Featured Categories */}
-        <div className="mt-16 pt-16 border-t">
-          <h2 className="text-2xl font-semibold text-foreground mb-8 text-center">Explore Topics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {categories.slice(1).map((category) => (
-              <div
-                key={category}
-                className="text-center p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => setSelectedCategory(category)}
-              >
-                <h3 className="font-medium text-foreground">{category}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {allPosts.filter(post => post.category === category).length} posts
-                </p>
-              </div>
-            ))}
+
+        {/* Featured Categories - Explore Topics */}
+        {categories.length > 1 && (
+          <div className="mt-16 pt-16 border-t">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-semibold text-foreground mb-4">Explore Topics</h2>
+              <p className="text-muted-foreground">Discover our active blog categories and dive into topics that inspire your faith journey</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.slice(1).map((category) => {
+                const categoryPosts = publishedPosts.filter(post => post.category === category);
+                const postCount = categoryPosts.length;
+                const latestPost = categoryPosts[0]; // Most recent post in this category
+                
+                return (
+                  <div
+                    key={category}
+                    className="group cursor-pointer bg-card rounded-lg border p-6 hover:shadow-md transition-all duration-300 hover:border-primary/20"
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {category}
+                      </h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {postCount} post{postCount !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                    
+                    {latestPost && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Latest post:</p>
+                        <h4 className="font-medium text-foreground line-clamp-2 leading-snug">
+                          {latestPost.title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          By {latestPost.author} • {new Date(latestPost.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="mt-4 text-sm text-primary group-hover:text-primary/80 transition-colors">
+                      View all {category.toLowerCase()} posts →
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
