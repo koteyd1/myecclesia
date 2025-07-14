@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,24 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const denominationOptions = [
+    "All Welcome",
+    "Baptist",
+    "Methodist",
+    "Presbyterian",
+    "Lutheran",
+    "Episcopal",
+    "Catholic",
+    "Pentecostal",
+    "Orthodox",
+    "Anglican",
+    "Congregational",
+    "Reformed",
+    "Evangelical",
+    "Non-denominational",
+    "Interfaith"
+  ];
   const [isAdmin, setIsAdmin] = useState(false);
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
@@ -245,6 +264,13 @@ const AdminDashboard = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -489,13 +515,21 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <Label htmlFor="denominations">Denominations</Label>
-                    <Input
-                      id="denominations"
-                      name="denominations"
+                    <Select
                       value={formData.denominations}
-                      onChange={handleChange}
-                      placeholder="Baptist, Methodist, Catholic, etc."
-                    />
+                      onValueChange={(value) => handleSelectChange("denominations", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select denomination" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {denominationOptions.map((denomination) => (
+                          <SelectItem key={denomination} value={denomination}>
+                            {denomination}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="date">Date *</Label>
