@@ -59,17 +59,21 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
   // Initialize Google Maps directly
   useEffect(() => {
+    let isComponentMounted = true;
+    
     const initMap = async () => {
       console.log('🎯 Checking map container:', !!mapContainer.current);
       
       if (!mapContainer.current) {
         console.log('❌ Map container ref is null, retrying...');
-        setTimeout(initMap, 100);
+        if (isComponentMounted) {
+          setTimeout(initMap, 100);
+        }
         return;
       }
       
-      if (isLoading || isLoaded) {
-        console.log('⏭️ Already loading or loaded, skipping...');
+      if (isLoading || isLoaded || !isComponentMounted) {
+        console.log('⏭️ Already loading/loaded or component unmounted, skipping...');
         return;
       }
       
@@ -79,6 +83,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
       try {
         // Get API key
         const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
+        
+        if (!isComponentMounted) return; // Check if component is still mounted
         
         if (secretError || !secretData?.key) {
           throw new Error(`API key error: ${secretError?.message || 'No key returned'}`);
@@ -94,11 +100,15 @@ const EventsMap: React.FC<EventsMapProps> = ({
         });
 
         await loader.load();
+        
+        if (!isComponentMounted) return; // Check if component is still mounted
+        
         console.log('✅ Google Maps API loaded');
 
-        // Double-check container exists before creating map
-        if (!mapContainer.current) {
-          throw new Error('Map container disappeared during initialization');
+        // Final check - container must exist and component must be mounted
+        if (!mapContainer.current || !isComponentMounted) {
+          console.log('❌ Container or component no longer available');
+          return;
         }
 
         // Create map directly
@@ -112,6 +122,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
           streetViewControl: true,
           fullscreenControl: true,
         });
+
+        if (!isComponentMounted) return; // Final check before setting state
 
         console.log('✅ Google Maps instance created');
         setMap(googleMap);
@@ -143,6 +155,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
         });
 
       } catch (error) {
+        if (!isComponentMounted) return;
+        
         console.error('❌ Failed to initialize Google Maps:', error);
         setIsLoading(false);
         toast({
@@ -155,7 +169,12 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
     // Start initialization after a delay to ensure DOM is ready
     setTimeout(initMap, 300);
-  }, [events, userLocation, onEventSelect, isLoading, isLoaded, toast]);
+    
+    // Cleanup function
+    return () => {
+      isComponentMounted = false;
+    };
+  }, []); // Remove dependencies that cause re-renders
 
   if (isLoading) {
     return (
