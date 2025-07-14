@@ -68,8 +68,8 @@ const AdminDashboard = () => {
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
   const [userStats, setUserStats] = useState({ totalUsers: 0, recentUsers: 0, totalRegistrations: 0 });
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -287,12 +287,12 @@ const AdminDashboard = () => {
     }
 
     // Event filter
-    if (selectedEvent) {
+    if (selectedEvent && selectedEvent !== "all") {
       filtered = filtered.filter(registration => registration.event_id === selectedEvent);
     }
 
     // Status filter
-    if (selectedStatus) {
+    if (selectedStatus && selectedStatus !== "all") {
       filtered = filtered.filter(registration => registration.status === selectedStatus);
     }
 
@@ -320,8 +320,8 @@ const AdminDashboard = () => {
   // Clear all filters
   const clearFilters = () => {
     setSearchTerm("");
-    setSelectedEvent("");
-    setSelectedStatus("");
+    setSelectedEvent("all");
+    setSelectedStatus("all");
     setDateFrom(undefined);
     setDateTo(undefined);
   };
@@ -1191,7 +1191,7 @@ const AdminDashboard = () => {
                         <SelectValue placeholder="Filter by event" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Events</SelectItem>
+                        <SelectItem value="all">All Events</SelectItem>
                         {events.map((event) => (
                           <SelectItem key={event.id} value={event.id}>
                             {event.title}
@@ -1205,7 +1205,7 @@ const AdminDashboard = () => {
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Status</SelectItem>
+                        <SelectItem value="all">All Status</SelectItem>
                         <SelectItem value="registered">Registered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                         <SelectItem value="attended">Attended</SelectItem>
