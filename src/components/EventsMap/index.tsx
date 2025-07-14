@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
@@ -11,6 +11,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
   userLocation,
   onLocationUpdate 
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
   console.log('🎯 EventsMap component rendering...');
   const mapContainer = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -24,7 +26,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
     centerMapOnLocation
   } = useGoogleMaps();
 
-  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapContainer.current });
+  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapContainer.current, isMounted });
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -61,35 +63,24 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
+  // Effect to track when component is mounted
   useEffect(() => {
-    console.log('🎯 useEffect triggered - mapContainer.current:', !!mapContainer.current);
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  // Effect to initialize map once DOM is ready
+  useEffect(() => {
+    console.log('🎯 Map initialization effect - isMounted:', isMounted, 'hasContainer:', !!mapContainer.current);
     
-    // Simple check without infinite retries
-    const initMap = () => {
-      if (mapContainer.current) {
-        console.log('🎯 Calling initializeMap...');
-        initializeMap(mapContainer.current, userLocation);
-      } else {
-        console.error('❌ mapContainer.current is null - DOM element not found');
-        // Set a timeout to try once more after React has fully rendered
-        setTimeout(() => {
-          if (mapContainer.current) {
-            console.log('🎯 Second attempt successful - calling initializeMap...');
-            initializeMap(mapContainer.current, userLocation);
-          } else {
-            console.error('❌ Second attempt failed - showing error to user');
-            toast({
-              title: "Map Error",
-              description: "Failed to initialize the map. Please refresh the page.",
-              variant: "destructive",
-            });
-          }
-        }, 1000);
-      }
-    };
-    
-    initMap();
-  }, [initializeMap, userLocation, toast]);
+    if (!isMounted || !mapContainer.current) {
+      console.log('⏳ Waiting for component to mount and container to be available...');
+      return;
+    }
+
+    console.log('✅ Everything ready - initializing map');
+    initializeMap(mapContainer.current, userLocation);
+  }, [isMounted, initializeMap, userLocation]);
 
   useEffect(() => {
     if (isLoaded) {
