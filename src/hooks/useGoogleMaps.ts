@@ -38,7 +38,7 @@ export const useGoogleMaps = () => {
 
       await loader.load();
 
-      const center = userLocation || { lat: 40.7128, lng: -74.0060 };
+      const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London, UK
       
       map.current = new google.maps.Map(container, {
         center: center,

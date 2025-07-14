@@ -2,11 +2,28 @@ import { MapLocation } from '@/types/EventsMap';
 
 export const getMockCoordinates = (location: string): MapLocation => {
   const locationMocks: { [key: string]: MapLocation } = {
-    'downtown': { lat: 40.7831, lng: -73.9712 },
-    'main street': { lat: 40.7589, lng: -73.9851 },
-    'city center': { lat: 40.7505, lng: -73.9934 },
-    'central park': { lat: 40.7829, lng: -73.9654 },
-    'times square': { lat: 40.7580, lng: -73.9855 },
+    // London locations
+    'london': { lat: 51.5074, lng: -0.1278 },
+    'st. paul': { lat: 51.5138, lng: -0.0984 },
+    'westminster abbey': { lat: 51.4994, lng: -0.1273 },
+    'royal albert hall': { lat: 51.5009, lng: -0.1773 },
+    
+    // Other UK cities
+    'manchester': { lat: 53.4808, lng: -2.2426 },
+    'birmingham': { lat: 52.4862, lng: -1.8904 },
+    'edinburgh': { lat: 55.9533, lng: -3.1883 },
+    'cardiff': { lat: 51.4816, lng: -3.1791 },
+    'york': { lat: 53.9600, lng: -1.0873 },
+    'canterbury': { lat: 51.2802, lng: 1.0789 },
+    'salisbury': { lat: 51.0693, lng: -1.7958 },
+    'bath': { lat: 51.3811, lng: -2.3590 },
+    'liverpool': { lat: 53.4084, lng: -2.9916 },
+    'glasgow': { lat: 55.8642, lng: -4.2518 },
+    'durham': { lat: 54.7753, lng: -1.5849 },
+    'chester': { lat: 53.1906, lng: -2.8837 },
+    'monmouthshire': { lat: 51.8120, lng: -2.7190 },
+    'tintern': { lat: 51.6998, lng: -2.6781 },
+    'stonehenge': { lat: 51.1789, lng: -1.8262 },
   };
 
   const lowerLocation = location.toLowerCase();
@@ -16,10 +33,10 @@ export const getMockCoordinates = (location: string): MapLocation => {
     }
   }
 
-  // Return random coordinates around NYC area for demo
+  // Return coordinates around central England for demo
   return {
-    lat: 40.7128 + (Math.random() - 0.5) * 0.1,
-    lng: -74.0060 + (Math.random() - 0.5) * 0.1
+    lat: 52.5 + (Math.random() - 0.5) * 2,
+    lng: -1.5 + (Math.random() - 0.5) * 2
   };
 };
 
