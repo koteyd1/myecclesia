@@ -35,9 +35,18 @@ const About = () => {
               To create a loving community where everyone feels welcomed, valued, and encouraged to grow 
               in their relationship with God and with one another.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               We believe in the power of faith to transform lives and communities, and we strive to be 
               a beacon of hope and love in our neighborhood and beyond.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              The inspiration behind creating this Christian events ticketing platform came from a desire to unite the Body of Christ and make it easier for believers across the UK to connect, worship, and grow together. Recognizing that Christian events—such as worship nights, conferences, and community outreach—play a vital role in nurturing faith and building fellowship, the platform was developed to remove barriers to participation and help ministries reach a wider audience.
+            </p>
+            <p className="text-muted-foreground mb-4">
+              We saw the need for a user-friendly, dedicated solution tailored to the unique needs of churches and Christian organizations, making it simple to promote events, manage ticketing, and encourage community involvement. By leveraging innovation and technology, the platform aims to empower churches to focus more on ministry and outreach, while seamlessly handling the logistics of event management.
+            </p>
+            <p className="text-muted-foreground">
+              Ultimately, the vision is to promote the Christian faith, foster unity among believers, and support the growth of vibrant, faith-filled communities throughout the UK.
             </p>
           </div>
         </div>
