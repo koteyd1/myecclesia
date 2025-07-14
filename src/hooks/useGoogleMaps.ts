@@ -61,6 +61,16 @@ export const useGoogleMaps = () => {
       });
 
       console.log('✅ Google Maps instance created');
+      
+      // Force map to resize and render properly
+      setTimeout(() => {
+        if (map.current) {
+          google.maps.event.trigger(map.current, 'resize');
+          map.current.setCenter(center);
+          console.log('✅ Map resized and centered');
+        }
+      }, 100);
+      
       setIsLoaded(true);
       setIsLoading(false);
 
