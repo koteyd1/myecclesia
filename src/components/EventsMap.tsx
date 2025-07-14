@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Navigation } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Event {
   id: string;
@@ -38,20 +39,19 @@ const EventsMap: React.FC<EventsMapProps> = ({
   // Google Geocoding through Supabase Edge Function
   const geocodeLocation = async (location: string): Promise<{ lat: number; lng: number } | null> => {
     try {
-      const response = await fetch('/functions/v1/geocode', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: location })
+      const { data, error } = await supabase.functions.invoke('geocode', {
+        body: { address: location }
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (error) {
+        console.warn(`Geocoding failed for location: ${location}`, error);
+        return getMockCoordinates(location);
+      }
+
+      if (data && data.lat && data.lng) {
         return { lat: data.lat, lng: data.lng };
       } else {
-        console.warn(`Geocoding failed for location: ${location}`);
-        // Fallback to mock geocoding for demo purposes
+        console.warn(`No coordinates returned for location: ${location}`);
         return getMockCoordinates(location);
       }
     } catch (error) {
