@@ -120,12 +120,13 @@ const EventsMap: React.FC<EventsMapProps> = ({
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
         ref={mapContainer} 
-        className="flex-1 min-h-[500px]" 
+        className="w-full border border-red-200" 
         style={{ 
-          height: 'calc(100% - 60px)',
           width: '100%',
+          height: '500px',
+          minWidth: '300px',
           minHeight: '500px',
-          position: 'relative'
+          backgroundColor: '#f8f8f8'
         }}
       />
     </div>
