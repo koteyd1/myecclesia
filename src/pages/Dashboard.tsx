@@ -141,6 +141,45 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Manage your event registrations</p>
         </div>
 
+        {/* Quick Links */}
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Links</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/events")}
+              >
+                Browse Events
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/event-guidelines")}
+              >
+                Event Guidelines & Safety
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/calendar")}
+              >
+                Event Calendar
+              </Button>
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/contact")}
+              >
+                Contact Support
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />

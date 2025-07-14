@@ -238,6 +238,14 @@ const Index = () => {
                     Contact Us
                   </button>
                 </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/event-guidelines")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Event Guidelines
+                  </button>
+                </li>
               </ul>
             </div>
             
