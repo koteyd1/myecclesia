@@ -52,12 +52,6 @@ const Events = () => {
     "Interfaith"
   ];
 
-  const priceOptions = [
-    { value: "", label: "All Events" },
-    { value: "free", label: "Free Events" },
-    { value: "paid", label: "Paid Events" }
-  ];
-
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -162,7 +156,6 @@ const Events = () => {
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
-                <SelectItem value="">All Categories</SelectItem>
                 {categoryOptions.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -176,7 +169,6 @@ const Events = () => {
                 <SelectValue placeholder="All Denominations" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
-                <SelectItem value="">All Denominations</SelectItem>
                 {denominationOptions.map((denomination) => (
                   <SelectItem key={denomination} value={denomination}>
                     {denomination}
@@ -190,11 +182,8 @@ const Events = () => {
                 <SelectValue placeholder="All Events" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
-                {priceOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="free">Free Events</SelectItem>
+                <SelectItem value="paid">Paid Events</SelectItem>
               </SelectContent>
             </Select>
 
