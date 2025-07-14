@@ -19,7 +19,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 150,
-    category: "Worship"
+    category: "Worship",
+    denominations: "All Welcome"
   },
   {
     id: "2", 
@@ -31,7 +32,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=800&h=400&fit=crop",
     price: 5,
     availableTickets: 50,
-    category: "Fellowship"
+    category: "Fellowship",
+    denominations: "Baptist"
   },
   {
     id: "3",
@@ -43,7 +45,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop",
     price: 10,
     availableTickets: 80,
-    category: "Community"
+    category: "Community",
+    denominations: "Interfaith"
   },
   {
     id: "4",
@@ -55,7 +58,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 25,
-    category: "Education"
+    category: "Education",
+    denominations: "Methodist"
   },
   {
     id: "5",
@@ -67,7 +71,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1460904577954-8fadb262612c?w=800&h=400&fit=crop",
     price: 0,
     availableTickets: 200,
-    category: "Special Event"
+    category: "Special Event",
+    denominations: "All Welcome"
   },
   {
     id: "6",
@@ -79,7 +84,8 @@ const sampleEvents = [
     image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=400&fit=crop",
     price: 75,
     availableTickets: 30,
-    category: "Retreat"
+    category: "Retreat",
+    denominations: "Catholic"
   }
 ];
 

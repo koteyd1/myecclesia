@@ -36,6 +36,7 @@ const AdminDashboard = () => {
     price: 0,
     available_tickets: 0,
     category: "",
+    denominations: "",
     organizer: "",
     duration: "",
     requirements: "",
@@ -175,6 +176,7 @@ const AdminDashboard = () => {
         price: 0,
         available_tickets: 0,
         category: "",
+        denominations: "",
         organizer: "",
         duration: "",
         requirements: "",
@@ -205,6 +207,7 @@ const AdminDashboard = () => {
       price: event.price,
       available_tickets: event.available_tickets,
       category: event.category || "",
+      denominations: event.denominations || "",
       organizer: event.organizer || "",
       duration: event.duration || "",
       requirements: event.requirements || "",
@@ -482,6 +485,16 @@ const AdminDashboard = () => {
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="denominations">Denominations</Label>
+                    <Input
+                      id="denominations"
+                      name="denominations"
+                      value={formData.denominations}
+                      onChange={handleChange}
+                      placeholder="Baptist, Methodist, Catholic, etc."
                     />
                   </div>
                   <div>

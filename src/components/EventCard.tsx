@@ -15,6 +15,7 @@ interface EventCardProps {
   price: number;
   availableTickets: number;
   category: string;
+  denominations: string;
 }
 
 const EventCard = ({ 
@@ -27,7 +28,8 @@ const EventCard = ({
   image, 
   price, 
   availableTickets, 
-  category 
+  category,
+  denominations 
 }: EventCardProps) => {
   const navigate = useNavigate();
 
@@ -59,10 +61,17 @@ const EventCard = ({
           alt={title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute top-3 left-3">
-          <Badge variant="secondary" className="bg-white/90 text-foreground">
-            {category}
-          </Badge>
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {category && (
+            <Badge variant="secondary" className="bg-white/90 text-foreground">
+              {category}
+            </Badge>
+          )}
+          {denominations && (
+            <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
+              {denominations}
+            </Badge>
+          )}
         </div>
         {price === 0 ? (
           <div className="absolute top-3 right-3">

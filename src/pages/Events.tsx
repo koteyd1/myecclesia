@@ -73,6 +73,7 @@ const Events = () => {
               price={event.price || 0}
               availableTickets={event.available_tickets || 0}
               category={event.category || "Event"}
+              denominations={event.denominations || ""}
             />
           ))}
         </div>

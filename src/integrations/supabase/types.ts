@@ -101,6 +101,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           date: string
+          denominations: string | null
           description: string | null
           duration: string | null
           external_url: string | null
@@ -121,6 +122,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date: string
+          denominations?: string | null
           description?: string | null
           duration?: string | null
           external_url?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date?: string
+          denominations?: string | null
           description?: string | null
           duration?: string | null
           external_url?: string | null
