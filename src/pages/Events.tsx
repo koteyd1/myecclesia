@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
+import EventsMap from "@/components/EventsMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users } from "lucide-react";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Navigation } from "lucide-react";
 
 const Events = () => {
   const { toast } = useToast();
@@ -24,6 +25,9 @@ const Events = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [sortByDistance, setSortByDistance] = useState(false);
 
   const categoryOptions = [
     "Worship Service",
@@ -148,6 +152,68 @@ const Events = () => {
     endDate !== "" || minPrice !== "" || maxPrice !== "" || locationFilter !== "" ||
     availabilityFilter !== "";
 
+  // Simple distance calculation using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Mock geocoding for sorting by distance
+  const getEventCoordinates = (location: string): { lat: number; lng: number } => {
+    const locationMocks: { [key: string]: { lat: number; lng: number } } = {
+      'downtown': { lat: 40.7831, lng: -73.9712 },
+      'main street': { lat: 40.7589, lng: -73.9851 },
+      'city center': { lat: 40.7505, lng: -73.9934 },
+      'central park': { lat: 40.7829, lng: -73.9654 },
+      'times square': { lat: 40.7580, lng: -73.9855 },
+    };
+
+    const lowerLocation = location.toLowerCase();
+    for (const [key, coords] of Object.entries(locationMocks)) {
+      if (lowerLocation.includes(key)) {
+        return coords;
+      }
+    }
+
+    // Return random coordinates around NYC area for demo
+    return {
+      lat: 40.7128 + (Math.random() - 0.5) * 0.1,
+      lng: -74.0060 + (Math.random() - 0.5) * 0.1
+    };
+  };
+
+  // Sort events by distance if user location is available and sorting is enabled
+  const sortedEvents = sortByDistance && userLocation 
+    ? [...filteredEvents].sort((a, b) => {
+        const coordsA = getEventCoordinates(a.location);
+        const coordsB = getEventCoordinates(b.location);
+        const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
+        const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
+        return distanceA - distanceB;
+      })
+    : filteredEvents;
+
+  const handleEventSelect = (eventId: string) => {
+    setSelectedEventId(eventId);
+    // Scroll to the event card
+    const eventElement = document.getElementById(`event-${eventId}`);
+    if (eventElement) {
+      eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleLocationUpdate = (location: { lat: number; lng: number }) => {
+    setUserLocation(location);
+    setSortByDistance(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -225,6 +291,18 @@ const Events = () => {
               >
                 <X className="h-4 w-4" />
                 Clear All Filters
+              </Button>
+            )}
+
+            {userLocation && (
+              <Button
+                variant={sortByDistance ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSortByDistance(prev => !prev)}
+                className="flex items-center gap-2"
+              >
+                <Navigation className="h-4 w-4" />
+                Sort by Distance
               </Button>
             )}
           </div>
@@ -347,44 +425,85 @@ const Events = () => {
           {/* Results Count */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Showing {filteredEvents.length} of {events.length} events
+              Showing {sortedEvents.length} of {events.length} events
               {hasActiveFilters && " (filtered)"}
+              {sortByDistance && userLocation && " (sorted by distance)"}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredEvents.map((event) => (
-            <EventCard 
-              key={event.id} 
-              id={event.id}
-              title={event.title}
-              date={event.date}
-              time={event.time}
-              location={event.location}
-              description={event.description}
-              image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
-              price={event.price || 0}
-              availableTickets={event.available_tickets || 0}
-              category={event.category || "Event"}
-              denominations={event.denominations || ""}
-            />
-          ))}
+        {/* Main Content - Split Layout */}
+        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-400px)] min-h-[600px]">
+          {/* Events List - Left Side */}
+          <div className="lg:col-span-2 space-y-4 overflow-y-auto pr-2">
+            {sortedEvents.length > 0 ? (
+              <div className="grid gap-6">
+                {sortedEvents.map((event, index) => {
+                  const distance = sortByDistance && userLocation 
+                    ? calculateDistance(
+                        userLocation.lat, 
+                        userLocation.lng, 
+                        getEventCoordinates(event.location).lat, 
+                        getEventCoordinates(event.location).lng
+                      ).toFixed(1)
+                    : null;
+
+                  return (
+                    <div 
+                      key={event.id} 
+                      id={`event-${event.id}`}
+                      className={`transition-all duration-200 ${
+                        selectedEventId === event.id ? 'ring-2 ring-primary ring-offset-2' : ''
+                      }`}
+                    >
+                      <EventCard 
+                        id={event.id}
+                        title={event.title}
+                        date={event.date}
+                        time={event.time}
+                        location={event.location}
+                        description={event.description}
+                        image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                        price={event.price || 0}
+                        availableTickets={event.available_tickets || 0}
+                        category={event.category || "Event"}
+                        denominations={event.denominations || ""}
+                      />
+                      {distance && (
+                        <div className="mt-2 text-sm text-muted-foreground flex items-center gap-1">
+                          <Navigation className="h-3 w-3" />
+                          ~{distance} km away
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : events.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
+                <p className="text-muted-foreground">Check back soon for upcoming events!</p>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
+                <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Map - Right Side */}
+          <div className="lg:col-span-1 sticky top-4">
+            <div className="bg-card border rounded-lg h-full">
+              <EventsMap 
+                events={sortedEvents}
+                onEventSelect={handleEventSelect}
+                userLocation={userLocation}
+                onLocationUpdate={handleLocationUpdate}
+              />
+            </div>
+          </div>
         </div>
-
-        {filteredEvents.length === 0 && events.length > 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
-            <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
-          </div>
-        )}
-
-        {events.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
-            <p className="text-muted-foreground">Check back soon for upcoming events!</p>
-          </div>
-        )}
       </main>
     </div>
   );
