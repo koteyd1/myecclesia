@@ -304,10 +304,15 @@ const EventDetail = () => {
                 alt={event.title}
                 className="w-full h-64 md:h-80 object-cover rounded-lg"
               />
-              <div className="absolute top-4 left-4">
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
                 <Badge variant="secondary" className="bg-white/90 text-foreground">
                   {event.category}
                 </Badge>
+                {event.denominations && (
+                  <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
+                    {event.denominations}
+                  </Badge>
+                )}
               </div>
               {event.price === 0 ? (
                 <div className="absolute top-4 right-4">
@@ -351,11 +356,12 @@ const EventDetail = () => {
                 </div>
               </div>
 
-              {(event.organizer || event.requirements) && (
+              {(event.organizer || event.requirements || event.denominations) && (
                 <div className="bg-muted/30 p-4 rounded-lg">
                   <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
                   <div className="space-y-2 text-sm text-muted-foreground">
                     {event.organizer && <p><strong>Organizer:</strong> {event.organizer}</p>}
+                    {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
                     {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
                     {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
                   </div>
