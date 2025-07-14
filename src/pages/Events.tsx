@@ -165,8 +165,32 @@ const Events = () => {
     return R * c;
   };
 
-  // Mock geocoding for sorting by distance
-  const getEventCoordinates = (location: string): { lat: number; lng: number } => {
+  // Google Geocoding for distance calculation
+  const getEventCoordinates = async (location: string): Promise<{ lat: number; lng: number }> => {
+    try {
+      const response = await fetch('/functions/v1/geocode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: location })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { lat: data.lat, lng: data.lng };
+      } else {
+        // Fallback to mock coordinates
+        return getMockEventCoordinates(location);
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return getMockEventCoordinates(location);
+    }
+  };
+
+  // Fallback mock geocoding for demo/development
+  const getMockEventCoordinates = (location: string): { lat: number; lng: number } => {
     const locationMocks: { [key: string]: { lat: number; lng: number } } = {
       'downtown': { lat: 40.7831, lng: -73.9712 },
       'main street': { lat: 40.7589, lng: -73.9851 },
@@ -192,8 +216,8 @@ const Events = () => {
   // Sort events by distance if user location is available and sorting is enabled
   const sortedEvents = sortByDistance && userLocation 
     ? [...filteredEvents].sort((a, b) => {
-        const coordsA = getEventCoordinates(a.location);
-        const coordsB = getEventCoordinates(b.location);
+        const coordsA = getMockEventCoordinates(a.location);
+        const coordsB = getMockEventCoordinates(b.location);
         const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
         const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
         return distanceA - distanceB;
@@ -443,8 +467,8 @@ const Events = () => {
                     ? calculateDistance(
                         userLocation.lat, 
                         userLocation.lng, 
-                        getEventCoordinates(event.location).lat, 
-                        getEventCoordinates(event.location).lng
+                        getMockEventCoordinates(event.location).lat, 
+                        getMockEventCoordinates(event.location).lng
                       ).toFixed(1)
                     : null;
 

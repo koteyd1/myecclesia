@@ -35,9 +35,34 @@ const EventsMap: React.FC<EventsMapProps> = ({
   const [showTokenInput, setShowTokenInput] = useState(true);
   const { toast } = useToast();
 
-  // Mock geocoding function - in production, you'd use a real geocoding service
+  // Google Geocoding through Supabase Edge Function
   const geocodeLocation = async (location: string): Promise<{ lat: number; lng: number } | null> => {
-    // Simple mock geocoding for common locations
+    try {
+      const response = await fetch('/functions/v1/geocode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: location })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { lat: data.lat, lng: data.lng };
+      } else {
+        console.warn(`Geocoding failed for location: ${location}`);
+        // Fallback to mock geocoding for demo purposes
+        return getMockCoordinates(location);
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      // Fallback to mock geocoding for demo purposes
+      return getMockCoordinates(location);
+    }
+  };
+
+  // Fallback mock geocoding for demo/development
+  const getMockCoordinates = (location: string): { lat: number; lng: number } => {
     const locationMocks: { [key: string]: { lat: number; lng: number } } = {
       'downtown': { lat: 40.7831, lng: -73.9712 },
       'main street': { lat: 40.7589, lng: -73.9851 },
