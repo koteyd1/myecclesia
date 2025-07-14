@@ -37,6 +37,25 @@ const AdminDashboard = () => {
     "Non-denominational",
     "Interfaith"
   ];
+
+  const categoryOptions = [
+    "Worship Service",
+    "Bible Study",
+    "Prayer Meeting",
+    "Youth Events",
+    "Children's Ministry",
+    "Community Outreach",
+    "Missions",
+    "Conferences",
+    "Retreats",
+    "Camps",
+    "Fellowship",
+    "Music Ministry",
+    "Special Events",
+    "Holiday Celebrations",
+    "Educational",
+    "Fundraising"
+  ];
   const [isAdmin, setIsAdmin] = useState(false);
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
@@ -506,12 +525,21 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      name="category"
+                    <Select
                       value={formData.category}
-                      onChange={handleChange}
-                    />
+                      onValueChange={(value) => handleSelectChange("category", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {categoryOptions.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="denominations">Denominations</Label>
