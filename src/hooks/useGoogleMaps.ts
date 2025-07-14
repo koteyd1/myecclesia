@@ -20,26 +20,40 @@ export const useGoogleMaps = () => {
     container: HTMLDivElement,
     userLocation?: MapLocation | null
   ) => {
+    console.log('🗺️ Starting map initialization...');
     try {
       // Get Google Maps API key from Supabase secrets
+      console.log('🔑 Calling get-google-maps-key function...');
       const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
       
+      console.log('🔑 Response from get-google-maps-key:', { secretData, secretError });
+      
       if (secretError || !secretData?.key) {
-        console.warn('Could not get Google Maps API key from secrets');
+        console.error('❌ Could not get Google Maps API key from secrets:', secretError);
         setIsLoading(false);
+        toast({
+          title: "API Key Error",
+          description: "Could not retrieve Google Maps API key from server",
+          variant: "destructive",
+        });
         return;
       }
 
+      console.log('🚀 Initializing Google Maps with API key length:', secretData.key.length);
+      
       const loader = new Loader({
         apiKey: secretData.key,
         version: 'weekly',
         libraries: ['marker']
       });
 
+      console.log('📦 Loading Google Maps API...');
       await loader.load();
+      console.log('✅ Google Maps API loaded successfully!');
 
       const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London, UK
       
+      console.log('🗺️ Creating Google Maps instance with center:', center);
       map.current = new google.maps.Map(container, {
         center: center,
         zoom: userLocation ? 12 : 10,
@@ -48,8 +62,10 @@ export const useGoogleMaps = () => {
         fullscreenControl: true,
       });
 
+      console.log('✅ Google Maps instance created successfully!');
       setIsLoaded(true);
       setIsLoading(false);
+      console.log('🎉 Map initialization complete!');
 
     } catch (error) {
       console.error('Error loading Google Maps:', error);
