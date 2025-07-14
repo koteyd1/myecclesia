@@ -24,27 +24,25 @@ export const useGoogleMaps = () => {
   ) => {
     console.log('🗺️ Starting map initialization...');
     try {
-      // Get Google Maps API key from Supabase secrets
-      console.log('🔑 Calling get-google-maps-key function...');
-      const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
+      // For now, we'll need you to set the API key directly here
+      // This is temporary until we can properly configure the edge function
+      const apiKey: string = 'YOUR_GOOGLE_MAPS_API_KEY_HERE'; // Replace with your actual key
       
-      console.log('🔑 Response from get-google-maps-key:', { secretData, secretError });
-      
-      if (secretError || !secretData?.key) {
-        console.error('❌ Could not get Google Maps API key from secrets:', secretError);
+      if (apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+        console.error('❌ Google Maps API key not set');
         setIsLoading(false);
         toast({
-          title: "API Key Error",
-          description: "Could not retrieve Google Maps API key from server",
+          title: "API Key Missing",
+          description: "Please replace 'YOUR_GOOGLE_MAPS_API_KEY_HERE' with your actual Google Maps API key in the code",
           variant: "destructive",
         });
         return;
       }
 
-      console.log('🚀 Initializing Google Maps with API key length:', secretData.key.length);
+      console.log('🚀 Initializing Google Maps with API key length:', apiKey.length);
       
       const loader = new Loader({
-        apiKey: secretData.key,
+        apiKey: apiKey,
         version: 'weekly',
         libraries: ['marker']
       });
