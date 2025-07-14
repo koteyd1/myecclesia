@@ -19,21 +19,12 @@ const About = () => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground mb-4">Our Story</h2>
             <p className="text-muted-foreground mb-4">
-              Founded in 1985, our church has been a cornerstone of the community for nearly four decades. 
-              We began as a small group of families who shared a vision of creating a welcoming space where 
-              people from all walks of life could come together to worship and grow in faith.
-            </p>
-            <p className="text-muted-foreground">
-              Today, we continue that mission by offering meaningful worship services, community outreach programs, 
-              and opportunities for spiritual growth for people of all ages.
-            </p>
-            <p className="text-muted-foreground mt-4">
               Welcome to Churchevents, a dedicated ticketing platform created to serve the vibrant Christian community across the UK. Our mission is to bring believers together, fostering unity within the Body of Christ by making it easy to discover, attend, and support Christian events—from worship nights and conferences to community outreach and faith-based workshops.
             </p>
-            <p className="text-muted-foreground mt-4">
+            <p className="text-muted-foreground mb-4">
               We believe that every event is an opportunity to grow spiritually, build meaningful connections, and share the transformative message of Christ. By providing a seamless, user-friendly platform, we aim to empower churches, ministries, and Christian organizations to reach more people and strengthen the faith community nationwide.
             </p>
-            <p className="text-muted-foreground mt-4">
+            <p className="text-muted-foreground">
               We are passionate about promoting the Gospel and encouraging fellowship across all denominations. Whether you're organizing a small local gathering or a large-scale conference, our platform is designed to support your vision and help you connect with others who share your faith.
             </p>
           </div>
