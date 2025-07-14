@@ -232,14 +232,6 @@ const Index = () => {
                 </li>
                 <li>
                   <button 
-                    onClick={() => navigate("/contact")}
-                    className="hover:text-primary transition-colors text-left"
-                  >
-                    Contact Us
-                  </button>
-                </li>
-                <li>
-                  <button 
                     onClick={() => navigate("/event-guidelines")}
                     className="hover:text-primary transition-colors text-left"
                   >
@@ -300,13 +292,17 @@ const Index = () => {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Contact</h4>
-              <div className="space-y-2 text-gray-300">
-                <p>123 Church Street</p>
-                <p>Your City, ST 12345</p>
-                <p>(555) 123-4567</p>
-                <p>events@church.org</p>
-              </div>
+              <h4 className="font-semibold mb-4">Denominations</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li>Baptist</li>
+                <li>Methodist</li>
+                <li>Catholic</li>
+                <li>Presbyterian</li>
+                <li>Lutheran</li>
+                <li>Episcopal</li>
+                <li>Pentecostal</li>
+                <li>Non-denominational</li>
+              </ul>
             </div>
           </div>
           
