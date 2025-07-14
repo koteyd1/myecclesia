@@ -16,6 +16,8 @@ export const useGoogleMaps = () => {
   const { geocodeLocation } = useGeocoding();
   const { toast } = useToast();
 
+  console.log('🪝 useGoogleMaps hook initialized with state:', { isLoaded, isLoading });
+
   const initializeMap = useCallback(async (
     container: HTMLDivElement,
     userLocation?: MapLocation | null

@@ -11,6 +11,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
   userLocation,
   onLocationUpdate 
 }) => {
+  console.log('🎯 EventsMap component rendering...');
   const mapContainer = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const {
@@ -22,6 +23,8 @@ const EventsMap: React.FC<EventsMapProps> = ({
     addEventMarkers,
     centerMapOnLocation
   } = useGoogleMaps();
+
+  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapContainer.current });
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -59,8 +62,12 @@ const EventsMap: React.FC<EventsMapProps> = ({
   };
 
   useEffect(() => {
+    console.log('🎯 useEffect triggered - mapContainer.current:', !!mapContainer.current);
     if (mapContainer.current) {
+      console.log('🎯 Calling initializeMap...');
       initializeMap(mapContainer.current, userLocation);
+    } else {
+      console.log('❌ mapContainer.current is null');
     }
   }, [initializeMap, userLocation]);
 
