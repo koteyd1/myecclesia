@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
@@ -61,24 +61,21 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  useEffect(() => {
-    console.log('🎯 useEffect triggered - mapContainer.current:', !!mapContainer.current);
+  useLayoutEffect(() => {
+    console.log('🎯 useLayoutEffect triggered - mapContainer.current:', !!mapContainer.current);
     
-    // Use a timeout to ensure the DOM ref is attached
-    const initMap = () => {
-      if (mapContainer.current) {
-        console.log('🎯 Calling initializeMap...');
-        initializeMap(mapContainer.current, userLocation);
-      } else {
-        console.log('❌ mapContainer.current is still null, retrying...');
-        // Retry after a short delay
-        setTimeout(initMap, 100);
-      }
-    };
-    
-    // Start initialization after a small delay to ensure DOM is ready
-    setTimeout(initMap, 50);
-  }, [initializeMap, userLocation]);
+    if (mapContainer.current) {
+      console.log('🎯 Calling initializeMap immediately...');
+      initializeMap(mapContainer.current, userLocation);
+    } else {
+      console.error('❌ mapContainer.current is null in useLayoutEffect');
+      toast({
+        title: "Map Error",
+        description: "Failed to initialize the map. Please refresh the page.",
+        variant: "destructive",
+      });
+    }
+  }, [initializeMap, userLocation, toast]);
 
   useEffect(() => {
     if (isLoaded) {
