@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { EventsMapProps } from '@/types/EventsMap';
 import MapControls from './MapControls';
+import { Loader } from '@googlemaps/js-api-loader';
+import { supabase } from '@/integrations/supabase/client';
 
 const EventsMap: React.FC<EventsMapProps> = ({ 
   events, 
@@ -12,17 +13,10 @@ const EventsMap: React.FC<EventsMapProps> = ({
   onLocationUpdate 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const [containerReady, setContainerReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const { toast } = useToast();
-  const {
-    isLoaded,
-    isLoading,
-    initializeMap,
-    clearMarkers,
-    addUserLocationMarker,
-    addEventMarkers,
-    centerMapOnLocation
-  } = useGoogleMaps();
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -41,7 +35,11 @@ const EventsMap: React.FC<EventsMapProps> = ({
           lng: position.coords.longitude
         };
         onLocationUpdate?.(location);
-        centerMapOnLocation(location);
+        
+        if (map) {
+          map.setCenter(location);
+          map.setZoom(12);
+        }
 
         toast({
           title: "Location found",
@@ -59,52 +57,93 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  // Check container dimensions and mark as ready
+  // Initialize Google Maps directly
   useEffect(() => {
-    const checkContainer = () => {
-      if (mapContainer.current) {
-        const rect = mapContainer.current.getBoundingClientRect();
-        console.log('📏 Checking container:', rect);
+    const initMap = async () => {
+      if (!mapContainer.current || isLoading || isLoaded) return;
+      
+      setIsLoading(true);
+      console.log('🗺️ Starting direct Google Maps initialization...');
+
+      try {
+        // Get API key
+        const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
         
-        if (rect.width > 0 && rect.height > 0) {
-          console.log('✅ Container ready with dimensions:', rect.width, 'x', rect.height);
-          setContainerReady(true);
-        } else {
-          console.log('⚠️ Container not ready, retrying...');
-          setTimeout(checkContainer, 100);
+        if (secretError || !secretData?.key) {
+          throw new Error(`API key error: ${secretError?.message || 'No key returned'}`);
         }
+
+        console.log('🔑 API key retrieved, loading Google Maps...');
+
+        // Load Google Maps
+        const loader = new Loader({
+          apiKey: secretData.key,
+          version: 'weekly',
+          libraries: ['places']
+        });
+
+        await loader.load();
+        console.log('✅ Google Maps API loaded');
+
+        // Create map directly
+        const center = userLocation || { lat: 51.5074, lng: -0.1278 };
+        
+        const googleMap = new google.maps.Map(mapContainer.current, {
+          center: center,
+          zoom: userLocation ? 12 : 10,
+          mapTypeControl: true,
+          streetViewControl: true,
+          fullscreenControl: true,
+        });
+
+        console.log('✅ Google Maps instance created');
+        setMap(googleMap);
+        setIsLoaded(true);
+        setIsLoading(false);
+
+        // Add markers for events
+        events.forEach(event => {
+          // For now, use random coordinates near London for testing
+          const eventLatLng = {
+            lat: 51.5074 + (Math.random() - 0.5) * 0.1,
+            lng: -0.1278 + (Math.random() - 0.5) * 0.1
+          };
+
+          const marker = new google.maps.Marker({
+            position: eventLatLng,
+            map: googleMap,
+            title: event.title,
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<div class="p-2"><strong>${event.title}</strong><br/>${event.location}</div>`
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(googleMap, marker);
+            onEventSelect?.(event.id);
+          });
+        });
+
+      } catch (error) {
+        console.error('❌ Failed to initialize Google Maps:', error);
+        setIsLoading(false);
+        toast({
+          title: "Map Error",
+          description: `Failed to load Google Maps: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          variant: "destructive",
+        });
       }
     };
 
-    // Small delay to ensure DOM is rendered
-    setTimeout(checkContainer, 50);
-  }, []);
-
-  // Initialize map when container is ready
-  useEffect(() => {
-    if (containerReady && mapContainer.current) {
-      console.log('🗺️ Initializing map with ready container');
-      initializeMap(mapContainer.current, userLocation);
-    }
-  }, [containerReady, initializeMap, userLocation]);
-
-  // Update markers when map is loaded
-  useEffect(() => {
-    if (isLoaded) {
-      console.log('🎯 Updating markers...');
-      clearMarkers();
-      
-      if (userLocation) {
-        addUserLocationMarker(userLocation);
-      }
-      
-      addEventMarkers(events, onEventSelect);
-    }
-  }, [events, userLocation, isLoaded, clearMarkers, addUserLocationMarker, addEventMarkers, onEventSelect]);
+    // Wait a moment for container to be ready
+    const timer = setTimeout(initMap, 200);
+    return () => clearTimeout(timer);
+  }, [events, userLocation, onEventSelect, isLoading, isLoaded, toast]);
 
   if (isLoading) {
     return (
-      <div className="w-full h-[500px] flex flex-col items-center justify-center bg-muted/20 rounded-lg">
+      <div className="w-full h-[50vh] flex flex-col items-center justify-center bg-muted/20 rounded-lg">
         <MapPin className="h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
         <h3 className="text-lg font-semibold mb-2">Loading Map...</h3>
         <p className="text-sm text-muted-foreground text-center">
@@ -115,16 +154,15 @@ const EventsMap: React.FC<EventsMapProps> = ({
   }
 
   return (
-    <div className="w-full h-[600px] flex flex-col border">
+    <div className="w-full h-[50vh] flex flex-col border rounded-lg overflow-hidden">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
         ref={mapContainer}
-        className="flex-1 w-full"
+        className="flex-1 w-full bg-gray-200"
         style={{
           width: '100%',
-          height: '540px', // 600px - 60px for controls
-          minHeight: '540px',
-          backgroundColor: '#e5e7eb'
+          height: '100%',
+          minHeight: '300px'
         }}
       />
     </div>
