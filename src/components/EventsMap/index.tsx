@@ -63,12 +63,21 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
   useEffect(() => {
     console.log('🎯 useEffect triggered - mapContainer.current:', !!mapContainer.current);
-    if (mapContainer.current) {
-      console.log('🎯 Calling initializeMap...');
-      initializeMap(mapContainer.current, userLocation);
-    } else {
-      console.log('❌ mapContainer.current is null');
-    }
+    
+    // Use a timeout to ensure the DOM ref is attached
+    const initMap = () => {
+      if (mapContainer.current) {
+        console.log('🎯 Calling initializeMap...');
+        initializeMap(mapContainer.current, userLocation);
+      } else {
+        console.log('❌ mapContainer.current is still null, retrying...');
+        // Retry after a short delay
+        setTimeout(initMap, 100);
+      }
+    };
+    
+    // Start initialization after a small delay to ensure DOM is ready
+    setTimeout(initMap, 50);
   }, [initializeMap, userLocation]);
 
   useEffect(() => {
