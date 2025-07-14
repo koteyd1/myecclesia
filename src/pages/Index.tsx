@@ -298,10 +298,6 @@ const Index = () => {
                 <li>Methodist</li>
                 <li>Catholic</li>
                 <li>Presbyterian</li>
-                <li>Lutheran</li>
-                <li>Episcopal</li>
-                <li>Pentecostal</li>
-                <li>Non-denominational</li>
               </ul>
             </div>
           </div>
