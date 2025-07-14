@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, Calendar, Users, BookOpen } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -59,6 +60,9 @@ const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
+  const [userStats, setUserStats] = useState({ totalUsers: 0, recentUsers: 0, totalRegistrations: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
@@ -99,6 +103,8 @@ const AdminDashboard = () => {
     checkAdminRole();
     fetchEvents();
     fetchBlogPosts();
+    fetchUsers();
+    fetchRegistrations();
   }, [user, navigate]);
 
   const checkAdminRole = async () => {
@@ -167,6 +173,84 @@ const AdminDashboard = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to load blog posts.",
+      });
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*, user_roles(role)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+      
+      // Calculate user stats
+      const totalUsers = data?.length || 0;
+      const recentUsers = data?.filter(user => {
+        const createdAt = new Date(user.created_at);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return createdAt >= thirtyDaysAgo;
+      }).length || 0;
+      
+      setUserStats(prev => ({ ...prev, totalUsers, recentUsers }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load users.",
+      });
+    }
+  };
+
+  const fetchRegistrations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("event_registrations")
+        .select("*, events(title), profiles(full_name, email)")
+        .order("registered_at", { ascending: false });
+
+      if (error) throw error;
+      setRegistrations(data || []);
+      
+      // Update user stats with total registrations
+      setUserStats(prev => ({ ...prev, totalRegistrations: data?.length || 0 }));
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load registrations.",
+      });
+    }
+  };
+
+  const handleRemoveUser = async (userId) => {
+    if (!confirm("Are you sure you want to remove this user? This action cannot be undone.")) return;
+
+    try {
+      // Remove user from auth.users (this will cascade to other tables)
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "User removed successfully.",
+      });
+
+      fetchUsers();
+      fetchRegistrations();
+    } catch (error) {
+      console.error("Error removing user:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove user. You may need elevated permissions.",
       });
     }
   };
@@ -434,7 +518,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -486,13 +570,27 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-primary" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                  <p className="text-2xl font-bold">{userStats.totalUsers}</p>
+                  <p className="text-xs text-muted-foreground">+{userStats.recentUsers} this month</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Management Tabs */}
         <Tabs defaultValue="events" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="blogs">Blog Posts</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-8">
@@ -897,6 +995,118 @@ const AdminDashboard = () => {
                       </div>
                     ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">User Management</h2>
+              <div className="flex gap-4">
+                <Card className="px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Total Registrations: {userStats.totalRegistrations}</span>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Users List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Registered Users</CardTitle>
+                <CardDescription>View and manage all registered users</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {users.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No users registered yet.
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>{user.full_name || 'N/A'}</TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
+                          <TableCell>{user.phone || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge variant={user.user_roles?.role === 'admin' ? 'default' : 'secondary'}>
+                              {user.user_roles?.role || 'user'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveUser(user.user_id)}
+                              disabled={user.user_roles?.role === 'admin'}
+                            >
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Event Registrations */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Registrations</CardTitle>
+                <CardDescription>View all event registrations and attendance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {registrations.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    No event registrations yet.
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Event</TableHead>
+                        <TableHead>Registered</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {registrations.map((registration) => (
+                        <TableRow key={registration.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{registration.profiles?.full_name || 'N/A'}</div>
+                              <div className="text-sm text-muted-foreground">{registration.profiles?.email}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{registration.events?.title || 'N/A'}</TableCell>
+                          <TableCell>{new Date(registration.registered_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Badge variant={registration.status === 'registered' ? 'default' : 'secondary'}>
+                              {registration.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
