@@ -23,6 +23,13 @@ export const useGoogleMaps = () => {
     userLocation?: MapLocation | null
   ) => {
     console.log('🗺️ Starting map initialization...');
+    console.log('🗺️ Container element:', container);
+    console.log('🗺️ Container dimensions:', {
+      width: container.offsetWidth,
+      height: container.offsetHeight,
+      display: window.getComputedStyle(container).display
+    });
+    
     try {
       // Get Google Maps API key from Supabase secrets
       console.log('🔑 Calling get-google-maps-key function...');
@@ -81,11 +88,11 @@ export const useGoogleMaps = () => {
       console.log('🎉 Map initialization complete!');
 
     } catch (error) {
-      console.error('Error loading Google Maps:', error);
+      console.error('💥 Error loading Google Maps:', error);
       setIsLoading(false);
       toast({
         title: "Map loading error",
-        description: "Could not load Google Maps. Please check your API key.",
+        description: `Could not load Google Maps: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
