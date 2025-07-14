@@ -61,8 +61,25 @@ const EventsMap: React.FC<EventsMapProps> = ({
   // Initialize map when component mounts
   useEffect(() => {
     if (mapContainer.current) {
-      console.log('🎯 Initializing map...');
-      initializeMap(mapContainer.current, userLocation);
+      console.log('🎯 Container found, checking dimensions...');
+      const rect = mapContainer.current.getBoundingClientRect();
+      console.log('📏 Container dimensions:', { 
+        width: rect.width, 
+        height: rect.height,
+        visible: rect.width > 0 && rect.height > 0
+      });
+      
+      if (rect.width > 0 && rect.height > 0) {
+        console.log('✅ Container has valid dimensions, initializing map...');
+        initializeMap(mapContainer.current, userLocation);
+      } else {
+        console.log('⚠️ Container has zero dimensions, retrying...');
+        setTimeout(() => {
+          if (mapContainer.current) {
+            initializeMap(mapContainer.current, userLocation);
+          }
+        }, 500);
+      }
     }
   }, [initializeMap, userLocation]);
 
