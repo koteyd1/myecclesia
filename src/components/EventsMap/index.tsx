@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
@@ -11,10 +11,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
   userLocation,
   onLocationUpdate 
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
-  const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null);
-
-  console.log('🎯 EventsMap component rendering...');
+  const mapContainer = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const {
     isLoaded,
@@ -25,8 +22,6 @@ const EventsMap: React.FC<EventsMapProps> = ({
     addEventMarkers,
     centerMapOnLocation
   } = useGoogleMaps();
-
-  console.log('🎯 EventsMap state:', { isLoaded, isLoading, hasContainer: !!mapElement, isMounted });
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -63,27 +58,18 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  // Effect to track when component is mounted
+  // Initialize map when component mounts
   useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
-
-  // Effect to initialize map once DOM is ready
-  useEffect(() => {
-    console.log('🎯 Map initialization effect - isMounted:', isMounted, 'hasContainer:', !!mapElement);
-    
-    if (!isMounted || !mapElement) {
-      console.log('⏳ Waiting for component to mount and container to be available...');
-      return;
+    if (mapContainer.current) {
+      console.log('🎯 Initializing map...');
+      initializeMap(mapContainer.current, userLocation);
     }
+  }, [initializeMap, userLocation]);
 
-    console.log('✅ Everything ready - initializing map');
-    initializeMap(mapElement, userLocation);
-  }, [isMounted, mapElement, initializeMap, userLocation]);
-
+  // Update markers when events or user location changes
   useEffect(() => {
     if (isLoaded) {
+      console.log('🎯 Updating markers...');
       clearMarkers();
       
       // Add user location marker if available
@@ -112,7 +98,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
     <div className="h-full flex flex-col">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
-        ref={setMapElement} 
+        ref={mapContainer} 
         className="flex-1 min-h-[500px]" 
         style={{ height: 'calc(100% - 60px)' }}
       />

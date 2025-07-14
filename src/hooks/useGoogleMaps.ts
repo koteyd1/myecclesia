@@ -10,70 +10,48 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useGoogleMaps = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const map = useRef<google.maps.Map | null>(null);
   const markers = useRef<google.maps.Marker[]>([]);
   const { geocodeLocation } = useGeocoding();
   const { toast } = useToast();
 
-  console.log('🪝 useGoogleMaps hook initialized with state:', { isLoaded, isLoading });
-
   const initializeMap = useCallback(async (
     container: HTMLDivElement,
     userLocation?: MapLocation | null
   ) => {
-    console.log('🗺️ Starting map initialization...');
-    console.log('🗺️ Container element:', container);
-    console.log('🗺️ Container dimensions:', {
-      width: container.offsetWidth,
-      height: container.offsetHeight,
-      display: window.getComputedStyle(container).display
-    });
+    if (isLoaded || isLoading) {
+      console.log('Map already loaded or loading, skipping initialization');
+      return;
+    }
+
+    console.log('🗺️ Starting Google Maps initialization...');
+    setIsLoading(true);
     
     try {
-      // Get Google Maps API key from Supabase secrets
-      console.log('🔑 Calling get-google-maps-key function...');
+      // Get API key from Supabase
+      console.log('🔑 Fetching Google Maps API key...');
       const { data: secretData, error: secretError } = await supabase.functions.invoke('get-google-maps-key');
       
-      console.log('🔑 Response from get-google-maps-key:', { secretData, secretError });
-      
-      if (secretError) {
-        console.error('❌ Supabase function error:', secretError);
-        setIsLoading(false);
-        toast({
-          title: "API Key Error",
-          description: `Could not retrieve Google Maps API key: ${secretError.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!secretData?.key) {
-        console.error('❌ No API key in response:', secretData);
-        setIsLoading(false);
-        toast({
-          title: "API Key Missing",
-          description: "Google Maps API key not found in response",
-          variant: "destructive",
-        });
-        return;
+      if (secretError || !secretData?.key) {
+        throw new Error(`API key error: ${secretError?.message || 'No key returned'}`);
       }
 
-      console.log('🚀 Initializing Google Maps with API key length:', secretData.key.length);
+      console.log('✅ API key retrieved, loading Google Maps...');
       
+      // Load Google Maps
       const loader = new Loader({
         apiKey: secretData.key,
         version: 'weekly',
         libraries: ['marker']
       });
 
-      console.log('📦 Loading Google Maps API...');
       await loader.load();
-      console.log('✅ Google Maps API loaded successfully!');
+      console.log('✅ Google Maps API loaded');
 
-      const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London, UK
+      // Create map
+      const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London
       
-      console.log('🗺️ Creating Google Maps instance with center:', center);
       map.current = new google.maps.Map(container, {
         center: center,
         zoom: userLocation ? 12 : 10,
@@ -82,21 +60,20 @@ export const useGoogleMaps = () => {
         fullscreenControl: true,
       });
 
-      console.log('✅ Google Maps instance created successfully!');
+      console.log('✅ Google Maps instance created');
       setIsLoaded(true);
       setIsLoading(false);
-      console.log('🎉 Map initialization complete!');
 
     } catch (error) {
-      console.error('💥 Error loading Google Maps:', error);
+      console.error('❌ Google Maps initialization failed:', error);
       setIsLoading(false);
       toast({
-        title: "Map loading error",
-        description: `Could not load Google Maps: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "Map Error",
+        description: `Failed to load Google Maps: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [isLoaded, isLoading, toast]);
 
   const clearMarkers = useCallback(() => {
     markers.current.forEach(marker => marker.setMap(null));
