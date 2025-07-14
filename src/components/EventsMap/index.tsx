@@ -138,7 +138,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
   }, [events, onEventSelect, toast]);
 
   return (
-    <div className="w-full h-[70vh] flex flex-col border rounded-lg overflow-hidden">
+    <div className="w-full h-[85vh] flex flex-col border rounded-lg overflow-hidden">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
         ref={mapContainer}
@@ -146,7 +146,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
         style={{
           width: '100%',
           height: '100%',
-          minHeight: '500px',
+          minHeight: '600px',
           backgroundColor: '#f3f4f6'
         }}
       />
