@@ -4,6 +4,8 @@ import EventCard from "@/components/EventCard";
 import EventsMap from "@/components/EventsMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useGeocoding } from "@/hooks/useGeocoding";
+import { getMockCoordinates } from "@/utils/mapUtils";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,7 @@ import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Na
 
 const Events = () => {
   const { toast } = useToast();
+  const { geocodeLocation } = useGeocoding();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -165,59 +168,17 @@ const Events = () => {
     return R * c;
   };
 
-  // Google Geocoding for distance calculation
+  // Get event coordinates using the geocoding hook
   const getEventCoordinates = async (location: string): Promise<{ lat: number; lng: number }> => {
-    try {
-      const response = await fetch('/functions/v1/geocode', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: location })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { lat: data.lat, lng: data.lng };
-      } else {
-        // Fallback to mock coordinates
-        return getMockEventCoordinates(location);
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      return getMockEventCoordinates(location);
-    }
-  };
-
-  // Fallback mock geocoding for demo/development
-  const getMockEventCoordinates = (location: string): { lat: number; lng: number } => {
-    const locationMocks: { [key: string]: { lat: number; lng: number } } = {
-      'downtown': { lat: 40.7831, lng: -73.9712 },
-      'main street': { lat: 40.7589, lng: -73.9851 },
-      'city center': { lat: 40.7505, lng: -73.9934 },
-      'central park': { lat: 40.7829, lng: -73.9654 },
-      'times square': { lat: 40.7580, lng: -73.9855 },
-    };
-
-    const lowerLocation = location.toLowerCase();
-    for (const [key, coords] of Object.entries(locationMocks)) {
-      if (lowerLocation.includes(key)) {
-        return coords;
-      }
-    }
-
-    // Return random coordinates around NYC area for demo
-    return {
-      lat: 40.7128 + (Math.random() - 0.5) * 0.1,
-      lng: -74.0060 + (Math.random() - 0.5) * 0.1
-    };
+    const coords = await geocodeLocation(location);
+    return coords || getMockCoordinates(location);
   };
 
   // Sort events by distance if user location is available and sorting is enabled
   const sortedEvents = sortByDistance && userLocation 
     ? [...filteredEvents].sort((a, b) => {
-        const coordsA = getMockEventCoordinates(a.location);
-        const coordsB = getMockEventCoordinates(b.location);
+        const coordsA = getMockCoordinates(a.location);
+        const coordsB = getMockCoordinates(b.location);
         const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
         const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
         return distanceA - distanceB;
@@ -467,8 +428,8 @@ const Events = () => {
                     ? calculateDistance(
                         userLocation.lat, 
                         userLocation.lng, 
-                        getMockEventCoordinates(event.location).lat, 
-                        getMockEventCoordinates(event.location).lng
+                        getMockCoordinates(event.location).lat, 
+                        getMockCoordinates(event.location).lng
                       ).toFixed(1)
                     : null;
 
