@@ -478,8 +478,8 @@ const Events = () => {
           </div>
 
           {/* Map - Right Side */}
-          <div className="lg:col-span-1 sticky top-4">
-            <div className="bg-card border rounded-lg h-[600px]">
+          <div className="lg:col-span-1 sticky top-4 h-[600px]">
+            <div className="bg-card border rounded-lg h-full w-full">
               <EventsMap 
                 events={sortedEvents}
                 onEventSelect={handleEventSelect}

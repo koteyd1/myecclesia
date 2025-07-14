@@ -60,10 +60,13 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
   // Initialize map when component mounts
   useEffect(() => {
-    if (mapContainer.current) {
-      console.log('🎯 Container found, checking dimensions...');
+    if (!mapContainer.current) return;
+    
+    const initMapWithRetry = (retryCount = 0) => {
+      if (!mapContainer.current) return;
+      
       const rect = mapContainer.current.getBoundingClientRect();
-      console.log('📏 Container dimensions:', { 
+      console.log('📏 Container dimensions (attempt', retryCount + 1, '):', { 
         width: rect.width, 
         height: rect.height,
         visible: rect.width > 0 && rect.height > 0
@@ -72,15 +75,16 @@ const EventsMap: React.FC<EventsMapProps> = ({
       if (rect.width > 0 && rect.height > 0) {
         console.log('✅ Container has valid dimensions, initializing map...');
         initializeMap(mapContainer.current, userLocation);
+      } else if (retryCount < 10) {
+        console.log(`⚠️ Container has zero dimensions, retry ${retryCount + 1}/10...`);
+        setTimeout(() => initMapWithRetry(retryCount + 1), 200);
       } else {
-        console.log('⚠️ Container has zero dimensions, retrying...');
-        setTimeout(() => {
-          if (mapContainer.current) {
-            initializeMap(mapContainer.current, userLocation);
-          }
-        }, 500);
+        console.error('❌ Failed to get valid container dimensions after 10 retries');
       }
-    }
+    };
+    
+    // Start with a small delay to ensure CSS layout is complete
+    setTimeout(() => initMapWithRetry(), 100);
   }, [initializeMap, userLocation]);
 
   // Update markers when events or user location changes
