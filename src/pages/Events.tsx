@@ -6,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users } from "lucide-react";
 
 const Events = () => {
   const { toast } = useToast();
@@ -16,6 +17,13 @@ const Events = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDenomination, setSelectedDenomination] = useState("");
   const [priceFilter, setPriceFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [availabilityFilter, setAvailabilityFilter] = useState("");
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const categoryOptions = [
     "Worship Service",
@@ -79,21 +87,47 @@ const Events = () => {
 
   // Filter events based on search term and filters
   const filteredEvents = events.filter((event) => {
+    // Basic search
     const matchesSearch = searchTerm === "" || 
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase());
+      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.organizer?.toLowerCase().includes(searchTerm.toLowerCase());
 
+    // Category filter
     const matchesCategory = selectedCategory === "" || event.category === selectedCategory;
     
+    // Denomination filter
     const matchesDenomination = selectedDenomination === "" || 
       event.denominations?.includes(selectedDenomination);
 
+    // Price filter
     const matchesPrice = priceFilter === "" || 
       (priceFilter === "free" && (event.price === 0 || event.price === null)) ||
       (priceFilter === "paid" && event.price > 0);
 
-    return matchesSearch && matchesCategory && matchesDenomination && matchesPrice;
+    // Date range filter
+    const eventDate = new Date(event.date);
+    const matchesStartDate = startDate === "" || eventDate >= new Date(startDate);
+    const matchesEndDate = endDate === "" || eventDate <= new Date(endDate);
+
+    // Price range filter
+    const eventPrice = event.price || 0;
+    const matchesMinPrice = minPrice === "" || eventPrice >= parseFloat(minPrice);
+    const matchesMaxPrice = maxPrice === "" || eventPrice <= parseFloat(maxPrice);
+
+    // Location filter
+    const matchesLocation = locationFilter === "" || 
+      event.location.toLowerCase().includes(locationFilter.toLowerCase());
+
+    // Availability filter
+    const matchesAvailability = availabilityFilter === "" ||
+      (availabilityFilter === "available" && (event.available_tickets || 0) > 0) ||
+      (availabilityFilter === "full" && (event.available_tickets || 0) === 0);
+
+    return matchesSearch && matchesCategory && matchesDenomination && matchesPrice &&
+           matchesStartDate && matchesEndDate && matchesMinPrice && matchesMaxPrice &&
+           matchesLocation && matchesAvailability;
   });
 
   const clearFilters = () => {
@@ -101,10 +135,18 @@ const Events = () => {
     setSelectedCategory("");
     setSelectedDenomination("");
     setPriceFilter("");
+    setStartDate("");
+    setEndDate("");
+    setMinPrice("");
+    setMaxPrice("");
+    setLocationFilter("");
+    setAvailabilityFilter("");
   };
 
   const hasActiveFilters = searchTerm !== "" || selectedCategory !== "" || 
-    selectedDenomination !== "" || priceFilter !== "";
+    selectedDenomination !== "" || priceFilter !== "" || startDate !== "" ||
+    endDate !== "" || minPrice !== "" || maxPrice !== "" || locationFilter !== "" ||
+    availabilityFilter !== "";
 
   if (loading) {
     return (
@@ -144,11 +186,11 @@ const Events = () => {
             />
           </div>
 
-          {/* Filter Controls */}
+          {/* Basic Filter Controls */}
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Filters:</span>
+              <span className="text-sm font-medium text-muted-foreground">Quick Filters:</span>
             </div>
             
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -159,19 +201,6 @@ const Events = () => {
                 {categoryOptions.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedDenomination} onValueChange={setSelectedDenomination}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="All Denominations" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border shadow-lg z-50">
-                {denominationOptions.map((denomination) => (
-                  <SelectItem key={denomination} value={denomination}>
-                    {denomination}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -195,10 +224,125 @@ const Events = () => {
                 className="flex items-center gap-2"
               >
                 <X className="h-4 w-4" />
-                Clear Filters
+                Clear All Filters
               </Button>
             )}
           </div>
+
+          {/* Advanced Filters */}
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="mx-auto flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Advanced Filters
+                <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border border-border rounded-lg bg-muted/20">
+                
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">Date Range</label>
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      type="date"
+                      placeholder="Start Date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="text-sm"
+                    />
+                    <Input
+                      type="date"
+                      placeholder="End Date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">Price Range</label>
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      type="number"
+                      placeholder="Min Price"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      min="0"
+                      step="0.01"
+                      className="text-sm"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max Price"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      min="0"
+                      step="0.01"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">Location</label>
+                  </div>
+                  <Input
+                    placeholder="Search by location..."
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+
+                {/* Denomination */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Denomination</label>
+                  <Select value={selectedDenomination} onValueChange={setSelectedDenomination}>
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="All Denominations" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {denominationOptions.map((denomination) => (
+                        <SelectItem key={denomination} value={denomination}>
+                          {denomination}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Availability */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">Availability</label>
+                  </div>
+                  <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                    <SelectTrigger className="text-sm">
+                      <SelectValue placeholder="All Events" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      <SelectItem value="available">Available Spots</SelectItem>
+                      <SelectItem value="full">Fully Booked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Results Count */}
           <div className="text-center">
