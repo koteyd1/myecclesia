@@ -9,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 
 const donationOptions = [
-  { amount: 25, label: "$25", description: "Helps provide meals for community events" },
-  { amount: 50, label: "$50", description: "Supports youth program activities" },
-  { amount: 100, label: "$100", description: "Funds educational workshops and materials" },
-  { amount: 250, label: "$250", description: "Sponsors a family retreat weekend" },
+  { amount: 25, label: "£25", description: "Helps provide meals for community events" },
+  { amount: 50, label: "£50", description: "Supports youth program activities" },
+  { amount: 100, label: "£100", description: "Funds educational workshops and materials" },
+  { amount: 250, label: "£250", description: "Sponsors a family retreat weekend" },
 ];
 
 const Donate = () => {
@@ -62,7 +62,7 @@ const Donate = () => {
     // For now, just show success message since payment isn't integrated yet
     toast({
       title: "Thank You!",
-      description: `Your donation of $${donationAmount} has been received. Payment processing will be available soon.`,
+      description: `Your donation of £${donationAmount} has been received. Payment processing will be available soon.`,
     });
     
     console.log("Donation submission:", {
@@ -239,7 +239,7 @@ const Donate = () => {
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">Donation Amount:</span>
                         <span className="text-2xl font-bold text-primary">
-                          ${finalAmount.toFixed(2)}
+                          £{finalAmount.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">

@@ -323,7 +323,7 @@ const EventDetail = () => {
               ) : (
                 <div className="absolute top-4 right-4">
                   <Badge variant="outline" className="bg-white/90 text-foreground">
-                    ${event.price}
+                    £{event.price}
                   </Badge>
                 </div>
               )}
@@ -376,7 +376,7 @@ const EventDetail = () => {
               <CardHeader>
                 <CardTitle>Event Registration</CardTitle>
                 <CardDescription>
-                  {event.price === 0 ? "This event is free to attend" : `Event fee: $${event.price}`}
+                  {event.price === 0 ? "This event is free to attend" : `Event fee: £${event.price}`}
                 </CardDescription>
               </CardHeader>
               <CardContent>

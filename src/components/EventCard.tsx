@@ -82,7 +82,7 @@ const EventCard = ({
         ) : (
           <div className="absolute top-3 right-3">
             <Badge variant="outline" className="bg-white/90 text-foreground">
-              ${price}
+              £{price}
             </Badge>
           </div>
         )}

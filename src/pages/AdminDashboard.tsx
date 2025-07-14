@@ -601,7 +601,7 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="price">Price ($)</Label>
+                    <Label htmlFor="price">Price (£)</Label>
                     <Input
                       id="price"
                       name="price"
