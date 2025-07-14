@@ -21,7 +21,7 @@ export const useGoogleMaps = () => {
     userLocation?: MapLocation | null
   ) => {
     if (isLoaded || isLoading) {
-      console.log('Map already loaded or loading, skipping initialization');
+      console.log('Map already loaded or loading, skipping...');
       return;
     }
 
@@ -49,47 +49,21 @@ export const useGoogleMaps = () => {
       await loader.load();
       console.log('✅ Google Maps API loaded');
 
-      // Create map
+      // Create map with simple center
       const center = userLocation || { lat: 51.5074, lng: -0.1278 }; // Default to London
       
-      // Create map with explicit dimensions
-      console.log('📏 Container dimensions:', {
-        width: container.offsetWidth,
-        height: container.offsetHeight,
-        clientWidth: container.clientWidth,
-        clientHeight: container.clientHeight
-      });
-
-      if (container.offsetWidth === 0 || container.offsetHeight === 0) {
-        throw new Error('Container has zero dimensions');
-      }
-
+      console.log('🗺️ Creating map instance...');
       map.current = new google.maps.Map(container, {
         center: center,
         zoom: userLocation ? 12 : 10,
         mapTypeControl: true,
         streetViewControl: true,
         fullscreenControl: true,
-        backgroundColor: '#f0f0f0', // Make sure we see something
       });
 
-      console.log('✅ Google Maps instance created');
-      
-      // Wait for map to be ready before marking as loaded
-      google.maps.event.addListenerOnce(map.current, 'idle', () => {
-        console.log('✅ Map is idle and ready');
-        setIsLoaded(true);
-        setIsLoading(false);
-      });
-      
-      // Force immediate resize
-      setTimeout(() => {
-        if (map.current) {
-          google.maps.event.trigger(map.current, 'resize');
-          map.current.setCenter(center);
-          console.log('✅ Map resized and centered');
-        }
-      }, 200);
+      console.log('✅ Map instance created successfully');
+      setIsLoaded(true);
+      setIsLoading(false);
 
     } catch (error) {
       console.error('❌ Google Maps initialization failed:', error);

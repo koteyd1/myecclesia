@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
@@ -12,6 +12,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
   onLocationUpdate 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const [containerReady, setContainerReady] = useState(false);
   const { toast } = useToast();
   const {
     isLoaded,
@@ -58,54 +59,52 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  // Initialize map when component mounts
+  // Check container dimensions and mark as ready
   useEffect(() => {
-    if (!mapContainer.current) return;
-    
-    const initMapWithRetry = (retryCount = 0) => {
-      if (!mapContainer.current) return;
-      
-      const rect = mapContainer.current.getBoundingClientRect();
-      console.log('📏 Container dimensions (attempt', retryCount + 1, '):', { 
-        width: rect.width, 
-        height: rect.height,
-        visible: rect.width > 0 && rect.height > 0
-      });
-      
-      if (rect.width > 0 && rect.height > 0) {
-        console.log('✅ Container has valid dimensions, initializing map...');
-        initializeMap(mapContainer.current, userLocation);
-      } else if (retryCount < 10) {
-        console.log(`⚠️ Container has zero dimensions, retry ${retryCount + 1}/10...`);
-        setTimeout(() => initMapWithRetry(retryCount + 1), 200);
-      } else {
-        console.error('❌ Failed to get valid container dimensions after 10 retries');
+    const checkContainer = () => {
+      if (mapContainer.current) {
+        const rect = mapContainer.current.getBoundingClientRect();
+        console.log('📏 Checking container:', rect);
+        
+        if (rect.width > 0 && rect.height > 0) {
+          console.log('✅ Container ready with dimensions:', rect.width, 'x', rect.height);
+          setContainerReady(true);
+        } else {
+          console.log('⚠️ Container not ready, retrying...');
+          setTimeout(checkContainer, 100);
+        }
       }
     };
-    
-    // Start with a small delay to ensure CSS layout is complete
-    setTimeout(() => initMapWithRetry(), 100);
-  }, [initializeMap, userLocation]);
 
-  // Update markers when events or user location changes
+    // Small delay to ensure DOM is rendered
+    setTimeout(checkContainer, 50);
+  }, []);
+
+  // Initialize map when container is ready
+  useEffect(() => {
+    if (containerReady && mapContainer.current) {
+      console.log('🗺️ Initializing map with ready container');
+      initializeMap(mapContainer.current, userLocation);
+    }
+  }, [containerReady, initializeMap, userLocation]);
+
+  // Update markers when map is loaded
   useEffect(() => {
     if (isLoaded) {
       console.log('🎯 Updating markers...');
       clearMarkers();
       
-      // Add user location marker if available
       if (userLocation) {
         addUserLocationMarker(userLocation);
       }
       
-      // Add event markers
       addEventMarkers(events, onEventSelect);
     }
   }, [events, userLocation, isLoaded, clearMarkers, addUserLocationMarker, addEventMarkers, onEventSelect]);
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 bg-muted/20 rounded-lg">
+      <div className="w-full h-[500px] flex flex-col items-center justify-center bg-muted/20 rounded-lg">
         <MapPin className="h-12 w-12 text-muted-foreground mb-4 animate-pulse" />
         <h3 className="text-lg font-semibold mb-2">Loading Map...</h3>
         <p className="text-sm text-muted-foreground text-center">
@@ -116,17 +115,16 @@ const EventsMap: React.FC<EventsMapProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-full h-[600px] flex flex-col border">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
       <div 
-        ref={mapContainer} 
-        className="w-full border border-red-200" 
-        style={{ 
+        ref={mapContainer}
+        className="flex-1 w-full"
+        style={{
           width: '100%',
-          height: '500px',
-          minWidth: '300px',
-          minHeight: '500px',
-          backgroundColor: '#f8f8f8'
+          height: '540px', // 600px - 60px for controls
+          minHeight: '540px',
+          backgroundColor: '#e5e7eb'
         }}
       />
     </div>
