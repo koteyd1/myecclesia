@@ -66,12 +66,17 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [userStats, setUserStats] = useState({ totalUsers: 0, recentUsers: 0, totalRegistrations: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [userDateFrom, setUserDateFrom] = useState<Date | undefined>();
+  const [userDateTo, setUserDateTo] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
@@ -209,6 +214,7 @@ const AdminDashboard = () => {
       })) || [];
 
       setUsers(usersWithRoles);
+      setFilteredUsers(usersWithRoles);
       
       // Calculate user stats
       const totalUsers = profiles?.length || 0;
@@ -317,6 +323,44 @@ const AdminDashboard = () => {
     applyFilters();
   }, [searchTerm, selectedEvent, selectedStatus, dateFrom, dateTo, registrations]);
 
+  // Filter users based on search and filter criteria
+  const applyUserFilters = () => {
+    let filtered = users;
+
+    // Search filter
+    if (userSearchTerm) {
+      filtered = filtered.filter(user => 
+        user.full_name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
+      );
+    }
+
+    // Role filter
+    if (selectedRole && selectedRole !== "all") {
+      filtered = filtered.filter(user => user.user_roles?.role === selectedRole);
+    }
+
+    // Date range filter
+    if (userDateFrom) {
+      filtered = filtered.filter(user => 
+        new Date(user.created_at) >= userDateFrom
+      );
+    }
+
+    if (userDateTo) {
+      filtered = filtered.filter(user => 
+        new Date(user.created_at) <= userDateTo
+      );
+    }
+
+    setFilteredUsers(filtered);
+  };
+
+  // Apply user filters whenever filter criteria change
+  useEffect(() => {
+    applyUserFilters();
+  }, [userSearchTerm, selectedRole, userDateFrom, userDateTo, users]);
+
   // Clear all filters
   const clearFilters = () => {
     setSearchTerm("");
@@ -324,6 +368,14 @@ const AdminDashboard = () => {
     setSelectedStatus("all");
     setDateFrom(undefined);
     setDateTo(undefined);
+  };
+
+  // Clear user filters
+  const clearUserFilters = () => {
+    setUserSearchTerm("");
+    setSelectedRole("all");
+    setUserDateFrom(undefined);
+    setUserDateTo(undefined);
   };
 
   const handleRemoveUser = async (userId) => {
@@ -1118,9 +1170,85 @@ const AdminDashboard = () => {
                 <CardDescription>View and manage all registered users</CardDescription>
               </CardHeader>
               <CardContent>
-                {users.length === 0 ? (
+                {/* Search and Filter Controls */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={userSearchTerm}
+                        onChange={(e) => setUserSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Filter by role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-[140px] justify-start">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Date From
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={userDateFrom}
+                          onSelect={setUserDateFrom}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-[140px] justify-start">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Date To
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={userDateTo}
+                          onSelect={setUserDateTo}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <Button variant="outline" onClick={clearUserFilters}>
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Results Summary */}
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {filteredUsers.length} of {users.length} users
+                    {userSearchTerm && ` matching "${userSearchTerm}"`}
+                  </p>
+                </div>
+
+                {filteredUsers.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No users registered yet.
+                    {users.length === 0 ? "No users registered yet." : "No users match your filters."}
                   </p>
                 ) : (
                   <Table>
@@ -1135,7 +1263,7 @@ const AdminDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user) => (
+                      {filteredUsers.map((user) => (
                         <TableRow key={user.id}>
                           <TableCell>{user.full_name || 'N/A'}</TableCell>
                           <TableCell>{user.email || 'N/A'}</TableCell>
