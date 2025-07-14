@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
@@ -61,20 +61,34 @@ const EventsMap: React.FC<EventsMapProps> = ({
     );
   };
 
-  useLayoutEffect(() => {
-    console.log('🎯 useLayoutEffect triggered - mapContainer.current:', !!mapContainer.current);
+  useEffect(() => {
+    console.log('🎯 useEffect triggered - mapContainer.current:', !!mapContainer.current);
     
-    if (mapContainer.current) {
-      console.log('🎯 Calling initializeMap immediately...');
-      initializeMap(mapContainer.current, userLocation);
-    } else {
-      console.error('❌ mapContainer.current is null in useLayoutEffect');
-      toast({
-        title: "Map Error",
-        description: "Failed to initialize the map. Please refresh the page.",
-        variant: "destructive",
-      });
-    }
+    // Simple check without infinite retries
+    const initMap = () => {
+      if (mapContainer.current) {
+        console.log('🎯 Calling initializeMap...');
+        initializeMap(mapContainer.current, userLocation);
+      } else {
+        console.error('❌ mapContainer.current is null - DOM element not found');
+        // Set a timeout to try once more after React has fully rendered
+        setTimeout(() => {
+          if (mapContainer.current) {
+            console.log('🎯 Second attempt successful - calling initializeMap...');
+            initializeMap(mapContainer.current, userLocation);
+          } else {
+            console.error('❌ Second attempt failed - showing error to user');
+            toast({
+              title: "Map Error",
+              description: "Failed to initialize the map. Please refresh the page.",
+              variant: "destructive",
+            });
+          }
+        }, 1000);
+      }
+    };
+    
+    initMap();
   }, [initializeMap, userLocation, toast]);
 
   useEffect(() => {
@@ -106,7 +120,11 @@ const EventsMap: React.FC<EventsMapProps> = ({
   return (
     <div className="h-full flex flex-col">
       <MapControls onGetCurrentLocation={getCurrentLocation} />
-      <div ref={mapContainer} className="flex-1 rounded-b-lg overflow-hidden" />
+      <div 
+        ref={mapContainer} 
+        className="flex-1 rounded-b-lg overflow-hidden min-h-[400px]" 
+        style={{ minHeight: '400px' }}
+      />
     </div>
   );
 };
