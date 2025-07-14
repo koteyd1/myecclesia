@@ -32,14 +32,6 @@ const About = () => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground mb-4">Our Mission</h2>
             <p className="text-muted-foreground mb-4">
-              To create a loving community where everyone feels welcomed, valued, and encouraged to grow 
-              in their relationship with God and with one another.
-            </p>
-            <p className="text-muted-foreground mb-4">
-              We believe in the power of faith to transform lives and communities, and we strive to be 
-              a beacon of hope and love in our neighborhood and beyond.
-            </p>
-            <p className="text-muted-foreground mb-4">
               The inspiration behind creating this Christian events ticketing platform came from a desire to unite the Body of Christ and make it easier for believers across the UK to connect, worship, and grow together. Recognizing that Christian events—such as worship nights, conferences, and community outreach—play a vital role in nurturing faith and building fellowship, the platform was developed to remove barriers to participation and help ministries reach a wider audience.
             </p>
             <p className="text-muted-foreground mb-4">
