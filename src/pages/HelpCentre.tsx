@@ -251,12 +251,6 @@ const HelpCentre = () => {
                     making spiritual resources accessible to everyone.
                   </p>
                   
-                  <h3 className="font-semibold mb-2">Free Forever</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Our commitment is to keep this platform completely free. We're supported by 
-                    donations from users who believe in our mission to connect faith communities.
-                  </p>
-                  
                   <h3 className="font-semibold mb-2">Privacy & Security</h3>
                   <ul className="space-y-2 text-muted-foreground">
                     <li>• Your data is protected and never sold</li>
