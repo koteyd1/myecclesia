@@ -19,9 +19,6 @@ const HelpCentre = () => {
           <p className="text-xl text-muted-foreground mb-4">
             Learn how to use all of MyEcclesia's features
           </p>
-          <Badge variant="secondary" className="text-lg px-4 py-2">
-            100% Free Platform
-          </Badge>
         </div>
 
         {/* Quick Features Overview */}
