@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
 import EventsMap from "@/components/EventsMap";
 import { supabase } from "@/integrations/supabase/client";
@@ -490,6 +491,7 @@ const Events = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
