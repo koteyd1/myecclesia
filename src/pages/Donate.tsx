@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { Heart, DollarSign, Users, Target } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Heart, DollarSign, Users, Target, CreditCard, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const donationOptions = [
   { amount: 25, label: "£25", description: "Helps provide meals for community events" },
@@ -17,8 +20,11 @@ const donationOptions = [
 
 const Donate = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
+  const [donationType, setDonationType] = useState<'one_time' | 'recurring'>('one_time');
+  const [isLoading, setIsLoading] = useState(false);
   const [donorInfo, setDonorInfo] = useState({
     name: "",
     email: "",
@@ -36,7 +42,34 @@ const Donate = () => {
     setSelectedAmount(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const canceled = urlParams.get('canceled');
+    
+    if (success === 'true') {
+      toast({
+        title: "Thank You!",
+        description: "Your donation has been successfully processed.",
+      });
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    if (canceled === 'true') {
+      toast({
+        title: "Payment Canceled",
+        description: "Your payment was canceled. You can try again anytime.",
+        variant: "destructive",
+      });
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const donationAmount = selectedAmount || parseFloat(customAmount);
@@ -59,16 +92,43 @@ const Donate = () => {
       return;
     }
 
-    // For now, just show success message since payment isn't integrated yet
-    toast({
-      title: "Thank You!",
-      description: `Your donation of £${donationAmount} has been received. Payment processing will be available soon.`,
-    });
-    
-    console.log("Donation submission:", {
-      amount: donationAmount,
-      donor: donorInfo
-    });
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-donation-payment', {
+        body: {
+          amount: donationAmount,
+          donationType: donationType,
+          donorInfo: donorInfo,
+          isAuthenticated: !!user
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        
+        toast({
+          title: "Payment Processing",
+          description: "You'll be redirected to Stripe to complete your donation.",
+        });
+      } else {
+        throw new Error('No payment URL received');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Payment Error",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const finalAmount = selectedAmount || parseFloat(customAmount) || 0;
@@ -147,7 +207,7 @@ const Donate = () => {
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Make a Donation</CardTitle>
                 <CardDescription>
-                  Choose an amount or enter a custom donation
+                  Choose an amount and select one-time or recurring donation
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -181,6 +241,27 @@ const Donate = () => {
                         step="0.01"
                       />
                     </div>
+                  </div>
+
+                  {/* Donation Type Selection */}
+                  <div>
+                    <Label className="text-base font-semibold mb-4 block">Donation Type</Label>
+                    <RadioGroup value={donationType} onValueChange={(value) => setDonationType(value as 'one_time' | 'recurring')}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="one_time" id="one_time" />
+                        <Label htmlFor="one_time" className="flex items-center cursor-pointer">
+                          <CreditCard className="h-4 w-4 mr-2 text-primary" />
+                          One-time donation
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="recurring" id="recurring" />
+                        <Label htmlFor="recurring" className="flex items-center cursor-pointer">
+                          <CalendarDays className="h-4 w-4 mr-2 text-primary" />
+                          Monthly recurring donation
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
 
                   {/* Donor Information */}
@@ -242,9 +323,12 @@ const Donate = () => {
                           £{finalAmount.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Payment processing will be available soon. For now, this is a preview of your donation.
-                      </p>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-sm text-muted-foreground">Type:</span>
+                        <span className="text-sm font-medium">
+                          {donationType === 'recurring' ? 'Monthly Recurring' : 'One-time'}
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -252,10 +336,16 @@ const Donate = () => {
                     type="submit" 
                     size="lg" 
                     className="w-full"
-                    disabled={!finalAmount || finalAmount <= 0}
+                    disabled={!finalAmount || finalAmount <= 0 || isLoading}
                   >
-                    <Heart className="h-5 w-5 mr-2" />
-                    Complete Donation
+                    {isLoading ? (
+                      "Processing..."
+                    ) : (
+                      <>
+                        <Heart className="h-5 w-5 mr-2" />
+                        Complete Donation
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>
