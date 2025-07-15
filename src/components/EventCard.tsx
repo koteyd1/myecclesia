@@ -68,7 +68,7 @@ const EventCard = ({
         <img 
           src={image} 
           alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {category && (
@@ -97,10 +97,10 @@ const EventCard = ({
         )}
       </div>
       
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
               {title}
             </h3>
             <p className="text-muted-foreground text-sm line-clamp-2">
@@ -127,19 +127,19 @@ const EventCard = ({
             </div>
           </div>
           
-          <div className="pt-2 flex gap-2">
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
             <Button 
-              className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+              className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity text-sm sm:text-base"
               onClick={handleRegisterNow}
             >
               Register Now
             </Button>
-            <div onClick={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()} className="sm:w-auto w-full">
               <SocialShare
                 url={`/events/${id}`}
                 title={title}
                 description={description}
-                className="h-10"
+                className="h-10 w-full sm:w-auto"
               />
             </div>
           </div>
