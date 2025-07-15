@@ -97,8 +97,7 @@ const EventGuidelines = () => {
                 </h4>
                 <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                   <div>
-                    <p><strong>Emergency Contact:</strong> (555) 123-4567</p>
-                    <p><strong>Local Emergency:</strong> 911</p>
+                    <p><strong>Local Emergency:</strong> 999</p>
                   </div>
                   <div>
                     <p><strong>First Aid:</strong> Available at registration desk</p>
@@ -206,17 +205,8 @@ const EventGuidelines = () => {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold mb-2">Event Coordinator</h4>
                   <p className="text-sm text-muted-foreground">
-                    Phone: (555) 123-4567<br/>
-                    Email: events@church.org
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Pastor/Spiritual Care</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Phone: (555) 987-6543<br/>
-                    Email: pastor@church.org
+                    If you have any questions or concerns about event guidelines, please speak with event staff or coordinators during the event.
                   </p>
                 </div>
               </div>
