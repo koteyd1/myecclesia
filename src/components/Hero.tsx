@@ -19,9 +19,9 @@ const Hero = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-relaxed overflow-visible">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-loose overflow-visible py-4">
             <span className="block mb-2">Bringing Our</span>
             <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
               Community Together
