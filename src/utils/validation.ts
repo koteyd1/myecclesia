@@ -57,9 +57,9 @@ export const sanitizeInput = (input: string, maxLength: number): string => {
 };
 
 export const validateName = (name: string): boolean => {
-  if (!name || name.length > INPUT_LIMITS.NAME_MAX) return false;
-  // Allow letters, spaces, hyphens, apostrophes
-  const nameRegex = /^[a-zA-Z\s\-']+$/;
+  if (!name || name.length === 0 || name.length > INPUT_LIMITS.NAME_MAX) return false;
+  // Allow letters, spaces, hyphens, apostrophes, and basic punctuation
+  const nameRegex = /^[a-zA-Z\s\-'.]+$/;
   return nameRegex.test(name.trim());
 };
 
