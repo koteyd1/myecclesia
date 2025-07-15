@@ -24,50 +24,30 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Contact form submitted', { formData });
-    
     if (isSubmitting) return;
-    
     setIsSubmitting(true);
     
     try {
-      // Validate and sanitize inputs
-      console.log('Starting validation...');
-      const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
-      const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
-      const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
-      const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
-      
-      console.log('Sanitized data:', { sanitizedName, sanitizedEmail, sanitizedPhone, sanitizedMessage });
-      
-      // Validation - simplified for debugging
-      console.log('Name validation:', validateName(sanitizedName), sanitizedName);
-      console.log('Email validation:', validateEmail(sanitizedEmail), sanitizedEmail);
-      console.log('Phone validation:', validatePhone(sanitizedPhone), sanitizedPhone);
-      console.log('Message validation:', validateMessage(sanitizedMessage), sanitizedMessage);
-      
-      if (!sanitizedName.trim()) {
-        console.log('Name is empty');
+      // Simple validation
+      if (!formData.name.trim()) {
         toast({
           variant: "destructive",
-          title: "Invalid name",
-          description: "Please enter a valid name.",
+          title: "Name required",
+          description: "Please enter your name.",
         });
         return;
       }
       
-      if (!sanitizedEmail.trim() || !sanitizedEmail.includes('@')) {
-        console.log('Email validation failed');
+      if (!formData.email.trim()) {
         toast({
           variant: "destructive",
-          title: "Invalid email",
-          description: "Please enter a valid email address.",
+          title: "Email required", 
+          description: "Please enter your email.",
         });
         return;
       }
       
-      if (!sanitizedMessage.trim()) {
-        console.log('Message is empty');
+      if (!formData.message.trim()) {
         toast({
           variant: "destructive",
           title: "Message required",
@@ -75,33 +55,27 @@ const Contact = () => {
         });
         return;
       }
-      
-      console.log('All validation passed, attempting database save...');
-      
-      // Save to database
-      console.log('Attempting to save to database...');
+
+      // Save to database with minimal data
       const { error } = await supabase
         .from('contact_messages')
         .insert({
-          name: sanitizedName,
-          email: sanitizedEmail,
-          phone: sanitizedPhone || null,
-          message: sanitizedMessage
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          message: formData.message.trim()
         });
 
-      console.log('Database insert result:', { error });
-
       if (error) {
-        console.error('Error saving contact message:', error);
+        console.error('Database error:', error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to send your message. Please try again.",
+          description: `Database error: ${error.message}`,
         });
         return;
       }
 
-      console.log('Message saved successfully!');
       toast({
         title: "Message sent!",
         description: "Thank you for your message. We'll get back to you soon.",
@@ -115,7 +89,6 @@ const Contact = () => {
         description: "An unexpected error occurred. Please try again.",
       });
     } finally {
-      console.log('Setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
