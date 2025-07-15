@@ -24,6 +24,8 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Contact form submitted', { formData });
+    
     if (isSubmitting) return;
     
     setIsSubmitting(true);
