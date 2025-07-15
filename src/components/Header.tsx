@@ -29,7 +29,7 @@ const Header = () => {
               <img 
                 src="/lovable-uploads/0d3d2918-a9f2-480a-ab92-4a5c6554877d.png" 
                 alt="MyEcclesia Logo" 
-                className="h-12 w-12 object-contain"
+                className="h-16 w-16 object-contain"
               />
               <span className="text-xl font-bold text-foreground">MyEcclesia</span>
             </button>
