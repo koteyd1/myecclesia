@@ -24,7 +24,7 @@ const Hero = () => {
           <div className="mb-6">
             <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white">
               <Calendar className="h-4 w-4" />
-              <span className="text-sm font-medium">Church Events Platform</span>
+              <span className="text-sm font-medium">MyEcclesia Events Platform</span>
             </div>
           </div>
           

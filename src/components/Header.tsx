@@ -26,7 +26,7 @@ const Header = () => {
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
               <Calendar className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-foreground">ChurchEvents</span>
+              <span className="text-xl font-bold text-foreground">MyEcclesia</span>
             </button>
           </div>
 
