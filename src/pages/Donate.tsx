@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, DollarSign, Users, Target, CreditCard, CalendarDays } from "lucide-react";
+import { Heart, PoundSterling, Users, Target, CreditCard, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 const donationOptions = [
-  { amount: 25, label: "£25", description: "Helps provide meals for community events" },
-  { amount: 50, label: "£50", description: "Supports youth program activities" },
-  { amount: 100, label: "£100", description: "Funds educational workshops and materials" },
-  { amount: 250, label: "£250", description: "Sponsors a family retreat weekend" },
+  { amount: 5, label: "£5", description: "Helps provide refreshments for community events" },
+  { amount: 10, label: "£10", description: "Supports youth program activities" },
+  { amount: 25, label: "£25", description: "Funds educational workshops and materials" },
+  { amount: 50, label: "£50", description: "Sponsors a family retreat weekend" },
 ];
 
 const Donate = () => {
@@ -230,7 +230,7 @@ const Donate = () => {
                     </div>
                     
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <PoundSterling className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="number"
                         placeholder="Enter custom amount"

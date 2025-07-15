@@ -20,7 +20,7 @@ const About = () => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground mb-4">Our Story</h2>
             <p className="text-muted-foreground mb-4">
-              Welcome to Churchevents, a dedicated ticketing platform created to serve the vibrant Christian community across the UK. Our mission is to bring believers together, fostering unity within the Body of Christ by making it easy to discover, attend, and support Christian events—from worship nights and conferences to community outreach and faith-based workshops.
+              Welcome to MyEcclesia, a dedicated ticketing platform created to serve the vibrant Christian community across the UK. Our mission is to bring believers together, fostering unity within the Body of Christ by making it easy to discover, attend, and support Christian events—from worship nights and conferences to community outreach and faith-based workshops.
             </p>
             <p className="text-muted-foreground mb-4">
               We believe that every event is an opportunity to grow spiritually, build meaningful connections, and share the transformative message of Christ. By providing a seamless, user-friendly platform, we aim to empower churches, ministries, and Christian organizations to reach more people and strengthen the faith community nationwide.
