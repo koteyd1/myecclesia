@@ -90,6 +90,32 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent",
+        description: "Check your email for a link to reset your password.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error sending reset email",
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -117,9 +143,10 @@ const Auth = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="forgot">Reset</TabsTrigger>
               </TabsList>
               
               <TabsContent value="signin">
@@ -190,6 +217,28 @@ const Auth = () => {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Sign Up"}
                   </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="forgot">
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Sending reset email..." : "Send Reset Email"}
+                  </Button>
+                  <p className="text-sm text-muted-foreground text-center">
+                    We'll send you a link to reset your password
+                  </p>
                 </form>
               </TabsContent>
             </Tabs>
