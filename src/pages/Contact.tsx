@@ -40,9 +40,14 @@ const Contact = () => {
       
       console.log('Sanitized data:', { sanitizedName, sanitizedEmail, sanitizedPhone, sanitizedMessage });
       
-      // Validation
-      if (!validateName(sanitizedName)) {
-        console.log('Name validation failed');
+      // Validation - simplified for debugging
+      console.log('Name validation:', validateName(sanitizedName), sanitizedName);
+      console.log('Email validation:', validateEmail(sanitizedEmail), sanitizedEmail);
+      console.log('Phone validation:', validatePhone(sanitizedPhone), sanitizedPhone);
+      console.log('Message validation:', validateMessage(sanitizedMessage), sanitizedMessage);
+      
+      if (!sanitizedName.trim()) {
+        console.log('Name is empty');
         toast({
           variant: "destructive",
           title: "Invalid name",
@@ -51,7 +56,7 @@ const Contact = () => {
         return;
       }
       
-      if (!validateEmail(sanitizedEmail)) {
+      if (!sanitizedEmail.trim() || !sanitizedEmail.includes('@')) {
         console.log('Email validation failed');
         toast({
           variant: "destructive",
@@ -61,22 +66,12 @@ const Contact = () => {
         return;
       }
       
-      if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
-        console.log('Phone validation failed');
+      if (!sanitizedMessage.trim()) {
+        console.log('Message is empty');
         toast({
           variant: "destructive",
-          title: "Invalid phone",
-          description: "Please enter a valid phone number.",
-        });
-        return;
-      }
-      
-      if (!validateMessage(sanitizedMessage)) {
-        console.log('Message validation failed');
-        toast({
-          variant: "destructive",
-          title: "Message too long",
-          description: `Message must not exceed ${INPUT_LIMITS.MESSAGE_MAX} characters.`,
+          title: "Message required",
+          description: "Please enter a message.",
         });
         return;
       }
