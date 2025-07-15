@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeInput, validateEmail, validateName, validatePhone, validateMessage, INPUT_LIMITS } from "@/utils/validation";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,60 +18,95 @@ const Contact = () => {
     phone: "",
     message: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate and sanitize inputs
-    const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
-    const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
-    const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
-    const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
+    if (isSubmitting) return;
     
-    // Validation
-    if (!validateName(sanitizedName)) {
+    setIsSubmitting(true);
+    
+    try {
+      // Validate and sanitize inputs
+      const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
+      const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
+      const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
+      const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
+      
+      // Validation
+      if (!validateName(sanitizedName)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid name",
+          description: "Please enter a valid name.",
+        });
+        return;
+      }
+      
+      if (!validateEmail(sanitizedEmail)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid email",
+          description: "Please enter a valid email address.",
+        });
+        return;
+      }
+      
+      if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid phone",
+          description: "Please enter a valid phone number.",
+        });
+        return;
+      }
+      
+      if (!validateMessage(sanitizedMessage)) {
+        toast({
+          variant: "destructive",
+          title: "Message too long",
+          description: `Message must not exceed ${INPUT_LIMITS.MESSAGE_MAX} characters.`,
+        });
+        return;
+      }
+      
+      // Save to database
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: sanitizedName,
+          email: sanitizedEmail,
+          phone: sanitizedPhone || null,
+          message: sanitizedMessage
+        });
+
+      if (error) {
+        console.error('Error saving contact message:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to send your message. Please try again.",
+        });
+        return;
+      }
+
+      toast({
+        title: "Message sent!",
+        description: "Thank you for your message. We'll get back to you soon.",
+      });
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         variant: "destructive",
-        title: "Invalid name",
-        description: "Please enter a valid name.",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    if (!validateEmail(sanitizedEmail)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-      });
-      return;
-    }
-    
-    if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid phone",
-        description: "Please enter a valid phone number.",
-      });
-      return;
-    }
-    
-    if (!validateMessage(sanitizedMessage)) {
-      toast({
-        variant: "destructive",
-        title: "Message too long",
-        description: `Message must not exceed ${INPUT_LIMITS.MESSAGE_MAX} characters.`,
-      });
-      return;
-    }
-    
-    // TODO: Implement form submission logic with sanitized data
-    toast({
-      title: "Message sent!",
-      description: "Thank you for your message. We'll get back to you soon.",
-    });
-    setFormData({ name: "", email: "", phone: "", message: "" });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -161,8 +197,8 @@ const Contact = () => {
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full">
-                    Send Message
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </CardContent>
