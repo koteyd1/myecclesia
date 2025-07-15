@@ -418,12 +418,38 @@ const Events = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-400px)] lg:min-h-[600px]">
-          {/* Events List - Full width on mobile, 2/3 on desktop */}
-          <div className="col-span-1 lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2">
+        {/* Mobile Map Toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowMapOnMobile(!showMapOnMobile)}
+            className="w-full"
+          >
+            <MapPin className="h-4 w-4 mr-2" />
+            {showMapOnMobile ? 'Hide Map' : 'Show Map'}
+          </Button>
+        </div>
+
+        {/* Mobile Map */}
+        {showMapOnMobile && (
+          <div className="lg:hidden mb-6">
+            <div className="bg-card border rounded-lg h-[300px] w-full">
+              <EventsMap 
+                events={sortedEvents}
+                onEventSelect={handleEventSelect}
+                userLocation={userLocation}
+                onLocationUpdate={handleLocationUpdate}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content - Split Layout */}
+        <div className="grid lg:grid-cols-3 gap-6 lg:h-[calc(100vh-400px)] lg:min-h-[600px]">
+          {/* Events List - Left Side */}
+          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2">
             {sortedEvents.length > 0 ? (
-              <div className="grid gap-4 sm:gap-6">
+              <div className="grid gap-6">
                 {sortedEvents.map((event, index) => {
                   const distance = sortByDistance && userLocation 
                     ? calculateDistance(
