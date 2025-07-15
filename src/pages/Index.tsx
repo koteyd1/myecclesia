@@ -238,6 +238,22 @@ const Index = () => {
                     Event Guidelines
                   </button>
                 </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/privacy-policy")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => navigate("/terms-and-conditions")}
+                    className="hover:text-primary transition-colors text-left"
+                  >
+                    Terms & Conditions
+                  </button>
+                </li>
               </ul>
             </div>
             
