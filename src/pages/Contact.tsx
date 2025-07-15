@@ -75,6 +75,7 @@ const Contact = () => {
       }
       
       // Save to database
+      console.log('Attempting to save to database...');
       const { error } = await supabase
         .from('contact_messages')
         .insert({
@@ -83,6 +84,8 @@ const Contact = () => {
           phone: sanitizedPhone || null,
           message: sanitizedMessage
         });
+
+      console.log('Database insert result:', { error });
 
       if (error) {
         console.error('Error saving contact message:', error);
