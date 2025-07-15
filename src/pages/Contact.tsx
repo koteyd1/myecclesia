@@ -24,7 +24,6 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    alert('Form submission started'); // Debug alert
     console.log('Contact form submitted', { formData });
     
     if (isSubmitting) return;
@@ -33,13 +32,17 @@ const Contact = () => {
     
     try {
       // Validate and sanitize inputs
+      console.log('Starting validation...');
       const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
       const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
       const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
       const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
       
+      console.log('Sanitized data:', { sanitizedName, sanitizedEmail, sanitizedPhone, sanitizedMessage });
+      
       // Validation
       if (!validateName(sanitizedName)) {
+        console.log('Name validation failed');
         toast({
           variant: "destructive",
           title: "Invalid name",
@@ -49,6 +52,7 @@ const Contact = () => {
       }
       
       if (!validateEmail(sanitizedEmail)) {
+        console.log('Email validation failed');
         toast({
           variant: "destructive",
           title: "Invalid email",
@@ -58,6 +62,7 @@ const Contact = () => {
       }
       
       if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
+        console.log('Phone validation failed');
         toast({
           variant: "destructive",
           title: "Invalid phone",
@@ -67,6 +72,7 @@ const Contact = () => {
       }
       
       if (!validateMessage(sanitizedMessage)) {
+        console.log('Message validation failed');
         toast({
           variant: "destructive",
           title: "Message too long",
@@ -74,6 +80,8 @@ const Contact = () => {
         });
         return;
       }
+      
+      console.log('All validation passed, attempting database save...');
       
       // Save to database
       console.log('Attempting to save to database...');
@@ -98,6 +106,7 @@ const Contact = () => {
         return;
       }
 
+      console.log('Message saved successfully!');
       toast({
         title: "Message sent!",
         description: "Thank you for your message. We'll get back to you soon.",
@@ -111,6 +120,7 @@ const Contact = () => {
         description: "An unexpected error occurred. Please try again.",
       });
     } finally {
+      console.log('Setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
