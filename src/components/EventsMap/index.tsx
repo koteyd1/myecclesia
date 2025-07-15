@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EventsMapProps } from '@/types/EventsMap';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import MapControls from './MapControls';
 
 const EventsMap: React.FC<EventsMapProps> = ({ 
@@ -12,6 +13,15 @@ const EventsMap: React.FC<EventsMapProps> = ({
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { 
+    isLoaded, 
+    isLoading, 
+    initializeMap, 
+    clearMarkers, 
+    addUserLocationMarker, 
+    addEventMarkers,
+    centerMapOnLocation 
+  } = useGoogleMaps();
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -30,6 +40,7 @@ const EventsMap: React.FC<EventsMapProps> = ({
           lng: position.coords.longitude
         };
         onLocationUpdate?.(location);
+        centerMapOnLocation(location);
         toast({
           title: "Location found",
           description: "Map centered on your location",
@@ -48,94 +59,25 @@ const EventsMap: React.FC<EventsMapProps> = ({
 
   useEffect(() => {
     const loadMap = async () => {
-      if (!mapContainer.current) {
-        console.log('❌ No map container');
-        return;
-      }
-
-      try {
-        console.log('🔑 Loading Google Maps with direct script...');
-        
-        // Load Google Maps API directly
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBDkQO17iBT0aY-cJgCQPERDIAjeY3Ol38&libraries=places`;
-        script.async = true;
-        
-        script.onload = () => {
-          console.log('✅ Google Maps script loaded');
-          
-          if (!mapContainer.current) {
-            console.log('❌ Container missing after script load');
-            return;
-          }
-
-          // Create the map
-          const map = new google.maps.Map(mapContainer.current, {
-            center: { lat: 51.5074, lng: -0.1278 }, // London
-            zoom: 10,
-            mapTypeControl: true,
-            streetViewControl: true,
-            fullscreenControl: true,
-          });
-
-          console.log('✅ Google Maps created successfully!');
-
-          // Add some test markers for the events
-          events.slice(0, 5).forEach((event, index) => {
-            const latLng = {
-              lat: 51.5074 + (Math.random() - 0.5) * 0.2,
-              lng: -0.1278 + (Math.random() - 0.5) * 0.2
-            };
-
-            const marker = new google.maps.Marker({
-              position: latLng,
-              map: map,
-              title: event.title,
-            });
-
-            const infoWindow = new google.maps.InfoWindow({
-              content: `
-                <div class="p-3 max-w-xs">
-                  <h3 class="font-bold text-lg">${event.title}</h3>
-                  <p class="text-sm text-gray-600 mt-1">${event.location}</p>
-                  <p class="text-sm font-semibold mt-2">
-                    ${event.date} at ${event.time}
-                  </p>
-                </div>
-              `
-            });
-
-            marker.addListener('click', () => {
-              infoWindow.open(map, marker);
-              onEventSelect?.(event.id);
-            });
-          });
-        };
-
-        script.onerror = () => {
-          console.error('❌ Failed to load Google Maps script');
-          toast({
-            title: "Map Error",
-            description: "Failed to load Google Maps",
-            variant: "destructive",
-          });
-        };
-
-        document.head.appendChild(script);
-
-      } catch (error) {
-        console.error('❌ Map loading error:', error);
-        toast({
-          title: "Map Error",
-          description: "Failed to initialize map",
-          variant: "destructive",
-        });
-      }
+      if (!mapContainer.current) return;
+      
+      await initializeMap(mapContainer.current, userLocation);
     };
 
-    // Load map after a short delay
-    setTimeout(loadMap, 500);
-  }, [events, onEventSelect, toast]);
+    loadMap();
+  }, [initializeMap, userLocation]);
+
+  useEffect(() => {
+    if (isLoaded && events.length > 0) {
+      clearMarkers();
+      
+      if (userLocation) {
+        addUserLocationMarker(userLocation);
+      }
+      
+      addEventMarkers(events, onEventSelect);
+    }
+  }, [isLoaded, events, userLocation, onEventSelect, clearMarkers, addUserLocationMarker, addEventMarkers]);
 
   return (
     <div className="w-full h-[85vh] flex flex-col border rounded-lg overflow-hidden">
