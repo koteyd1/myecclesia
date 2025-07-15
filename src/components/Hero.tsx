@@ -7,7 +7,7 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[700px] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
@@ -19,14 +19,16 @@ const Hero = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-12">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-[1.4] overflow-visible py-8">
-            <span className="block mb-4">Bringing Our</span>
-            <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
-              Community Together
-            </span>
-          </h1>
+          <div className="mb-8">
+            <h1 className="text-4xl md:text-6xl font-bold text-white leading-[1.5] overflow-visible">
+              <span className="block mb-6">Bringing Our</span>
+              <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
+                Community Together
+              </span>
+            </h1>
+          </div>
           
           <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
             Discover and register for upcoming church events, fellowship gatherings, 
