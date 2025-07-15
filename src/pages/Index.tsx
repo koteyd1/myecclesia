@@ -204,10 +204,10 @@ const Index = () => {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Calendar className="h-6 w-6 text-primary" />
-                <span className="text-lg font-bold">ChurchEvents</span>
+                <span className="text-lg font-bold">MyEcclesia</span>
               </div>
               <p className="text-gray-300">
-                Bringing our church community together through meaningful events and shared experiences.
+                Bringing our church community together through meaningful events and shared experiences with MyEcclesia.
               </p>
             </div>
             
@@ -303,7 +303,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; 2024 ChurchEvents. All rights reserved.</p>
+            <p>&copy; 2024 MyEcclesia. All rights reserved.</p>
           </div>
         </div>
       </footer>

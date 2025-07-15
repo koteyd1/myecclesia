@@ -21,13 +21,6 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white">
-              <Calendar className="h-4 w-4" />
-              <span className="text-sm font-medium">MyEcclesia Events Platform</span>
-            </div>
-          </div>
-          
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight overflow-visible">
             <span className="block">Bringing Our</span>
             <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
