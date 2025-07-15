@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
 
 // Sample events data
 const sampleEvents = [
@@ -102,6 +104,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <StructuredData data={createOrganizationSchema()} />
       <Header />
       <Hero />
       
@@ -194,6 +197,15 @@ const Index = () => {
               <h3 className="text-xl font-semibold text-foreground mb-2">Quality Events</h3>
               <p className="text-muted-foreground">Thoughtfully planned events for all ages and interests</p>
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Newsletter Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto">
+          <div className="max-w-md mx-auto">
+            <NewsletterSignup />
           </div>
         </div>
       </section>

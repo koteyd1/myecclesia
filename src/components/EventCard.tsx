@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { SocialShare } from "@/components/SocialShare";
 
 interface EventCardProps {
   id: string;
@@ -126,13 +127,21 @@ const EventCard = ({
             </div>
           </div>
           
-          <div className="pt-2">
+          <div className="pt-2 flex gap-2">
             <Button 
-              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+              className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
               onClick={handleRegisterNow}
             >
               Register Now
             </Button>
+            <div onClick={(e) => e.stopPropagation()}>
+              <SocialShare
+                url={`/events/${id}`}
+                title={title}
+                description={description}
+                className="h-10"
+              />
+            </div>
           </div>
         </div>
       </CardContent>

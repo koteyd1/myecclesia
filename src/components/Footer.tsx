@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -101,13 +102,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Denominations</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>Baptist</li>
-              <li>Methodist</li>
-              <li>Catholic</li>
-              <li>Presbyterian</li>
-            </ul>
+            <NewsletterSignup variant="footer" />
           </div>
         </div>
         

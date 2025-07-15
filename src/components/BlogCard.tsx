@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { SocialShare } from "@/components/SocialShare";
 
 interface BlogCardProps {
   id: string;
@@ -84,7 +85,7 @@ const BlogCard = ({
             </div>
           </div>
           
-          <div className="pt-2">
+          <div className="pt-2 flex justify-between items-center">
             <Button 
               variant="ghost" 
               className="p-0 h-auto text-primary hover:text-primary/80 group"
@@ -93,6 +94,14 @@ const BlogCard = ({
               Read More
               <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </Button>
+            <div onClick={(e) => e.stopPropagation()}>
+              <SocialShare
+                url={`/blog/${id}`}
+                title={title}
+                description={excerpt}
+                className="h-8"
+              />
+            </div>
           </div>
         </div>
       </CardContent>
