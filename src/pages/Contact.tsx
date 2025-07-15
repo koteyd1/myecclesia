@@ -137,7 +137,7 @@ const Contact = () => {
                       id="phone"
                       name="phone"
                       type="tel"
-                      placeholder="(555) 123-4567"
+                      placeholder="07700 900000"
                       value={formData.phone}
                       onChange={handleChange}
                       maxLength={INPUT_LIMITS.PHONE_MAX}
