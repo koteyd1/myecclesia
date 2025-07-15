@@ -1,4 +1,3 @@
-import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
@@ -10,7 +9,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <Calendar className="h-6 w-6 text-primary" />
+              <img 
+                src="/lovable-uploads/0d3d2918-a9f2-480a-ab92-4a5c6554877d.png" 
+                alt="MyEcclesia Logo" 
+                className="h-8 w-8 object-contain"
+              />
               <span className="text-lg font-bold">MyEcclesia</span>
             </div>
             <p className="text-gray-300">

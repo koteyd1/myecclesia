@@ -1,4 +1,4 @@
-import { Calendar, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +26,11 @@ const Header = () => {
               onClick={() => navigate("/")}
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
             >
-              <Calendar className="h-8 w-8 text-primary" />
+              <img 
+                src="/lovable-uploads/0d3d2918-a9f2-480a-ab92-4a5c6554877d.png" 
+                alt="MyEcclesia Logo" 
+                className="h-10 w-10 object-contain"
+              />
               <span className="text-xl font-bold text-foreground">MyEcclesia</span>
             </button>
           </div>
