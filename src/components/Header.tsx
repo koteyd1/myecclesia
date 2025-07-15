@@ -1,5 +1,6 @@
-import { Calendar, User, Settings, LogOut } from "lucide-react";
+import { Calendar, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -48,9 +49,24 @@ const Header = () => {
               <Link to="/about" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 About
               </Link>
-              <Link to="/contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Contact
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                  <span>Contact</span>
+                  <ChevronDown className="h-3 w-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to="/contact" className="w-full">
+                      Contact Us
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/help-centre" className="w-full">
+                      Help Centre
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             
             <Link 
@@ -116,6 +132,9 @@ const Header = () => {
             </Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
+            </Link>
+            <Link to="/help-centre" className="text-foreground hover:text-primary transition-colors">
+              Help Centre
             </Link>
             <Link to="/donate" className="bg-primary text-primary-foreground px-3 py-1 rounded text-sm font-medium">
               Donate
