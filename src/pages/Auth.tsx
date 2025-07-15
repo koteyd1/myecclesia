@@ -7,15 +7,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, ArrowLeft } from "lucide-react";
+import { Calendar, ArrowLeft, Shield } from "lucide-react";
+import { useRateLimit } from "@/hooks/useRateLimit";
+import { validateEmail, validatePassword, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Rate limiting for authentication attempts
+  const authRateLimit = useRateLimit({ maxAttempts: 5, windowMs: 15 * 60 * 1000 }); // 5 attempts per 15 minutes
 
   useEffect(() => {
     // Check if user is already logged in
@@ -30,12 +36,38 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limiting
+    if (!authRateLimit.checkRateLimit()) {
+      const remainingTime = authRateLimit.getRemainingTime();
+      toast({
+        variant: "destructive",
+        title: "Too many attempts",
+        description: `Please wait ${remainingTime} seconds before trying again.`,
+      });
+      return;
+    }
+    
+    // Validate inputs
+    const sanitizedEmail = sanitizeInput(email, INPUT_LIMITS.EMAIL_MAX);
+    const sanitizedPassword = sanitizeInput(password, INPUT_LIMITS.PASSWORD_MAX);
+    
+    if (!validateEmail(sanitizedEmail)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+      });
+      return;
+    }
+    
     setIsLoading(true);
+    authRateLimit.recordAttempt();
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
       });
 
       if (error) throw error;
@@ -59,16 +91,60 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limiting
+    if (!authRateLimit.checkRateLimit()) {
+      const remainingTime = authRateLimit.getRemainingTime();
+      toast({
+        variant: "destructive",
+        title: "Too many attempts",
+        description: `Please wait ${remainingTime} seconds before trying again.`,
+      });
+      return;
+    }
+    
+    // Validate inputs
+    const sanitizedEmail = sanitizeInput(email, INPUT_LIMITS.EMAIL_MAX);
+    const sanitizedPassword = sanitizeInput(password, INPUT_LIMITS.PASSWORD_MAX);
+    const sanitizedFullName = sanitizeInput(fullName, INPUT_LIMITS.NAME_MAX);
+    
+    const errors: string[] = [];
+    
+    if (!validateEmail(sanitizedEmail)) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    const passwordValidation = validatePassword(sanitizedPassword);
+    if (!passwordValidation.isValid) {
+      errors.push(...passwordValidation.errors);
+    }
+    
+    if (!sanitizedFullName || sanitizedFullName.length < 2) {
+      errors.push("Please enter your full name (at least 2 characters)");
+    }
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: errors[0],
+      });
+      return;
+    }
+    
+    setValidationErrors([]);
     setIsLoading(true);
+    authRateLimit.recordAttempt();
 
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName,
+            full_name: sanitizedFullName,
           },
         },
       });
@@ -159,6 +235,7 @@ const Auth = () => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      maxLength={INPUT_LIMITS.EMAIL_MAX}
                       required
                     />
                   </div>
@@ -170,6 +247,7 @@ const Auth = () => {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      maxLength={INPUT_LIMITS.PASSWORD_MAX}
                       required
                     />
                   </div>
@@ -189,6 +267,7 @@ const Auth = () => {
                       placeholder="Enter your full name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      maxLength={INPUT_LIMITS.NAME_MAX}
                       required
                     />
                   </div>
@@ -200,6 +279,7 @@ const Auth = () => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      maxLength={INPUT_LIMITS.EMAIL_MAX}
                       required
                     />
                   </div>
@@ -211,8 +291,19 @@ const Auth = () => {
                       placeholder="Create a password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      maxLength={INPUT_LIMITS.PASSWORD_MAX}
                       required
                     />
+                    {validationErrors.length > 0 && (
+                      <div className="text-sm text-destructive space-y-1">
+                        {validationErrors.map((error, index) => (
+                          <div key={index} className="flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
+                            {error}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Sign Up"}
@@ -230,6 +321,7 @@ const Auth = () => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      maxLength={INPUT_LIMITS.EMAIL_MAX}
                       required
                     />
                   </div>

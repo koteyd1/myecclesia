@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeInput, validateEmail, validateName, validatePhone, validateMessage, INPUT_LIMITS } from "@/utils/validation";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,51 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
+    
+    // Validate and sanitize inputs
+    const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
+    const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
+    const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
+    const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
+    
+    // Validation
+    if (!validateName(sanitizedName)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid name",
+        description: "Please enter a valid name.",
+      });
+      return;
+    }
+    
+    if (!validateEmail(sanitizedEmail)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+      });
+      return;
+    }
+    
+    if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid phone",
+        description: "Please enter a valid phone number.",
+      });
+      return;
+    }
+    
+    if (!validateMessage(sanitizedMessage)) {
+      toast({
+        variant: "destructive",
+        title: "Message too long",
+        description: `Message must not exceed ${INPUT_LIMITS.MESSAGE_MAX} characters.`,
+      });
+      return;
+    }
+    
+    // TODO: Implement form submission logic with sanitized data
     toast({
       title: "Message sent!",
       description: "Thank you for your message. We'll get back to you soon.",
@@ -67,6 +112,7 @@ const Contact = () => {
                       placeholder="Your full name"
                       value={formData.name}
                       onChange={handleChange}
+                      maxLength={INPUT_LIMITS.NAME_MAX}
                       required
                     />
                   </div>
@@ -80,6 +126,7 @@ const Contact = () => {
                       placeholder="your.email@example.com"
                       value={formData.email}
                       onChange={handleChange}
+                      maxLength={INPUT_LIMITS.EMAIL_MAX}
                       required
                     />
                   </div>
@@ -93,6 +140,7 @@ const Contact = () => {
                       placeholder="(555) 123-4567"
                       value={formData.phone}
                       onChange={handleChange}
+                      maxLength={INPUT_LIMITS.PHONE_MAX}
                     />
                   </div>
                   
@@ -104,9 +152,13 @@ const Contact = () => {
                       placeholder="How can we help you?"
                       value={formData.message}
                       onChange={handleChange}
+                      maxLength={INPUT_LIMITS.MESSAGE_MAX}
                       rows={5}
                       required
                     />
+                    <div className="text-sm text-muted-foreground text-right">
+                      {formData.message.length}/{INPUT_LIMITS.MESSAGE_MAX}
+                    </div>
                   </div>
                   
                   <Button type="submit" className="w-full">

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { sanitizeInput, validateEmail, validateName, validatePhone, INPUT_LIMITS } from "@/utils/validation";
 
 const donationOptions = [
   { amount: 5, label: "£5", description: "Helps provide refreshments for community events" },
@@ -83,10 +84,34 @@ const Donate = () => {
       return;
     }
 
-    if (!donorInfo.name || !donorInfo.email) {
+    // Validate and sanitize donor information
+    const sanitizedName = sanitizeInput(donorInfo.name, INPUT_LIMITS.NAME_MAX);
+    const sanitizedEmail = sanitizeInput(donorInfo.email, INPUT_LIMITS.EMAIL_MAX);
+    const sanitizedPhone = sanitizeInput(donorInfo.phone, INPUT_LIMITS.PHONE_MAX);
+    const sanitizedMessage = sanitizeInput(donorInfo.message, INPUT_LIMITS.MESSAGE_MAX);
+
+    if (!validateName(sanitizedName)) {
       toast({
-        title: "Missing Information",
-        description: "Please provide your name and email address.",
+        title: "Invalid Name",
+        description: "Please enter a valid name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateEmail(sanitizedEmail)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
+      toast({
+        title: "Invalid Phone",
+        description: "Please enter a valid phone number.",
         variant: "destructive",
       });
       return;
@@ -99,7 +124,12 @@ const Donate = () => {
         body: {
           amount: donationAmount,
           donationType: donationType,
-          donorInfo: donorInfo,
+          donorInfo: {
+            name: sanitizedName,
+            email: sanitizedEmail,
+            phone: sanitizedPhone,
+            message: sanitizedMessage
+          },
           isAuthenticated: !!user
         }
       });
@@ -276,6 +306,7 @@ const Donate = () => {
                           type="text"
                           value={donorInfo.name}
                           onChange={(e) => setDonorInfo({...donorInfo, name: e.target.value})}
+                          maxLength={INPUT_LIMITS.NAME_MAX}
                           required
                         />
                       </div>
@@ -287,6 +318,7 @@ const Donate = () => {
                           type="email"
                           value={donorInfo.email}
                           onChange={(e) => setDonorInfo({...donorInfo, email: e.target.value})}
+                          maxLength={INPUT_LIMITS.EMAIL_MAX}
                           required
                         />
                       </div>
@@ -299,6 +331,7 @@ const Donate = () => {
                         type="tel"
                         value={donorInfo.phone}
                         onChange={(e) => setDonorInfo({...donorInfo, phone: e.target.value})}
+                        maxLength={INPUT_LIMITS.PHONE_MAX}
                       />
                     </div>
                     
@@ -309,8 +342,12 @@ const Donate = () => {
                         placeholder="Share why you're donating or any special instructions..."
                         value={donorInfo.message}
                         onChange={(e) => setDonorInfo({...donorInfo, message: e.target.value})}
+                        maxLength={INPUT_LIMITS.MESSAGE_MAX}
                         rows={3}
                       />
+                      <div className="text-sm text-muted-foreground text-right">
+                        {donorInfo.message.length}/{INPUT_LIMITS.MESSAGE_MAX}
+                      </div>
                     </div>
                   </div>
 
