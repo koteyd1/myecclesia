@@ -12,7 +12,7 @@ const Footer = () => {
               <img 
                 src="/lovable-uploads/0d3d2918-a9f2-480a-ab92-4a5c6554877d.png" 
                 alt="MyEcclesia Logo" 
-                className="h-8 w-8 object-contain"
+                className="h-10 w-10 object-contain"
               />
               <span className="text-lg font-bold">MyEcclesia</span>
             </div>
