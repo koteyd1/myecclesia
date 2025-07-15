@@ -31,6 +31,7 @@ const Events = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [sortByDistance, setSortByDistance] = useState(false);
+  const [showMapOnMobile, setShowMapOnMobile] = useState(false);
 
   const categoryOptions = [
     "Worship Service",
@@ -417,10 +418,36 @@ const Events = () => {
           </div>
         </div>
 
+        {/* Mobile Map Toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowMapOnMobile(!showMapOnMobile)}
+            className="w-full"
+          >
+            <MapPin className="h-4 w-4 mr-2" />
+            {showMapOnMobile ? 'Hide Map' : 'Show Map'}
+          </Button>
+        </div>
+
+        {/* Mobile Map */}
+        {showMapOnMobile && (
+          <div className="lg:hidden mb-6">
+            <div className="bg-card border rounded-lg h-[300px] w-full">
+              <EventsMap 
+                events={sortedEvents}
+                onEventSelect={handleEventSelect}
+                userLocation={userLocation}
+                onLocationUpdate={handleLocationUpdate}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Main Content - Split Layout */}
-        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-400px)] min-h-[600px]">
+        <div className="grid lg:grid-cols-3 gap-6 lg:h-[calc(100vh-400px)] lg:min-h-[600px]">
           {/* Events List - Left Side */}
-          <div className="lg:col-span-2 space-y-4 overflow-y-auto pr-2">
+          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2">
             {sortedEvents.length > 0 ? (
               <div className="grid gap-6">
                 {sortedEvents.map((event, index) => {
@@ -477,8 +504,8 @@ const Events = () => {
             )}
           </div>
 
-          {/* Map - Right Side */}
-          <div className="lg:col-span-1 sticky top-4 h-[500px]">
+          {/* Map - Right Side - Desktop Only */}
+          <div className="hidden lg:block lg:col-span-1 sticky top-4 h-[500px]">
             <div className="bg-card border rounded-lg h-full w-full">
               <EventsMap 
                 events={sortedEvents}
