@@ -680,7 +680,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -705,19 +705,6 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-primary" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Available Spots</p>
-                  <p className="text-2xl font-bold">
-                    {events.reduce((sum, event) => sum + (event.available_tickets || 0), 0)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
           
           <Card>
             <CardContent className="pt-6">
