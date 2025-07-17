@@ -489,6 +489,10 @@ const AdminDashboard = () => {
   };
 
   const handleDelete = async (eventId) => {
+    console.log("Attempting to delete event:", eventId);
+    console.log("Current user:", user);
+    console.log("Is admin:", isAdmin);
+    
     if (!confirm("Are you sure you want to delete this event?")) return;
 
     try {
@@ -497,8 +501,12 @@ const AdminDashboard = () => {
         .delete()
         .eq("id", eventId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Delete error details:", error);
+        throw error;
+      }
 
+      console.log("Event deleted successfully");
       toast({
         title: "Success!",
         description: "Event deleted successfully.",
@@ -510,7 +518,7 @@ const AdminDashboard = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete event.",
+        description: `Failed to delete event: ${error.message}`,
       });
     }
   };
@@ -598,6 +606,10 @@ const AdminDashboard = () => {
   };
 
   const handleBlogDelete = async (blogPostId) => {
+    console.log("Attempting to delete blog post:", blogPostId);
+    console.log("Current user:", user);
+    console.log("Is admin:", isAdmin);
+    
     if (!confirm("Are you sure you want to delete this blog post?")) return;
 
     try {
@@ -606,8 +618,12 @@ const AdminDashboard = () => {
         .delete()
         .eq("id", blogPostId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Blog delete error details:", error);
+        throw error;
+      }
 
+      console.log("Blog post deleted successfully");
       toast({
         title: "Success!",
         description: "Blog post deleted successfully.",
@@ -619,7 +635,7 @@ const AdminDashboard = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete blog post.",
+        description: `Failed to delete blog post: ${error.message}`,
       });
     }
   };
