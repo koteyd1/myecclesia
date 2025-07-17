@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity, Search, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity, Search, Filter, Upload } from "lucide-react";
+import { FileUpload } from "@/components/FileUpload";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -736,10 +737,11 @@ const AdminDashboard = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="events" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="blogs">Blog Posts</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="uploads">File Upload</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-8">
@@ -1416,6 +1418,20 @@ const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="uploads" className="space-y-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">File Upload</h2>
+              <div className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                <span className="text-sm text-muted-foreground">Upload files for loader.io verification and more</span>
+              </div>
+            </div>
+            
+            <div className="flex justify-center">
+              <FileUpload />
+            </div>
           </TabsContent>
         </Tabs>
       </main>
