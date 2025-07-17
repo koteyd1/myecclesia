@@ -69,6 +69,15 @@ const EventCard = ({
           src={image} 
           alt={title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+          decoding="async"
+          style={{
+            imageRendering: 'auto',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            WebkitTransform: 'translateZ(0)',
+            transform: 'translateZ(0)'
+          }}
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {category && (

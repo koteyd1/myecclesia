@@ -214,6 +214,13 @@ const Dashboard = () => {
                         src={registration.events.image}
                         alt={registration.events.title}
                         className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                        loading="lazy"
+                        decoding="async"
+                        style={{
+                          imageRendering: 'auto',
+                          WebkitBackfaceVisibility: 'hidden',
+                          backfaceVisibility: 'hidden'
+                        }}
                       />
                     </div>
                   )}

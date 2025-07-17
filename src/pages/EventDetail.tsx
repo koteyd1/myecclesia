@@ -303,6 +303,13 @@ const EventDetail = () => {
                 src={event.image} 
                 alt={event.title}
                 className="w-full h-64 md:h-80 object-cover rounded-lg"
+                loading="lazy"
+                decoding="async"
+                style={{
+                  imageRendering: 'auto',
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden'
+                }}
               />
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                 <Badge variant="secondary" className="bg-white/90 text-foreground">
