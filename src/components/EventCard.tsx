@@ -121,10 +121,6 @@ const EventCard = ({
               <MapPin className="h-4 w-4 mr-2 text-primary" />
               {location}
             </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Users className="h-4 w-4 mr-2 text-primary" />
-              {availableTickets} tickets available
-            </div>
           </div>
           
           <div className="pt-2 flex gap-2">
