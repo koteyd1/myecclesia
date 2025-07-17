@@ -9,98 +9,50 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
-
-// Sample events data
-const sampleEvents = [
-  {
-    id: "1",
-    title: "Sunday Worship Service",
-    date: "2024-01-21",
-    time: "10:00 AM",
-    location: "St. Mary's Church, Westminster, London",
-    description: "Join us for our weekly worship service featuring inspiring music, prayer, and a message of hope.",
-    image: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop",
-    price: 0,
-    availableTickets: 150,
-    category: "Worship",
-    denominations: "All Welcome"
-  },
-  {
-    id: "2", 
-    title: "Youth Fellowship Night",
-    date: "2024-01-26",
-    time: "7:00 PM",
-    location: "Hope Community Centre, Manchester",
-    description: "An evening of games, discussion, and fellowship for teens and young adults.",
-    image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=800&h=400&fit=crop",
-    price: 5,
-    availableTickets: 50,
-    category: "Fellowship",
-    denominations: "Baptist"
-  },
-  {
-    id: "3",
-    title: "Community Dinner",
-    date: "2024-02-02",
-    time: "6:30 PM", 
-    location: "Trinity Hall, Birmingham",
-    description: "A monthly community dinner bringing together families for food and fellowship.",
-    image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop",
-    price: 10,
-    availableTickets: 80,
-    category: "Community",
-    denominations: "Interfaith"
-  },
-  {
-    id: "4",
-    title: "Bible Study Workshop",
-    date: "2024-02-08",
-    time: "7:00 PM",
-    location: "Wesley Methodist Church, Bristol",
-    description: "Deep dive into scripture with guided discussion and study materials provided.",
-    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop",
-    price: 0,
-    availableTickets: 25,
-    category: "Education",
-    denominations: "Methodist"
-  },
-  {
-    id: "5",
-    title: "Easter Celebration Service",
-    date: "2024-03-31",
-    time: "9:00 AM",
-    location: "Canterbury Cathedral, Canterbury",
-    description: "Celebrate the resurrection with special music, baptisms, and a message of new life.",
-    image: "https://images.unsplash.com/photo-1460904577954-8fadb262612c?w=800&h=400&fit=crop",
-    price: 0,
-    availableTickets: 200,
-    category: "Special Event",
-    denominations: "All Welcome"
-  },
-  {
-    id: "6",
-    title: "Marriage Enrichment Retreat",
-    date: "2024-04-15",
-    time: "9:00 AM",
-    location: "Taizé Community Centre, Edinburgh",
-    description: "A weekend retreat focused on strengthening marriages through workshops and prayer.",
-    image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=400&fit=crop",
-    price: 75,
-    availableTickets: 30,
-    category: "Retreat",
-    denominations: "Catholic"
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { LoadingEventCard } from "@/components/LoadingStates";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("All Events");
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = ["All Events", "Worship", "Fellowship", "Community", "Education", "Special Event", "Retreat"];
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .gte("date", new Date().toISOString().split('T')[0]) // Only future events
+        .order("date", { ascending: true })
+        .limit(6); // Limit to 6 events for homepage
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load events",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get unique categories from events
+  const categories = ["All Events", ...new Set(events.map(event => event.category).filter(Boolean))];
 
   const filteredEvents = selectedCategory === "All Events" 
-    ? sampleEvents 
-    : sampleEvents.filter(event => event.category === selectedCategory);
+    ? events 
+    : events.filter(event => event.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,9 +88,25 @@ const Index = () => {
           
           {/* Events Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} {...event} />
-            ))}
+            {loading ? (
+              <>
+                <LoadingEventCard />
+                <LoadingEventCard />
+                <LoadingEventCard />
+              </>
+            ) : filteredEvents.length > 0 ? (
+              filteredEvents.map((event) => (
+                <EventCard key={event.id} {...event} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-muted-foreground text-lg">
+                  {selectedCategory === "All Events" 
+                    ? "No upcoming events found." 
+                    : `No upcoming events found in ${selectedCategory}.`}
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="text-center">
