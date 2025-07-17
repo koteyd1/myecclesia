@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Edit, Trash2, Calendar, Users, BookOpen, UserX, Activity, Search, Filter } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -871,17 +872,12 @@ const AdminDashboard = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input
-                    id="image"
-                    name="image"
-                    type="url"
-                    value={formData.image}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
+                <ImageUpload
+                  currentImageUrl={formData.image}
+                  onImageUrlChange={(url) => setFormData(prev => ({ ...prev, image: url }))}
+                  label="Event Image"
+                  placeholder="https://example.com/event-image.jpg"
+                />
                 
                 <div>
                   <Label htmlFor="external_url">Event Website Link</Label>
@@ -1016,17 +1012,12 @@ const AdminDashboard = () => {
                           placeholder="Faith, Service, Family, etc."
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="image">Featured Image URL</Label>
-                        <Input
-                          id="image"
-                          name="image"
-                          type="url"
-                          value={blogFormData.image}
-                          onChange={handleBlogChange}
-                          placeholder="https://example.com/image.jpg"
-                        />
-                      </div>
+                       <ImageUpload
+                         currentImageUrl={blogFormData.image}
+                         onImageUrlChange={(url) => setBlogFormData(prev => ({ ...prev, image: url }))}
+                         label="Featured Image"
+                         placeholder="https://example.com/blog-image.jpg"
+                       />
                     </div>
                     
                     <div>
