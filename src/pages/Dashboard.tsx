@@ -25,7 +25,7 @@ interface EventRegistration {
       image: string;
       category: string;
       organizer: string;
-      ticket_url: string;
+      external_url: string;
     };
 }
 
@@ -61,7 +61,7 @@ const Dashboard = () => {
             image,
             category,
             organizer,
-            ticket_url
+            external_url
           )
         `)
         .eq("user_id", user?.id)
@@ -248,11 +248,11 @@ const Dashboard = () => {
                           >
                             Cancel Registration
                           </Button>
-                          {registration.events.ticket_url && (
+                          {registration.events.external_url && (
                             <Button
                               size="sm"
                               className="bg-green-600 hover:bg-green-700 text-white"
-                              onClick={() => window.open(registration.events.ticket_url, '_blank')}
+                              onClick={() => window.open(registration.events.external_url, '_blank')}
                             >
                               <Ticket className="h-4 w-4 mr-2" />
                               Collect Ticket
