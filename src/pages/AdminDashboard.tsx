@@ -90,7 +90,6 @@ const AdminDashboard = () => {
     location: "",
     image: "",
     price: 0,
-    available_tickets: 0,
     category: "",
     denominations: "",
     organizer: "",
@@ -413,8 +412,7 @@ const AdminDashboard = () => {
       const eventData = {
         ...formData,
         created_by: user.id,
-        price: parseFloat(formData.price.toString()),
-        available_tickets: parseInt(formData.available_tickets.toString())
+        price: parseFloat(formData.price.toString())
       };
 
       let result;
@@ -446,7 +444,6 @@ const AdminDashboard = () => {
         location: "",
         image: "",
         price: 0,
-        available_tickets: 0,
         category: "",
         denominations: "",
         organizer: "",
@@ -477,7 +474,6 @@ const AdminDashboard = () => {
       location: event.location,
       image: event.image || "",
       price: event.price,
-      available_tickets: event.available_tickets,
       category: event.category || "",
       denominations: event.denominations || "",
       organizer: event.organizer || "",
@@ -872,16 +868,6 @@ const AdminDashboard = () => {
                       type="number"
                       step="0.01"
                       value={formData.price}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="available_tickets">Available Tickets</Label>
-                    <Input
-                      id="available_tickets"
-                      name="available_tickets"
-                      type="number"
-                      value={formData.available_tickets}
                       onChange={handleChange}
                     />
                   </div>
