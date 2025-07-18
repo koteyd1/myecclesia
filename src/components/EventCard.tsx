@@ -59,6 +59,14 @@ const EventCard = ({
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  const isSalesEnded = () => {
+    const eventDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate <= today;
+  };
+
   return (
     <Card 
       className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card cursor-pointer" 
@@ -133,12 +141,20 @@ const EventCard = ({
           </div>
           
           <div className="pt-2 flex gap-2">
-            <Button 
-              className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
-              onClick={handleRegisterNow}
-            >
-              Register Now
-            </Button>
+            {isSalesEnded() ? (
+              <div className="flex-1">
+                <Badge variant="secondary" className="w-full justify-center py-2 bg-muted text-muted-foreground">
+                  Sales Ended
+                </Badge>
+              </div>
+            ) : (
+              <Button 
+                className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+                onClick={handleRegisterNow}
+              >
+                Register Now
+              </Button>
+            )}
             <div onClick={(e) => e.stopPropagation()}>
               <SocialShare
                 url={`/events/${id}`}

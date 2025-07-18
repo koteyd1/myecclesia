@@ -257,6 +257,15 @@ const EventDetail = () => {
     });
   };
 
+  const isSalesEnded = () => {
+    if (!event) return false;
+    const eventDate = new Date(event.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate <= today;
+  };
+
 
   if (loading) {
     return (
@@ -387,7 +396,14 @@ const EventDetail = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {user ? (
+                {isSalesEnded() ? (
+                  <div className="p-4 bg-muted/50 border border-muted rounded-lg text-center">
+                    <h4 className="font-semibold text-muted-foreground mb-2">Sales Ended</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Registration for this event is no longer available.
+                    </p>
+                  </div>
+                ) : user ? (
                   <div className="space-y-4">
                     {isRegistered ? (
                       <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
