@@ -1,4 +1,36 @@
 project_id = "imwastdmyeaaslurcovw"
 
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "https://imwastdmyeaaslurcovw.lovableproject.com"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_password_require_reauthentication = true
+
+[db]
+port = 54322
+
+[edge_functions]
+region = "us-east-1"
+inspector_port = 8083
+
+[functions.geocode]
+verify_jwt = false
+
+[functions.get-google-maps-key]
+verify_jwt = true
+
 [functions.create-donation-payment]
+verify_jwt = false
+
+[functions.cleanup-old-events]
 verify_jwt = false
