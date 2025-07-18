@@ -60,11 +60,9 @@ const EventCard = ({
   };
 
   const isSalesEnded = () => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate <= today;
+    const eventDateTime = new Date(`${date}T${time}`);
+    const now = new Date();
+    return eventDateTime <= now;
   };
 
   return (

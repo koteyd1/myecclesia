@@ -259,11 +259,9 @@ const EventDetail = () => {
 
   const isSalesEnded = () => {
     if (!event) return false;
-    const eventDate = new Date(event.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate <= today;
+    const eventDateTime = new Date(`${event.date}T${event.time}`);
+    const now = new Date();
+    return eventDateTime <= now;
   };
 
 
