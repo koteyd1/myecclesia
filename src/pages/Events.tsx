@@ -80,7 +80,15 @@ const Events = () => {
         .order("date", { ascending: true });
 
       if (error) throw error;
-      setEvents(data || []);
+      
+      // Filter out events that have already passed their start time
+      const now = new Date();
+      const upcomingEvents = (data || []).filter(event => {
+        const eventDateTime = new Date(`${event.date}T${event.time}`);
+        return eventDateTime > now;
+      });
+      
+      setEvents(upcomingEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
