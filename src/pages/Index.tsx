@@ -36,11 +36,17 @@ const Index = () => {
       
       // Filter out events that have already passed their start time
       const now = new Date();
+      console.log("Homepage - Current time:", now.toISOString());
+      console.log("Homepage - Raw events from database:", data?.length);
+      
       const upcomingEvents = (data || []).filter(event => {
         const eventDateTime = new Date(`${event.date}T${event.time}`);
-        return eventDateTime > now;
+        const isUpcoming = eventDateTime > now;
+        console.log(`Homepage - Event "${event.title}" at ${eventDateTime.toISOString()} - Upcoming: ${isUpcoming}`);
+        return isUpcoming;
       }).slice(0, 6); // Limit to 6 events for homepage
       
+      console.log("Homepage - Filtered upcoming events:", upcomingEvents.length);
       setEvents(upcomingEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
