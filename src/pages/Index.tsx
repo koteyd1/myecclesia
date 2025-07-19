@@ -36,8 +36,6 @@ const Index = () => {
       
       // Filter out events that have already passed their start time
       const now = new Date();
-      console.log("Homepage - Current time:", now.toISOString());
-      console.log("Homepage - Raw events from database:", data?.length);
       
       if (data && data.length === 0) {
         console.log("No events found in database");
@@ -48,7 +46,6 @@ const Index = () => {
       const upcomingEvents = (data || []).filter(event => {
         const eventDateTime = new Date(`${event.date}T${event.time}`);
         const isUpcoming = eventDateTime > now;
-        console.log(`Homepage - Event "${event.title}" scheduled for ${event.date} ${event.time} (${eventDateTime.toISOString()}) - Current time: ${now.toISOString()} - Upcoming: ${isUpcoming}`);
         return isUpcoming;
       }).slice(0, 6); // Limit to 6 events for homepage
       
