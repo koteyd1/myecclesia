@@ -19,19 +19,44 @@ Deno.serve(async (req) => {
 
     console.log('Starting event cleanup process...')
 
-    // Calculate date 2 days ago
-    const twoDaysAgo = new Date()
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
-    const cutoffDate = twoDaysAgo.toISOString().split('T')[0]
+    // Calculate current datetime
+    const now = new Date()
+    const currentDateTime = now.toISOString()
 
-    console.log(`Deleting events with date before: ${cutoffDate}`)
+    console.log(`Deleting events that have passed: ${currentDateTime}`)
 
-    // Delete events that are 2+ days past their date
+    // Delete events where the combined date and time have passed
     const { data: deletedEvents, error: deleteError } = await supabase
       .from('events')
       .delete()
-      .lt('date', cutoffDate)
-      .select('id, title, date')
+      .lt('date', now.toISOString().split('T')[0])
+      .select('id, title, date, time')
+
+    // Also delete events from today where the time has passed
+    const { data: todayEvents, error: todayError } = await supabase
+      .from('events')
+      .select('id, title, date, time')
+      .eq('date', now.toISOString().split('T')[0])
+
+    if (!todayError && todayEvents) {
+      const expiredTodayEvents = todayEvents.filter(event => {
+        const eventDateTime = new Date(`${event.date}T${event.time}`)
+        return eventDateTime <= now
+      })
+
+      if (expiredTodayEvents.length > 0) {
+        const expiredIds = expiredTodayEvents.map(e => e.id)
+        const { data: expiredDeleted, error: expiredError } = await supabase
+          .from('events')
+          .delete()
+          .in('id', expiredIds)
+          .select('id, title, date, time')
+
+        if (!expiredError && expiredDeleted) {
+          deletedEvents?.push(...expiredDeleted)
+        }
+      }
+    }
 
     if (deleteError) {
       console.error('Error deleting events:', deleteError)
@@ -69,7 +94,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         deletedEvents: deletedEvents?.length || 0,
-        cutoffDate,
+        currentDateTime,
         events: deletedEvents
       }),
       {
