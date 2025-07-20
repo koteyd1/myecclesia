@@ -36,39 +36,23 @@ const Index = () => {
 
       if (error) throw error;
       
-      // Filter to show events from tomorrow onwards or today's events that haven't started yet
+      // Filter out events that have already passed their start time
       const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
       
-      console.log("Current time:", now.toLocaleString());
-      console.log("Tomorrow start:", tomorrow.toLocaleString());
-      
-      if (data && data.length === 0) {
-        console.log("No events found in database");
+      if (!data || data.length === 0) {
         setEvents([]);
         return;
       }
       
-      console.log("Total events from database:", data?.length);
-      
-      const upcomingEvents = (data || []).filter(event => {
+      const upcomingEvents = data.filter(event => {
         const eventDate = new Date(event.date);
         const [hours, minutes] = event.time.split(':').map(Number);
         eventDate.setHours(hours, minutes, 0, 0);
         
-        // Show events that are either in the future OR from tomorrow onwards
-        const isUpcoming = eventDate > now;
-        
-        console.log(`Event: ${event.title}, Date: ${event.date}, Time: ${event.time}, EventDateTime: ${eventDate.toLocaleString()}, IsUpcoming: ${isUpcoming}`);
-        
-        return isUpcoming;
+        // Show events that are in the future
+        return eventDate > now;
       }).slice(0, 6); // Limit to 6 events for homepage
       
-      console.log("Filtered upcoming events:", upcomingEvents.length);
-      
-      console.log("Homepage - Filtered upcoming events:", upcomingEvents.length);
       setEvents(upcomingEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
