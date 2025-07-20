@@ -44,9 +44,14 @@ const Index = () => {
       }
       
       const upcomingEvents = (data || []).filter(event => {
-        const eventDateTime = new Date(`${event.date}T${event.time}`);
+        // Create a proper datetime string for comparison
+        const eventDateTimeString = `${event.date}T${event.time}`;
+        const eventDateTime = new Date(eventDateTimeString);
+        
+        // Check if the event date/time is in the future
         const isUpcoming = eventDateTime > now;
-        return isUpcoming;
+        
+        return isUpcoming && !isNaN(eventDateTime.getTime());
       }).slice(0, 6); // Limit to 6 events for homepage
       
       console.log("Homepage - Filtered upcoming events:", upcomingEvents.length);
