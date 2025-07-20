@@ -44,23 +44,17 @@ const Index = () => {
       }
       
       const upcomingEvents = (data || []).filter(event => {
-        // Create a proper datetime string for comparison
-        const eventDateTimeString = `${event.date}T${event.time}`;
-        const eventDateTime = new Date(eventDateTimeString);
+        // Create date objects in local timezone
+        const eventDate = new Date(event.date);
+        const [hours, minutes] = event.time.split(':').map(Number);
+        eventDate.setHours(hours, minutes, 0, 0);
         
-        // Debug logging
-        console.log(`Event: ${event.title}`);
-        console.log(`Date string: ${eventDateTimeString}`);
-        console.log(`Event DateTime: ${eventDateTime.toISOString()}`);
-        console.log(`Current time: ${now.toISOString()}`);
-        console.log(`Is upcoming: ${eventDateTime > now}`);
-        console.log(`Is valid date: ${!isNaN(eventDateTime.getTime())}`);
-        console.log('---');
+        const isUpcoming = eventDate > now;
         
-        // Check if the event date/time is in the future
-        const isUpcoming = eventDateTime > now;
+        console.log(`Event: ${event.title}, Date: ${event.date}, Time: ${event.time}`);
+        console.log(`Event DateTime: ${eventDate.toLocaleString()}, Now: ${now.toLocaleString()}, Upcoming: ${isUpcoming}`);
         
-        return isUpcoming && !isNaN(eventDateTime.getTime());
+        return isUpcoming;
       }).slice(0, 6); // Limit to 6 events for homepage
       
       console.log("Homepage - Filtered upcoming events:", upcomingEvents.length);
