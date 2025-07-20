@@ -48,6 +48,15 @@ const Index = () => {
         const eventDateTimeString = `${event.date}T${event.time}`;
         const eventDateTime = new Date(eventDateTimeString);
         
+        // Debug logging
+        console.log(`Event: ${event.title}`);
+        console.log(`Date string: ${eventDateTimeString}`);
+        console.log(`Event DateTime: ${eventDateTime.toISOString()}`);
+        console.log(`Current time: ${now.toISOString()}`);
+        console.log(`Is upcoming: ${eventDateTime > now}`);
+        console.log(`Is valid date: ${!isNaN(eventDateTime.getTime())}`);
+        console.log('---');
+        
         // Check if the event date/time is in the future
         const isUpcoming = eventDateTime > now;
         
