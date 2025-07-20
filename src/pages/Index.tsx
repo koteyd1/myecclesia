@@ -34,8 +34,11 @@ const Index = () => {
 
       if (error) throw error;
       
-      // Filter out events that have already passed their start time
+      // Filter to show events from tomorrow onwards or today's events that haven't started yet
       const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
       
       if (data && data.length === 0) {
         console.log("No events found in database");
@@ -44,15 +47,12 @@ const Index = () => {
       }
       
       const upcomingEvents = (data || []).filter(event => {
-        // Create date objects in local timezone
         const eventDate = new Date(event.date);
         const [hours, minutes] = event.time.split(':').map(Number);
         eventDate.setHours(hours, minutes, 0, 0);
         
-        const isUpcoming = eventDate > now;
-        
-        console.log(`Event: ${event.title}, Date: ${event.date}, Time: ${event.time}`);
-        console.log(`Event DateTime: ${eventDate.toLocaleString()}, Now: ${now.toLocaleString()}, Upcoming: ${isUpcoming}`);
+        // Show events that are either in the future OR from tomorrow onwards
+        const isUpcoming = eventDate > now || eventDate >= tomorrow;
         
         return isUpcoming;
       }).slice(0, 6); // Limit to 6 events for homepage
