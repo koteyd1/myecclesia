@@ -29,8 +29,10 @@ const Index = () => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
+        .gte("date", new Date().toISOString().split('T')[0]) // Get events from today onwards
         .order("date", { ascending: true })
-        .limit(12); // Get more events to filter from
+        .order("time", { ascending: true })
+        .limit(20); // Get more events to filter from
 
       if (error) throw error;
       
