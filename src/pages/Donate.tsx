@@ -212,7 +212,7 @@ const Donate = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Outreach Programs</h3>
               <p className="text-muted-foreground">
-                Supporting outreach programs and people less fortunate
+                Supporting outreach programs and extending care to those in need
               </p>
             </div>
             
@@ -234,7 +234,7 @@ const Donate = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Website maintainence</h3>
               <p className="text-muted-foreground">
-                Managing websites to maintain quality standarding and mitigate technical issues
+                Managing websites to maintain quality standards and mitigate technical issues
               </p>
             </div>
             
