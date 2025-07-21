@@ -222,7 +222,7 @@ const Donate = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Youth Development</h3>
               <p className="text-muted-foreground">
-                Providing educational and spiritual growth opportunities for 100+ youth
+                Supporting discipleship, development and growth opportunities for youth
               </p>
             </div>
           </div>
