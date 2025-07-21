@@ -212,7 +212,7 @@ const Donate = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Outreach Programs</h3>
               <p className="text-muted-foreground">
-                Feeding 200+ families monthly through our food pantry and meal programs
+                Supporting outreach programs and ppeople less fortunate
               </p>
             </div>
             
