@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, PoundSterling, Users, Target, CreditCard, CalendarDays, Monitor, Lightbulb } from "lucide-react";
+import { Heart, PoundSterling, Users, Target, CreditCard, CalendarDays, Monitor, Lightbulb, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -195,7 +195,7 @@ const Donate = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-16">
             <div className="text-center">
               <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
@@ -243,6 +243,16 @@ const Donate = () => {
               <h3 className="text-xl font-semibold text-foreground mb-2">Initiatives and Developments</h3>
               <p className="text-muted-foreground">
                 Supporting creative Initiatives that help to add value to the Body of Christ
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <UserCheck className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Supporting Staff</h3>
+              <p className="text-muted-foreground">
+                Supporting MyEcclesia and its workers who help to provide a great service
               </p>
             </div>
           </div>
