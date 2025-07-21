@@ -202,7 +202,7 @@ const Donate = () => {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Community Events</h3>
               <p className="text-muted-foreground">
-                Supporting 50+ community events annually, bringing families together
+                Supporting community events annually, bringing believers together
               </p>
             </div>
             
