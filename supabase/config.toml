@@ -34,3 +34,9 @@ verify_jwt = false
 
 [functions.cleanup-old-events]
 verify_jwt = false
+
+[functions.schedule-cleanup]
+verify_jwt = false
+
+[functions.trigger-cleanup]
+verify_jwt = false

@@ -69,8 +69,28 @@ const Events = () => {
   ];
 
   useEffect(() => {
-    fetchEvents();
+    // Trigger cleanup first, then fetch events
+    triggerCleanup().then(() => {
+      fetchEvents();
+    });
   }, []);
+
+  const triggerCleanup = async () => {
+    try {
+      console.log('Triggering automatic cleanup of past events...');
+      const { data, error } = await supabase.functions.invoke('trigger-cleanup');
+      
+      if (error) {
+        console.error('Cleanup error:', error);
+        return;
+      }
+      
+      console.log('Cleanup completed:', data);
+    } catch (error) {
+      console.error('Error triggering cleanup:', error);
+      // Don't show error to user - this is a background operation
+    }
+  };
 
   const fetchEvents = async () => {
     try {
