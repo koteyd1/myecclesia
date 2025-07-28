@@ -42,7 +42,7 @@ const Events = () => {
     "Community Outreach",
     "Missions",
     "Conferences",
-    "Retreats",
+    "Retreats and Festivals",
     "Camps",
     "Fellowship",
     "Worship and Music",
