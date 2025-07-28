@@ -34,7 +34,7 @@ const Events = () => {
   const [showMapOnMobile, setShowMapOnMobile] = useState(false);
 
   const categoryOptions = [
-    "Worship Service",
+    "Church Service",
     "Bible Study",
     "Prayer Meeting",
     "Youth Events",
@@ -45,7 +45,7 @@ const Events = () => {
     "Retreats",
     "Camps",
     "Fellowship",
-    "Music Ministry",
+    "Worship and Music",
     "Special Events",
     "Holiday Celebrations",
     "Educational",

@@ -44,7 +44,7 @@ const AdminDashboard = () => {
   ];
 
   const categoryOptions = [
-    "Worship Service",
+    "Church Service",
     "Bible Study",
     "Prayer Meeting",
     "Youth Events",
@@ -55,7 +55,7 @@ const AdminDashboard = () => {
     "Retreats",
     "Camps",
     "Fellowship",
-    "Music Ministry",
+    "Worship and Music",
     "Special Events",
     "Holiday Celebrations",
     "Educational",
