@@ -217,7 +217,7 @@ const BlogPost = () => {
             
             <div className="space-y-6 text-foreground leading-relaxed">
               {blogPost.content.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="mb-4">
+                <p key={index} className="mb-4 whitespace-pre-wrap">
                   {paragraph}
                 </p>
               ))}
