@@ -2,21 +2,17 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
-import EventsMap from "@/components/EventsMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useGeocoding } from "@/hooks/useGeocoding";
-import { getMockCoordinates } from "@/utils/mapUtils";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Navigation } from "lucide-react";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users } from "lucide-react";
 import { LoadingEventCard } from "@/components/LoadingStates";
 
 const Events = () => {
   const { toast } = useToast();
-  const { geocodeLocation } = useGeocoding();
   const location = useLocation();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,10 +27,6 @@ const Events = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [sortByDistance, setSortByDistance] = useState(false);
-  const [showMapOnMobile, setShowMapOnMobile] = useState(false);
 
   const categoryOptions = [
     "Church Service",
@@ -227,51 +219,6 @@ const Events = () => {
     endDate !== "" || minPrice !== "" || maxPrice !== "" || locationFilter !== "" ||
     availabilityFilter !== "";
 
-  // Simple distance calculation using Haversine formula
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  // Get event coordinates using the geocoding hook
-  const getEventCoordinates = async (location: string): Promise<{ lat: number; lng: number }> => {
-    const coords = await geocodeLocation(location);
-    return coords || getMockCoordinates(location);
-  };
-
-  // Memoized sorted events for performance
-  const sortedEvents = useMemo(() => {
-    if (!sortByDistance || !userLocation) return filteredEvents;
-    
-    return [...filteredEvents].sort((a, b) => {
-      const coordsA = getMockCoordinates(a.location);
-      const coordsB = getMockCoordinates(b.location);
-      const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
-      const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
-      return distanceA - distanceB;
-    });
-  }, [filteredEvents, sortByDistance, userLocation]);
-
-  const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(eventId);
-    // Scroll to the event card
-    const eventElement = document.getElementById(`event-${eventId}`);
-    if (eventElement) {
-      eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
-  const handleLocationUpdate = (location: { lat: number; lng: number }) => {
-    setUserLocation(location);
-    setSortByDistance(true);
-  };
 
   if (loading) {
     return (
@@ -358,18 +305,6 @@ const Events = () => {
               >
                 <X className="h-4 w-4" />
                 Clear All Filters
-              </Button>
-            )}
-
-            {userLocation && (
-              <Button
-                variant={sortByDistance ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSortByDistance(prev => !prev)}
-                className="flex items-center gap-2"
-              >
-                <Navigation className="h-4 w-4" />
-                Sort by Distance
               </Button>
             )}
           </div>
@@ -492,110 +427,48 @@ const Events = () => {
           {/* Results Count */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Showing {sortedEvents.length} of {events.length} events
+              Showing {filteredEvents.length} of {events.length} events
               {hasActiveFilters && " (filtered)"}
-              {sortByDistance && userLocation && " (sorted by distance)"}
             </p>
           </div>
         </div>
 
-        {/* Mobile Map Toggle */}
-        <div className="lg:hidden mb-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowMapOnMobile(!showMapOnMobile)}
-            className="w-full"
-          >
-            <MapPin className="h-4 w-4 mr-2" />
-            {showMapOnMobile ? 'Hide Map' : 'Show Map'}
-          </Button>
-        </div>
-
-        {/* Mobile Map */}
-        {showMapOnMobile && (
-          <div className="lg:hidden mb-6">
-            <div className="bg-card border rounded-lg h-[300px] w-full">
-              <EventsMap 
-                events={sortedEvents}
-                onEventSelect={handleEventSelect}
-                userLocation={userLocation}
-                onLocationUpdate={handleLocationUpdate}
-              />
+        {/* Events List */}
+        <div className="space-y-4">
+          {filteredEvents.length > 0 ? (
+            <div className="grid gap-6">
+              {filteredEvents.map((event) => (
+                <div 
+                  key={event.id} 
+                  id={`event-${event.id}`}
+                >
+                  <EventCard 
+                    id={event.id}
+                    title={event.title}
+                    date={event.date}
+                    time={event.time}
+                    location={event.location}
+                    description={event.description}
+                    image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                    price={event.price || 0}
+                    availableTickets={event.available_tickets || 0}
+                    category={event.category || "Event"}
+                    denominations={event.denominations || ""}
+                  />
+                </div>
+              ))}
             </div>
-          </div>
-        )}
-
-        {/* Main Content - Split Layout */}
-        <div className="grid lg:grid-cols-3 gap-6 lg:h-[calc(100vh-400px)] lg:min-h-[600px]">
-          {/* Events List - Left Side */}
-          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2">
-            {sortedEvents.length > 0 ? (
-              <div className="grid gap-6">
-                {sortedEvents.map((event, index) => {
-                  const distance = sortByDistance && userLocation 
-                    ? calculateDistance(
-                        userLocation.lat, 
-                        userLocation.lng, 
-                        getMockCoordinates(event.location).lat, 
-                        getMockCoordinates(event.location).lng
-                      ).toFixed(1)
-                    : null;
-
-                  return (
-                    <div 
-                      key={event.id} 
-                      id={`event-${event.id}`}
-                      className={`transition-all duration-200 ${
-                        selectedEventId === event.id ? 'ring-2 ring-primary ring-offset-2' : ''
-                      }`}
-                    >
-                      <EventCard 
-                        id={event.id}
-                        title={event.title}
-                        date={event.date}
-                        time={event.time}
-                        location={event.location}
-                        description={event.description}
-                        image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
-                        price={event.price || 0}
-                        availableTickets={event.available_tickets || 0}
-                        category={event.category || "Event"}
-                        denominations={event.denominations || ""}
-                      />
-                      {distance && (
-                        <div className="mt-2 text-sm text-muted-foreground flex items-center gap-1">
-                          <Navigation className="h-3 w-3" />
-                          ~{distance} km away
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : events.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
-                <p className="text-muted-foreground">Check back soon for upcoming events!</p>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
-                <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Map - Right Side - Desktop Only */}
-          <div className="hidden lg:block lg:col-span-1 sticky top-4 h-[500px]">
-            <div className="bg-card border rounded-lg h-full w-full">
-              <EventsMap 
-                events={sortedEvents}
-                onEventSelect={handleEventSelect}
-                userLocation={userLocation}
-                onLocationUpdate={handleLocationUpdate}
-              />
+          ) : events.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
+              <p className="text-muted-foreground">Check back soon for upcoming events!</p>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
+              <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
