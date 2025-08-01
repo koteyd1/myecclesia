@@ -1,18 +1,21 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
+import EventsMap from "@/components/EventsMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useGeocoding } from "@/hooks/useGeocoding";
+import { getMockCoordinates } from "@/utils/mapUtils";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users } from "lucide-react";
-import { LoadingEventCard } from "@/components/LoadingStates";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Navigation } from "lucide-react";
 
 const Events = () => {
   const { toast } = useToast();
+  const { geocodeLocation } = useGeocoding();
   const location = useLocation();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,10 @@ const Events = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [sortByDistance, setSortByDistance] = useState(false);
+  const [showMapOnMobile, setShowMapOnMobile] = useState(false);
 
   const categoryOptions = [
     "Church Service",
@@ -65,10 +72,10 @@ const Events = () => {
   ];
 
   useEffect(() => {
-    // Skip cleanup and fetch events immediately for faster loading
-    fetchEvents();
-    // Run cleanup in background without waiting
-    triggerCleanup();
+    // Trigger cleanup first, then fetch events
+    triggerCleanup().then(() => {
+      fetchEvents();
+    });
   }, []);
 
   // Save scroll position when navigating away and restore when coming back
@@ -114,30 +121,28 @@ const Events = () => {
     }
   };
 
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = async () => {
     try {
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      
-      // Fetch only future events at database level for faster query
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .gte('date', today)
-        .order("date", { ascending: true })
-        .limit(20); // Initial batch for faster loading
+        .order("date", { ascending: true });
 
       if (error) throw error;
       
-      // Only filter by time for today's events to reduce processing
+      // Filter out events that have already passed their start time
+      const now = new Date();
+      console.log("Current time:", now.toISOString());
+      console.log("Raw events from database:", data?.length);
+      
       const upcomingEvents = (data || []).filter(event => {
-        if (event.date === today) {
-          const eventDateTime = new Date(`${event.date}T${event.time}`);
-          return eventDateTime > now;
-        }
-        return true; // Future dates are already filtered by the query
+        const eventDateTime = new Date(`${event.date}T${event.time}`);
+        const isUpcoming = eventDateTime > now;
+        console.log(`Event "${event.title}" at ${eventDateTime.toISOString()} - Upcoming: ${isUpcoming}`);
+        return isUpcoming;
       });
       
+      console.log("Filtered upcoming events:", upcomingEvents.length);
       setEvents(upcomingEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -149,57 +154,52 @@ const Events = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  };
 
-  // Memoized filtered events for performance
-  const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      // Basic search - optimized with early returns
-      if (searchTerm !== "") {
-        const searchLower = searchTerm.toLowerCase();
-        const titleMatch = event.title.toLowerCase().includes(searchLower);
-        const descMatch = event.description?.toLowerCase().includes(searchLower);
-        const locationMatch = event.location.toLowerCase().includes(searchLower);
-        const organizerMatch = event.organizer?.toLowerCase().includes(searchLower);
-        
-        if (!titleMatch && !descMatch && !locationMatch && !organizerMatch) return false;
-      }
+  // Filter events based on search term and filters
+  const filteredEvents = events.filter((event) => {
+    // Basic search
+    const matchesSearch = searchTerm === "" || 
+      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.organizer?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Quick filters
-      if (selectedCategory !== "" && event.category !== selectedCategory) return false;
-      if (selectedDenomination !== "" && !event.denominations?.includes(selectedDenomination)) return false;
-      
-      // Price filter
-      if (priceFilter !== "") {
-        const eventPrice = event.price || 0;
-        if (priceFilter === "free" && eventPrice > 0) return false;
-        if (priceFilter === "paid" && eventPrice === 0) return false;
-      }
+    // Category filter
+    const matchesCategory = selectedCategory === "" || event.category === selectedCategory;
+    
+    // Denomination filter
+    const matchesDenomination = selectedDenomination === "" || 
+      event.denominations?.includes(selectedDenomination);
 
-      // Advanced filters (only if they're set)
-      if (startDate !== "" || endDate !== "") {
-        const eventDate = new Date(event.date);
-        if (startDate !== "" && eventDate < new Date(startDate)) return false;
-        if (endDate !== "" && eventDate > new Date(endDate)) return false;
-      }
+    // Price filter
+    const matchesPrice = priceFilter === "" || 
+      (priceFilter === "free" && (event.price === 0 || event.price === null)) ||
+      (priceFilter === "paid" && event.price > 0);
 
-      if (minPrice !== "" || maxPrice !== "") {
-        const eventPrice = event.price || 0;
-        if (minPrice !== "" && eventPrice < parseFloat(minPrice)) return false;
-        if (maxPrice !== "" && eventPrice > parseFloat(maxPrice)) return false;
-      }
+    // Date range filter
+    const eventDate = new Date(event.date);
+    const matchesStartDate = startDate === "" || eventDate >= new Date(startDate);
+    const matchesEndDate = endDate === "" || eventDate <= new Date(endDate);
 
-      if (locationFilter !== "" && !event.location.toLowerCase().includes(locationFilter.toLowerCase())) return false;
-      
-      if (availabilityFilter !== "") {
-        const tickets = event.available_tickets || 0;
-        if (availabilityFilter === "available" && tickets === 0) return false;
-        if (availabilityFilter === "full" && tickets > 0) return false;
-      }
+    // Price range filter
+    const eventPrice = event.price || 0;
+    const matchesMinPrice = minPrice === "" || eventPrice >= parseFloat(minPrice);
+    const matchesMaxPrice = maxPrice === "" || eventPrice <= parseFloat(maxPrice);
 
-      return true;
-    });
-  }, [events, searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter]);
+    // Location filter
+    const matchesLocation = locationFilter === "" || 
+      event.location.toLowerCase().includes(locationFilter.toLowerCase());
+
+    // Availability filter
+    const matchesAvailability = availabilityFilter === "" ||
+      (availabilityFilter === "available" && (event.available_tickets || 0) > 0) ||
+      (availabilityFilter === "full" && (event.available_tickets || 0) === 0);
+
+    return matchesSearch && matchesCategory && matchesDenomination && matchesPrice &&
+           matchesStartDate && matchesEndDate && matchesMinPrice && matchesMaxPrice &&
+           matchesLocation && matchesAvailability;
+  });
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -219,24 +219,59 @@ const Events = () => {
     endDate !== "" || minPrice !== "" || maxPrice !== "" || locationFilter !== "" ||
     availabilityFilter !== "";
 
+  // Simple distance calculation using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Get event coordinates using the geocoding hook
+  const getEventCoordinates = async (location: string): Promise<{ lat: number; lng: number }> => {
+    const coords = await geocodeLocation(location);
+    return coords || getMockCoordinates(location);
+  };
+
+  // Sort events by distance if user location is available and sorting is enabled
+  const sortedEvents = sortByDistance && userLocation 
+    ? [...filteredEvents].sort((a, b) => {
+        const coordsA = getMockCoordinates(a.location);
+        const coordsB = getMockCoordinates(b.location);
+        const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
+        const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
+        return distanceA - distanceB;
+      })
+    : filteredEvents;
+
+  const handleEventSelect = (eventId: string) => {
+    setSelectedEventId(eventId);
+    // Scroll to the event card
+    const eventElement = document.getElementById(`event-${eventId}`);
+    if (eventElement) {
+      eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleLocationUpdate = (location: { lat: number; lng: number }) => {
+    setUserLocation(location);
+    setSortByDistance(true);
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-4">All Events</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Loading upcoming events...
-            </p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="text-lg">Loading events...</div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <LoadingEventCard key={i} />
-            ))}
-          </div>
-        </main>
+        </div>
       </div>
     );
   }
@@ -305,6 +340,18 @@ const Events = () => {
               >
                 <X className="h-4 w-4" />
                 Clear All Filters
+              </Button>
+            )}
+
+            {userLocation && (
+              <Button
+                variant={sortByDistance ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSortByDistance(prev => !prev)}
+                className="flex items-center gap-2"
+              >
+                <Navigation className="h-4 w-4" />
+                Sort by Distance
               </Button>
             )}
           </div>
@@ -427,48 +474,110 @@ const Events = () => {
           {/* Results Count */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Showing {filteredEvents.length} of {events.length} events
+              Showing {sortedEvents.length} of {events.length} events
               {hasActiveFilters && " (filtered)"}
+              {sortByDistance && userLocation && " (sorted by distance)"}
             </p>
           </div>
         </div>
 
-        {/* Events List */}
-        <div className="space-y-4">
-          {filteredEvents.length > 0 ? (
-            <div className="grid gap-6">
-              {filteredEvents.map((event) => (
-                <div 
-                  key={event.id} 
-                  id={`event-${event.id}`}
-                >
-                  <EventCard 
-                    id={event.id}
-                    title={event.title}
-                    date={event.date}
-                    time={event.time}
-                    location={event.location}
-                    description={event.description}
-                    image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
-                    price={event.price || 0}
-                    availableTickets={event.available_tickets || 0}
-                    category={event.category || "Event"}
-                    denominations={event.denominations || ""}
-                  />
-                </div>
-              ))}
+        {/* Mobile Map Toggle */}
+        <div className="lg:hidden mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setShowMapOnMobile(!showMapOnMobile)}
+            className="w-full"
+          >
+            <MapPin className="h-4 w-4 mr-2" />
+            {showMapOnMobile ? 'Hide Map' : 'Show Map'}
+          </Button>
+        </div>
+
+        {/* Mobile Map */}
+        {showMapOnMobile && (
+          <div className="lg:hidden mb-6">
+            <div className="bg-card border rounded-lg h-[300px] w-full">
+              <EventsMap 
+                events={sortedEvents}
+                onEventSelect={handleEventSelect}
+                userLocation={userLocation}
+                onLocationUpdate={handleLocationUpdate}
+              />
             </div>
-          ) : events.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
-              <p className="text-muted-foreground">Check back soon for upcoming events!</p>
+          </div>
+        )}
+
+        {/* Main Content - Split Layout */}
+        <div className="grid lg:grid-cols-3 gap-6 lg:h-[calc(100vh-400px)] lg:min-h-[600px]">
+          {/* Events List - Left Side */}
+          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2">
+            {sortedEvents.length > 0 ? (
+              <div className="grid gap-6">
+                {sortedEvents.map((event, index) => {
+                  const distance = sortByDistance && userLocation 
+                    ? calculateDistance(
+                        userLocation.lat, 
+                        userLocation.lng, 
+                        getMockCoordinates(event.location).lat, 
+                        getMockCoordinates(event.location).lng
+                      ).toFixed(1)
+                    : null;
+
+                  return (
+                    <div 
+                      key={event.id} 
+                      id={`event-${event.id}`}
+                      className={`transition-all duration-200 ${
+                        selectedEventId === event.id ? 'ring-2 ring-primary ring-offset-2' : ''
+                      }`}
+                    >
+                      <EventCard 
+                        id={event.id}
+                        title={event.title}
+                        date={event.date}
+                        time={event.time}
+                        location={event.location}
+                        description={event.description}
+                        image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                        price={event.price || 0}
+                        availableTickets={event.available_tickets || 0}
+                        category={event.category || "Event"}
+                        denominations={event.denominations || ""}
+                      />
+                      {distance && (
+                        <div className="mt-2 text-sm text-muted-foreground flex items-center gap-1">
+                          <Navigation className="h-3 w-3" />
+                          ~{distance} km away
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : events.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
+                <p className="text-muted-foreground">Check back soon for upcoming events!</p>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
+                <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Map - Right Side - Desktop Only */}
+          <div className="hidden lg:block lg:col-span-1 sticky top-4 h-[500px]">
+            <div className="bg-card border rounded-lg h-full w-full">
+              <EventsMap 
+                events={sortedEvents}
+                onEventSelect={handleEventSelect}
+                userLocation={userLocation}
+                onLocationUpdate={handleLocationUpdate}
+              />
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
-              <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
-            </div>
-          )}
+          </div>
         </div>
       </main>
     </div>
