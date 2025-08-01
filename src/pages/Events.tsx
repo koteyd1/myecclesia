@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Navigation } from "lucide-react";
+import { LoadingEventCard } from "@/components/LoadingStates";
 
 const Events = () => {
   const { toast } = useToast();
@@ -72,10 +73,10 @@ const Events = () => {
   ];
 
   useEffect(() => {
-    // Trigger cleanup first, then fetch events
-    triggerCleanup().then(() => {
-      fetchEvents();
-    });
+    // Skip cleanup and fetch events immediately for faster loading
+    fetchEvents();
+    // Run cleanup in background without waiting
+    triggerCleanup();
   }, []);
 
   // Save scroll position when navigating away and restore when coming back
@@ -121,28 +122,30 @@ const Events = () => {
     }
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      
+      // Fetch only future events at database level for faster query
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .order("date", { ascending: true });
+        .gte('date', today)
+        .order("date", { ascending: true })
+        .limit(20); // Initial batch for faster loading
 
       if (error) throw error;
       
-      // Filter out events that have already passed their start time
-      const now = new Date();
-      console.log("Current time:", now.toISOString());
-      console.log("Raw events from database:", data?.length);
-      
+      // Only filter by time for today's events to reduce processing
       const upcomingEvents = (data || []).filter(event => {
-        const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const isUpcoming = eventDateTime > now;
-        console.log(`Event "${event.title}" at ${eventDateTime.toISOString()} - Upcoming: ${isUpcoming}`);
-        return isUpcoming;
+        if (event.date === today) {
+          const eventDateTime = new Date(`${event.date}T${event.time}`);
+          return eventDateTime > now;
+        }
+        return true; // Future dates are already filtered by the query
       });
       
-      console.log("Filtered upcoming events:", upcomingEvents.length);
       setEvents(upcomingEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -154,52 +157,57 @@ const Events = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  // Filter events based on search term and filters
-  const filteredEvents = events.filter((event) => {
-    // Basic search
-    const matchesSearch = searchTerm === "" || 
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.organizer?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Memoized filtered events for performance
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      // Basic search - optimized with early returns
+      if (searchTerm !== "") {
+        const searchLower = searchTerm.toLowerCase();
+        const titleMatch = event.title.toLowerCase().includes(searchLower);
+        const descMatch = event.description?.toLowerCase().includes(searchLower);
+        const locationMatch = event.location.toLowerCase().includes(searchLower);
+        const organizerMatch = event.organizer?.toLowerCase().includes(searchLower);
+        
+        if (!titleMatch && !descMatch && !locationMatch && !organizerMatch) return false;
+      }
 
-    // Category filter
-    const matchesCategory = selectedCategory === "" || event.category === selectedCategory;
-    
-    // Denomination filter
-    const matchesDenomination = selectedDenomination === "" || 
-      event.denominations?.includes(selectedDenomination);
+      // Quick filters
+      if (selectedCategory !== "" && event.category !== selectedCategory) return false;
+      if (selectedDenomination !== "" && !event.denominations?.includes(selectedDenomination)) return false;
+      
+      // Price filter
+      if (priceFilter !== "") {
+        const eventPrice = event.price || 0;
+        if (priceFilter === "free" && eventPrice > 0) return false;
+        if (priceFilter === "paid" && eventPrice === 0) return false;
+      }
 
-    // Price filter
-    const matchesPrice = priceFilter === "" || 
-      (priceFilter === "free" && (event.price === 0 || event.price === null)) ||
-      (priceFilter === "paid" && event.price > 0);
+      // Advanced filters (only if they're set)
+      if (startDate !== "" || endDate !== "") {
+        const eventDate = new Date(event.date);
+        if (startDate !== "" && eventDate < new Date(startDate)) return false;
+        if (endDate !== "" && eventDate > new Date(endDate)) return false;
+      }
 
-    // Date range filter
-    const eventDate = new Date(event.date);
-    const matchesStartDate = startDate === "" || eventDate >= new Date(startDate);
-    const matchesEndDate = endDate === "" || eventDate <= new Date(endDate);
+      if (minPrice !== "" || maxPrice !== "") {
+        const eventPrice = event.price || 0;
+        if (minPrice !== "" && eventPrice < parseFloat(minPrice)) return false;
+        if (maxPrice !== "" && eventPrice > parseFloat(maxPrice)) return false;
+      }
 
-    // Price range filter
-    const eventPrice = event.price || 0;
-    const matchesMinPrice = minPrice === "" || eventPrice >= parseFloat(minPrice);
-    const matchesMaxPrice = maxPrice === "" || eventPrice <= parseFloat(maxPrice);
+      if (locationFilter !== "" && !event.location.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+      
+      if (availabilityFilter !== "") {
+        const tickets = event.available_tickets || 0;
+        if (availabilityFilter === "available" && tickets === 0) return false;
+        if (availabilityFilter === "full" && tickets > 0) return false;
+      }
 
-    // Location filter
-    const matchesLocation = locationFilter === "" || 
-      event.location.toLowerCase().includes(locationFilter.toLowerCase());
-
-    // Availability filter
-    const matchesAvailability = availabilityFilter === "" ||
-      (availabilityFilter === "available" && (event.available_tickets || 0) > 0) ||
-      (availabilityFilter === "full" && (event.available_tickets || 0) === 0);
-
-    return matchesSearch && matchesCategory && matchesDenomination && matchesPrice &&
-           matchesStartDate && matchesEndDate && matchesMinPrice && matchesMaxPrice &&
-           matchesLocation && matchesAvailability;
-  });
+      return true;
+    });
+  }, [events, searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -238,16 +246,18 @@ const Events = () => {
     return coords || getMockCoordinates(location);
   };
 
-  // Sort events by distance if user location is available and sorting is enabled
-  const sortedEvents = sortByDistance && userLocation 
-    ? [...filteredEvents].sort((a, b) => {
-        const coordsA = getMockCoordinates(a.location);
-        const coordsB = getMockCoordinates(b.location);
-        const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
-        const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
-        return distanceA - distanceB;
-      })
-    : filteredEvents;
+  // Memoized sorted events for performance
+  const sortedEvents = useMemo(() => {
+    if (!sortByDistance || !userLocation) return filteredEvents;
+    
+    return [...filteredEvents].sort((a, b) => {
+      const coordsA = getMockCoordinates(a.location);
+      const coordsB = getMockCoordinates(b.location);
+      const distanceA = calculateDistance(userLocation.lat, userLocation.lng, coordsA.lat, coordsA.lng);
+      const distanceB = calculateDistance(userLocation.lat, userLocation.lng, coordsB.lat, coordsB.lng);
+      return distanceA - distanceB;
+    });
+  }, [filteredEvents, sortByDistance, userLocation]);
 
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId);
@@ -267,11 +277,19 @@ const Events = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <div className="text-lg">Loading events...</div>
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-foreground mb-4">All Events</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Loading upcoming events...
+            </p>
           </div>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <LoadingEventCard key={i} />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
