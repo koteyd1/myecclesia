@@ -35,11 +35,15 @@ const EventCard = ({
   const navigate = useNavigate();
 
   const handleViewEvent = () => {
+    // Save current scroll position before navigating
+    sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
     navigate(`/events/${id}`);
   };
 
   const handleRegisterNow = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Save current scroll position before navigating
+    sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
     navigate(`/events/${id}#register`);
   };
   const formatDate = (dateStr: string) => {

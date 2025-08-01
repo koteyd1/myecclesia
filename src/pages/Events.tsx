@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
 import EventsMap from "@/components/EventsMap";
@@ -15,6 +16,7 @@ import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, Na
 const Events = () => {
   const { toast } = useToast();
   const { geocodeLocation } = useGeocoding();
+  const location = useLocation();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,6 +77,32 @@ const Events = () => {
       fetchEvents();
     });
   }, []);
+
+  // Save scroll position when navigating away and restore when coming back
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
+    if (savedScrollPosition && location.state?.from === 'event-detail') {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+      }, 100);
+    }
+
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    };
+
+    const handleScroll = () => {
+      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [location.state]);
 
   const triggerCleanup = async () => {
     try {
