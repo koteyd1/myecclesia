@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users } from "lucide-react";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
 const Events = () => {
   const { toast } = useToast();
@@ -26,6 +26,8 @@ const Events = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("");
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 30;
 
   const categoryOptions = [
     "Church Service",
@@ -214,6 +216,17 @@ const Events = () => {
   // Use filtered events directly without distance sorting
   const sortedEvents = filteredEvents;
 
+  // Pagination logic
+  const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
+  const startIndex = (currentPage - 1) * eventsPerPage;
+  const endIndex = startIndex + eventsPerPage;
+  const currentEvents = sortedEvents.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  const handleFilterChange = () => {
+    setCurrentPage(1);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -247,7 +260,7 @@ const Events = () => {
             <Input
               placeholder="Search events..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); handleFilterChange(); }}
               className="pl-10"
             />
           </div>
@@ -259,7 +272,7 @@ const Events = () => {
               <span className="text-sm font-medium text-muted-foreground">Quick Filters:</span>
             </div>
             
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select value={selectedCategory} onValueChange={(value) => { setSelectedCategory(value); handleFilterChange(); }}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -272,7 +285,7 @@ const Events = () => {
               </SelectContent>
             </Select>
 
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
+            <Select value={priceFilter} onValueChange={(value) => { setPriceFilter(value); handleFilterChange(); }}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="All Events" />
               </SelectTrigger>
@@ -286,7 +299,7 @@ const Events = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={clearFilters}
+                onClick={() => { clearFilters(); handleFilterChange(); }}
                 className="flex items-center gap-2"
               >
                 <X className="h-4 w-4" />
@@ -412,10 +425,13 @@ const Events = () => {
           </Collapsible>
 
           {/* Results Count */}
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
-              Showing {sortedEvents.length} of {events.length} events
+              Showing {startIndex + 1}-{Math.min(endIndex, sortedEvents.length)} of {sortedEvents.length} events
               {hasActiveFilters && " (filtered)"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Page {currentPage} of {totalPages}
             </p>
           </div>
         </div>
@@ -424,9 +440,9 @@ const Events = () => {
         <div className="space-y-6">
           {/* Events List */}
           <div className="space-y-4">
-            {sortedEvents.length > 0 ? (
+            {currentEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedEvents.map((event) => (
+                {currentEvents.map((event) => (
                   <div key={event.id} id={`event-${event.id}`}>
                     <EventCard 
                       id={event.id}
@@ -444,15 +460,65 @@ const Events = () => {
                   </div>
                 ))}
               </div>
-            ) : events.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No events scheduled at this time.</p>
-                <p className="text-muted-foreground">Check back soon for upcoming events!</p>
-              </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No events match your search criteria.</p>
-                <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+                <p className="text-muted-foreground">
+                  {hasActiveFilters ? "No events match your filters." : "No events available."}
+                </p>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-4 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-10 h-10"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             )}
           </div>
