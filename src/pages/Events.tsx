@@ -150,8 +150,21 @@ const Events = () => {
     }
   };
 
+  // Remove duplicates based on title and date
+  const removeDuplicates = (events) => {
+    const seen = new Set();
+    return events.filter(event => {
+      const key = `${event.title.toLowerCase()}-${event.date}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  };
+
   // Filter events based on search term and filters
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = removeDuplicates(events).filter((event) => {
     // Basic search
     const matchesSearch = searchTerm === "" || 
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
