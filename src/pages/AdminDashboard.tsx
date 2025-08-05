@@ -383,10 +383,16 @@ const AdminDashboard = () => {
     if (!confirm("Are you sure you want to remove this user? This action cannot be undone.")) return;
 
     try {
-      // Remove user from auth.users (this will cascade to other tables)
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      
+      // Call the edge function to delete the user
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+      });
+
       if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to delete user');
+      }
 
       toast({
         title: "Success!",
@@ -395,13 +401,12 @@ const AdminDashboard = () => {
 
       fetchUsers();
       fetchRegistrations();
-      fetchRegistrations();
     } catch (error) {
       console.error("Error removing user:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to remove user. You may need elevated permissions.",
+        description: error.message || "Failed to remove user.",
       });
     }
   };
