@@ -31,7 +31,7 @@ const Events = () => {
 
   const categoryOptions = [
     "Church Service",
-    "Bible Study",
+    "Bible Study", 
     "Prayer Meeting",
     "Youth Events",
     "Children's Ministry",
@@ -51,7 +51,7 @@ const Events = () => {
 
   const denominationOptions = [
     "Catholic",
-    "Protestant",
+    "Protestant", 
     "Orthodox",
     "Baptist",
     "Methodist",
@@ -72,17 +72,35 @@ const Events = () => {
     });
   }, []);
 
-  // Save scroll position when navigating away and restore when coming back
+  // Handle scroll position and pagination state based on navigation
   useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
-    if (savedScrollPosition && location.state?.from === 'event-detail') {
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition, 10));
-      }, 100);
+    const isReturningFromEventDetail = location.state?.from === 'event-detail';
+    
+    if (isReturningFromEventDetail) {
+      // Restore previous page and scroll position when returning from event detail
+      const savedPage = sessionStorage.getItem('eventsCurrentPage');
+      const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
+      
+      if (savedPage) {
+        setCurrentPage(parseInt(savedPage, 10));
+      }
+      
+      if (savedScrollPosition) {
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        }, 100);
+      }
+    } else {
+      // Start from top and reset to page 1 for new visits
+      setCurrentPage(1);
+      window.scrollTo(0, 0);
+      sessionStorage.removeItem('eventsCurrentPage');
+      sessionStorage.removeItem('eventsScrollPosition');
     }
 
     const handleBeforeUnload = () => {
       sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
     };
 
     const handleScroll = () => {
@@ -95,8 +113,11 @@ const Events = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('scroll', handleScroll);
+      // Save current state when component unmounts
+      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
     };
-  }, [location.state]);
+  }, [location.state, currentPage]);
 
   const triggerCleanup = async () => {
     try {
@@ -235,9 +256,17 @@ const Events = () => {
   const endIndex = startIndex + eventsPerPage;
   const currentEvents = sortedEvents.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
+  // Reset to first page when filters change, but save the page state
   const handleFilterChange = () => {
     setCurrentPage(1);
+    sessionStorage.setItem('eventsCurrentPage', '1');
+  };
+
+  // Update page change handler to save state
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    sessionStorage.setItem('eventsCurrentPage', newPage.toString());
+    window.scrollTo(0, 0); // Scroll to top when changing pages
   };
 
   if (loading) {
@@ -487,7 +516,7 @@ const Events = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                   disabled={currentPage === 1}
                   className="flex items-center gap-2"
                 >
@@ -513,7 +542,7 @@ const Events = () => {
                         key={pageNum}
                         variant={currentPage === pageNum ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
+                        onClick={() => handlePageChange(pageNum)}
                         className="w-10 h-10"
                       >
                         {pageNum}
@@ -525,7 +554,7 @@ const Events = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="flex items-center gap-2"
                 >
