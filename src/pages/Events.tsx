@@ -31,7 +31,7 @@ const Events = () => {
 
   const categoryOptions = [
     "Church Service",
-    "Bible Study",
+    "Bible Study", 
     "Prayer Meeting",
     "Youth Events",
     "Children's Ministry",
@@ -51,7 +51,7 @@ const Events = () => {
 
   const denominationOptions = [
     "Catholic",
-    "Protestant",
+    "Protestant", 
     "Orthodox",
     "Baptist",
     "Methodist",
@@ -235,9 +235,14 @@ const Events = () => {
   const endIndex = startIndex + eventsPerPage;
   const currentEvents = sortedEvents.slice(startIndex, endIndex);
 
-  // Reset to first page when filters change
+  // Reset to first page when filters change and scroll to top when page changes
   const handleFilterChange = () => {
     setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -487,7 +492,7 @@ const Events = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                   disabled={currentPage === 1}
                   className="flex items-center gap-2"
                 >
@@ -513,7 +518,7 @@ const Events = () => {
                         key={pageNum}
                         variant={currentPage === pageNum ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
+                        onClick={() => handlePageChange(pageNum)}
                         className="w-10 h-10"
                       >
                         {pageNum}
@@ -525,7 +530,7 @@ const Events = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="flex items-center gap-2"
                 >
