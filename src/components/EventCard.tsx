@@ -1,10 +1,9 @@
-
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Clock, DollarSign, Users } from "lucide-react";
-import { Link } from "react-router-dom";
-import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { SocialShare } from "@/components/SocialShare";
 
 interface EventCardProps {
   id: string;
@@ -20,100 +19,153 @@ interface EventCardProps {
   denominations: string;
 }
 
-const EventCard = ({
+const EventCard = ({ 
   id,
-  title,
-  date,
-  time,
-  location,
-  description,
-  image,
-  price,
-  availableTickets,
+  title, 
+  date, 
+  time, 
+  location, 
+  description, 
+  image, 
+  price, 
+  availableTickets, 
   category,
-  denominations
+  denominations 
 }: EventCardProps) => {
-  const formattedDate = format(new Date(date), "MMM dd, yyyy");
-  const formattedTime = format(new Date(`2000-01-01T${time}`), "h:mm a");
-  
-  const handleCardClick = () => {
-    // Save current scroll position and page before navigating
+  const navigate = useNavigate();
+
+  const handleViewEvent = () => {
+    // Save current scroll position before navigating
     sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    navigate(`/events/${id}`);
+  };
+
+  const handleRegisterNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Save current scroll position before navigating
+    sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    navigate(`/events/${id}#register`);
+  };
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const isSalesEnded = () => {
+    const eventDateTime = new Date(`${date}T${time}`);
+    const now = new Date();
+    return eventDateTime <= now;
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-      <div className="relative h-48 overflow-hidden">
+    <Card 
+      className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card cursor-pointer" 
+      onClick={handleViewEvent}
+    >
+      <div className="relative overflow-hidden">
         <img 
           src={image} 
           alt={title}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+          decoding="async"
+          style={{
+            imageRendering: 'auto',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            WebkitTransform: 'translateZ(0)',
+            transform: 'translateZ(0)'
+          }}
         />
-        <div className="absolute top-4 left-4">
-          <Badge variant="secondary" className="bg-primary/90 text-primary-foreground">
-            {category}
-          </Badge>
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {category && (
+            <Badge variant="secondary" className="bg-white/90 text-foreground">
+              {category}
+            </Badge>
+          )}
+          {denominations && (
+            <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
+              {denominations}
+            </Badge>
+          )}
         </div>
-        {availableTickets === 0 && (
-          <div className="absolute top-4 right-4">
-            <Badge variant="destructive">Sold Out</Badge>
+        {price === 0 ? (
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-success text-success-foreground">
+              Free
+            </Badge>
+          </div>
+        ) : (
+          <div className="absolute top-3 right-3">
+            <Badge variant="outline" className="bg-white/90 text-foreground">
+              £{price}
+            </Badge>
           </div>
         )}
       </div>
       
-      <CardHeader className="pb-3">
-        <h3 className="font-semibold text-lg line-clamp-2 leading-tight">{title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-      </CardHeader>
-      
-      <CardContent className="pt-0 flex-grow flex flex-col justify-between">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 flex-shrink-0" />
-            <span>{formattedDate}</span>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="text-muted-foreground text-sm line-clamp-2">
+              {description}
+            </p>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4 flex-shrink-0" />
-            <span>{formattedTime}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 flex-shrink-0" />
-            <span className="line-clamp-1">{location}</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium">
-                {price === 0 ? "Free" : `$${price.toFixed(2)}`}
-              </span>
+          <div className="space-y-2">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-2 text-primary" />
+              {formatDate(date)}
             </div>
-            
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4 flex-shrink-0" />
-              <span>{availableTickets} spots left</span>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 mr-2 text-primary" />
+              {formatTime(time)}
+            </div>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 mr-2 text-primary" />
+              {location}
             </div>
           </div>
           
-          {denominations && (
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium">Denominations:</span> {denominations}
+          <div className="pt-2 flex gap-2">
+            {isSalesEnded() ? (
+              <div className="flex-1">
+                <Badge variant="secondary" className="w-full justify-center py-2 bg-muted text-muted-foreground">
+                  Sales Ended
+                </Badge>
+              </div>
+            ) : (
+              <Button 
+                className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+                onClick={handleRegisterNow}
+              >
+                Register Now
+              </Button>
+            )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <SocialShare
+                url={`/events/${id}`}
+                title={title}
+                description={description}
+                className="h-10"
+              />
             </div>
-          )}
-        </div>
-        
-        <div className="mt-4 pt-4 border-t">
-          <Link 
-            to={`/events/${id}`}
-            state={{ from: 'events' }}
-            onClick={handleCardClick}
-          >
-            <Button className="w-full" disabled={availableTickets === 0}>
-              {availableTickets === 0 ? "Sold Out" : "View Details"}
-            </Button>
-          </Link>
+          </div>
         </div>
       </CardContent>
     </Card>
