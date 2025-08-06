@@ -27,6 +27,7 @@ const Events = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState("");
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isInitialized, setIsInitialized] = useState(false);
   const eventsPerPage = 30;
 
   const categoryOptions = [
@@ -72,25 +73,31 @@ const Events = () => {
     });
   }, []);
 
-  // Save and restore page state when navigating
+  // Handle initial page restoration only once
   useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
-    const savedPage = sessionStorage.getItem('eventsCurrentPage');
-    
-    if (location.state?.from === 'event-detail') {
-      // Restore previous page if coming back from event detail
+    if (!isInitialized && location.state?.from === 'event-detail') {
+      const savedPage = sessionStorage.getItem('eventsCurrentPage');
+      const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
+      
       if (savedPage) {
         setCurrentPage(parseInt(savedPage, 10));
       }
       
-      // Restore scroll position after a short delay to ensure content is loaded
       if (savedScrollPosition) {
         setTimeout(() => {
           window.scrollTo(0, parseInt(savedScrollPosition, 10));
         }, 100);
       }
     }
+    setIsInitialized(true);
+  }, [location.state, isInitialized]);
 
+  // Save current page and scroll position
+  useEffect(() => {
+    if (isInitialized) {
+      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
+    }
+    
     const handleBeforeUnload = () => {
       sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
       sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
@@ -107,12 +114,7 @@ const Events = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.state, currentPage]);
-
-  // Save current page whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
-  }, [currentPage]);
+  }, [currentPage, isInitialized]);
 
   const triggerCleanup = async () => {
     try {
