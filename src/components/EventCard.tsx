@@ -35,17 +35,22 @@ const EventCard = ({
   const navigate = useNavigate();
 
   const handleViewEvent = () => {
-    // Save current scroll position before navigating
+    // Save current scroll position and page before navigating
     sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
+    sessionStorage.setItem('eventsCurrentPage', currentPage);
     navigate(`/events/${id}`);
   };
 
   const handleRegisterNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Save current scroll position before navigating
+    // Save current scroll position and page before navigating
     sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+    const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
+    sessionStorage.setItem('eventsCurrentPage', currentPage);
     navigate(`/events/${id}#register`);
   };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 

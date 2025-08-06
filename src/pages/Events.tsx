@@ -72,17 +72,28 @@ const Events = () => {
     });
   }, []);
 
-  // Save scroll position when navigating away and restore when coming back
+  // Save and restore page state when navigating
   useEffect(() => {
     const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
-    if (savedScrollPosition && location.state?.from === 'event-detail') {
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedScrollPosition, 10));
-      }, 100);
+    const savedPage = sessionStorage.getItem('eventsCurrentPage');
+    
+    if (location.state?.from === 'event-detail') {
+      // Restore previous page if coming back from event detail
+      if (savedPage) {
+        setCurrentPage(parseInt(savedPage, 10));
+      }
+      
+      // Restore scroll position after a short delay to ensure content is loaded
+      if (savedScrollPosition) {
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        }, 100);
+      }
     }
 
     const handleBeforeUnload = () => {
       sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
+      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
     };
 
     const handleScroll = () => {
@@ -96,7 +107,12 @@ const Events = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.state]);
+  }, [location.state, currentPage]);
+
+  // Save current page whenever it changes
+  useEffect(() => {
+    sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
+  }, [currentPage]);
 
   const triggerCleanup = async () => {
     try {
