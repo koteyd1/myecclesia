@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { SearchBar } from "@/components/SearchBar";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -69,6 +70,12 @@ const AdminDashboard = () => {
   const [registrations, setRegistrations] = useState([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  
+  // Add search states for events and blogs
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [filteredBlogPosts, setFilteredBlogPosts] = useState([]);
+  const [eventSearchQuery, setEventSearchQuery] = useState("");
+  const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [userStats, setUserStats] = useState({ totalUsers: 0, recentUsers: 0, totalRegistrations: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("all");
@@ -163,6 +170,7 @@ const AdminDashboard = () => {
 
       if (error) throw error;
       setEvents(data || []);
+      setFilteredEvents(data || []);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
@@ -182,6 +190,7 @@ const AdminDashboard = () => {
 
       if (error) throw error;
       setBlogPosts(data || []);
+      setFilteredBlogPosts(data || []);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
       toast({
@@ -191,6 +200,48 @@ const AdminDashboard = () => {
       });
     }
   };
+
+  // Add search functions for events and blogs
+  const handleEventSearch = (query: string) => {
+    setEventSearchQuery(query);
+    if (!query) {
+      setFilteredEvents(events);
+    } else {
+      const filtered = events.filter(event => 
+        event.title.toLowerCase().includes(query.toLowerCase()) ||
+        event.description?.toLowerCase().includes(query.toLowerCase()) ||
+        event.location.toLowerCase().includes(query.toLowerCase()) ||
+        event.category?.toLowerCase().includes(query.toLowerCase()) ||
+        event.organizer?.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredEvents(filtered);
+    }
+  };
+
+  const handleBlogSearch = (query: string) => {
+    setBlogSearchQuery(query);
+    if (!query) {
+      setFilteredBlogPosts(blogPosts);
+    } else {
+      const filtered = blogPosts.filter(blog => 
+        blog.title.toLowerCase().includes(query.toLowerCase()) ||
+        blog.content.toLowerCase().includes(query.toLowerCase()) ||
+        blog.author.toLowerCase().includes(query.toLowerCase()) ||
+        blog.category?.toLowerCase().includes(query.toLowerCase()) ||
+        blog.excerpt?.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredBlogPosts(filtered);
+    }
+  };
+
+  // Update filtered results when original data changes
+  useEffect(() => {
+    handleEventSearch(eventSearchQuery);
+  }, [events]);
+
+  useEffect(() => {
+    handleBlogSearch(blogSearchQuery);
+  }, [blogPosts]);
 
   const fetchUsers = async () => {
     try {
@@ -927,13 +978,28 @@ const AdminDashboard = () => {
                 <CardDescription>View, edit, or delete existing events</CardDescription>
               </CardHeader>
               <CardContent>
-                {events.length === 0 ? (
+                {/* Add Search Bar for Events */}
+                <div className="mb-6">
+                  <SearchBar
+                    onSearch={handleEventSearch}
+                    placeholder="Search events by title, description, location, category, or organizer..."
+                    value={eventSearchQuery}
+                    className="max-w-md"
+                  />
+                  {eventSearchQuery && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Showing {filteredEvents.length} of {events.length} events
+                    </p>
+                  )}
+                </div>
+
+                {filteredEvents.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No events created yet. Create your first event!
+                    {events.length === 0 ? "No events created yet. Create your first event!" : "No events match your search."}
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {events.map((event) => (
+                    {filteredEvents.map((event) => (
                       <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex-1">
                           <h3 className="font-semibold">{event.title}</h3>
@@ -1088,13 +1154,28 @@ const AdminDashboard = () => {
                 <CardDescription>View, edit, or delete existing blog posts</CardDescription>
               </CardHeader>
               <CardContent>
-                {blogPosts.length === 0 ? (
+                {/* Add Search Bar for Blog Posts */}
+                <div className="mb-6">
+                  <SearchBar
+                    onSearch={handleBlogSearch}
+                    placeholder="Search blogs by title, content, author, category, or excerpt..."
+                    value={blogSearchQuery}
+                    className="max-w-md"
+                  />
+                  {blogSearchQuery && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Showing {filteredBlogPosts.length} of {blogPosts.length} blog posts
+                    </p>
+                  )}
+                </div>
+
+                {filteredBlogPosts.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    No blog posts created yet. Create your first blog post!
+                    {blogPosts.length === 0 ? "No blog posts created yet. Create your first blog post!" : "No blog posts match your search."}
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {blogPosts.map((blogPost) => (
+                    {filteredBlogPosts.map((blogPost) => (
                       <div key={blogPost.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex-1">
                           <h3 className="font-semibold">{blogPost.title}</h3>
