@@ -6,6 +6,8 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
+  console.log('Sitemap function called')
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,6 +20,7 @@ Deno.serve(async (req) => {
 
     // Get current date to filter future events
     const today = new Date().toISOString().split('T')[0]
+    console.log('Fetching events from date:', today)
 
     // Fetch active events (date >= today)
     const { data: events, error } = await supabase
@@ -33,6 +36,8 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
       })
     }
+
+    console.log(`Found ${events?.length || 0} events`)
 
     // Generate sitemap XML
     const baseUrl = 'https://myecclesia.co.uk'
