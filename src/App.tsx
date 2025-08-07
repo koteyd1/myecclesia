@@ -21,6 +21,7 @@ import HelpCentre from "./pages/HelpCentre";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
+import SitemapRedirect from "./pages/SitemapRedirect";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/help-centre" element={<HelpCentre />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/sitemap.xml" element={<SitemapRedirect />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
