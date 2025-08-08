@@ -19,7 +19,7 @@ const SitemapPage = () => {
         setSitemapContent(xmlContent);
         
         // Set the correct content type for the page
-        document.contentType = 'application/xml';
+        // Content-Type must be set by the server/proxy; cannot modify document.contentType in the browser
         
       } catch (err) {
         console.error('Error fetching sitemap:', err);
