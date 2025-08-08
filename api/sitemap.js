@@ -36,12 +36,11 @@ export default async function handler(req, res) {
       throw new Error('Invalid XML response from Supabase function');
     }
 
-    // Set proper XML headers
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-    res.setHeader('X-Robots-Tag', 'noindex'); // Prevent indexing of the proxy endpoint itself
-    
-    res.status(200).send(sitemapXml);
+      // Set proper XML headers
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+      
+      res.status(200).send(sitemapXml);
 
   } catch (error) {
     console.error('Sitemap proxy error:', error);
