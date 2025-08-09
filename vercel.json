@@ -8,7 +8,7 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap"
     }
   ]
 }
