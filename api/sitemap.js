@@ -36,12 +36,14 @@ export default async function handler(req, res) {
       throw new Error('Invalid XML response from Supabase function');
     }
 
-      // Set proper XML headers
-      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+      // Set strict XML headers (no redirects)
+      res.setHeader('Content-Type', 'application/xml');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      // Cache: edge cache 1h, avoid browser caching issues
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=600');
+      res.setHeader('Content-Disposition', 'inline; filename="sitemap.xml"');
       
-      res.status(200).send(sitemapXml);
-
+      res.status(200).end(sitemapXml);
   } catch (error) {
     console.error('Sitemap proxy error:', error);
 
@@ -93,10 +95,13 @@ export default async function handler(req, res) {
   </url>
 </urlset>`;
 
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.setHeader('Retry-After', '300'); // Suggest retry after 5 minutes
     
-    res.status(503).send(fallbackSitemap);
+    res.status(503).end(fallbackSitemap);
   }
 }
