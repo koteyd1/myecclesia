@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
@@ -36,13 +36,19 @@ export default async function handler(req, res) {
       throw new Error('Invalid XML response from Supabase function');
     }
 
-      // Set strict XML headers (no redirects)
-      res.setHeader('Content-Type', 'application/xml');
+      // Prepare headers and avoid any HTML wrappers
+      const contentLength = Buffer.byteLength(sitemapXml, 'utf8');
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
       res.setHeader('X-Content-Type-Options', 'nosniff');
-      // Cache: edge cache 1h, avoid browser caching issues
       res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=600');
       res.setHeader('Content-Disposition', 'inline; filename="sitemap.xml"');
+      res.setHeader('Content-Length', contentLength.toString());
       
+      if (req.method === 'HEAD') {
+        res.status(200).end();
+        return;
+      }
+
       res.status(200).end(sitemapXml);
   } catch (error) {
     console.error('Sitemap proxy error:', error);
@@ -95,13 +101,18 @@ export default async function handler(req, res) {
   </url>
 </urlset>`;
 
-    res.setHeader('Content-Type', 'application/xml');
+    const contentLength = Buffer.byteLength(fallbackSitemap, 'utf8');
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.setHeader('Retry-After', '300'); // Suggest retry after 5 minutes
+    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=120');
+    res.setHeader('Content-Disposition', 'inline; filename="sitemap.xml"');
+    res.setHeader('Content-Length', contentLength.toString());
     
-    res.status(503).end(fallbackSitemap);
+    if (req.method === 'HEAD') {
+      res.status(200).end();
+      return;
+    }
+    
+    res.status(200).end(fallbackSitemap);
   }
 }
