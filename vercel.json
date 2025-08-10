@@ -1,14 +1,9 @@
-
 {
-  "functions": {
-    "api/sitemap.js": {
-      "maxDuration": 10
-    }
-  },
-  "rewrites": [
+  "redirects": [
     {
       "source": "/sitemap.xml",
-      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap"
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": true
     }
   ]
 }
