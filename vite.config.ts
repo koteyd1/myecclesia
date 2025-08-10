@@ -16,7 +16,7 @@ const generateSitemapPlugin = (): Plugin => {
         if (!res.ok) throw new Error(`Supabase function returned ${res.status}: ${res.statusText}`);
         const xml = await res.text();
         if (!xml.trim().startsWith("<?xml")) throw new Error("Invalid XML received");
-        await fs.writeFile(path.resolve(__dirname, "public", "sitemap.xml"), xml, "utf8");
+        await fs.writeFile(path.resolve(__dirname, "dist", "sitemap.xml"), xml, "utf8");
         console.log("[sitemap] Generated sitemap.xml from Supabase Edge Function");
       } catch (err) {
         console.warn("[sitemap] Failed to generate from Edge Function, writing fallback:", err);
@@ -31,7 +31,7 @@ const generateSitemapPlugin = (): Plugin => {
   <url><loc>https://myecclesia.co.uk/calendar</loc><lastmod>${nowIso}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://myecclesia.co.uk/blog</loc><lastmod>${nowIso}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>`;
-        await fs.writeFile(path.resolve(__dirname, "public", "sitemap.xml"), fallback, "utf8");
+        await fs.writeFile(path.resolve(__dirname, "dist", "sitemap.xml"), fallback, "utf8");
       }
     },
   };
