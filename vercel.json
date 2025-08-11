@@ -4,6 +4,11 @@
       "source": "/sitemap.xml",
       "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
       "permanent": true
+    },
+    {
+      "source": "/sitemap",
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": true
     }
   ]
 }
