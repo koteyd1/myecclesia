@@ -283,6 +283,78 @@ export type Database = {
         }
         Relationships: []
       }
+      files: {
+        Row: {
+          change_frequency: string | null
+          created_at: string | null
+          file_path: string
+          id: number
+          is_published: boolean | null
+          last_modified: string | null
+          organization: string
+          priority: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          change_frequency?: string | null
+          created_at?: string | null
+          file_path: string
+          id?: never
+          is_published?: boolean | null
+          last_modified?: string | null
+          organization: string
+          priority?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          change_frequency?: string | null
+          created_at?: string | null
+          file_path?: string
+          id?: never
+          is_published?: boolean | null
+          last_modified?: string | null
+          organization?: string
+          priority?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      pages: {
+        Row: {
+          changefreq: string | null
+          created_at: string | null
+          id: number
+          is_published: boolean
+          lastmod: string | null
+          loc: string
+          priority: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          changefreq?: string | null
+          created_at?: string | null
+          id?: never
+          is_published?: boolean
+          lastmod?: string | null
+          loc: string
+          priority?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          changefreq?: string | null
+          created_at?: string | null
+          id?: never
+          is_published?: boolean
+          lastmod?: string | null
+          loc?: string
+          priority?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -309,6 +381,30 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sitemap: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          id: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          id?: never
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          id?: never
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
