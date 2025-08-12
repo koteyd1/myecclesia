@@ -3,12 +3,20 @@
     {
       "source": "/sitemap.xml",
       "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
-      "permanent": true
+      "permanent": false,
+      "statusCode": 302
     },
     {
       "source": "/sitemap",
       "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
-      "permanent": true
+      "permanent": false,
+      "statusCode": 302
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap"
     }
   ]
 }

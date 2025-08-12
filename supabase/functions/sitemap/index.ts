@@ -53,48 +53,65 @@ Deno.serve(async (req) => {
     const baseUrl = 'https://myecclesia.co.uk'
     const currentDate = new Date().toISOString()
     
-    // Helper to build each <url> entry safely
-    const urlElement = (loc: string, lastmod: string, changefreq: string, priority: string | number) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
-
-    const urls: string[] = []
+    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+`
 
     // Static pages - matching actual routes from App.tsx
-    urls.push(urlElement(`${baseUrl}`, currentDate, 'daily', '1.0'))
-    urls.push(urlElement(`${baseUrl}/events`, currentDate, 'daily', '0.9'))
-    urls.push(urlElement(`${baseUrl}/calendar`, currentDate, 'daily', '0.8'))
-    urls.push(urlElement(`${baseUrl}/blog`, currentDate, 'weekly', '0.7'))
-    urls.push(urlElement(`${baseUrl}/about`, currentDate, 'weekly', '0.7'))
-    urls.push(urlElement(`${baseUrl}/contact`, currentDate, 'monthly', '0.6'))
-    urls.push(urlElement(`${baseUrl}/donate`, currentDate, 'monthly', '0.8'))
-    urls.push(urlElement(`${baseUrl}/event-guidelines`, currentDate, 'yearly', '0.4'))
-    urls.push(urlElement(`${baseUrl}/help-centre`, currentDate, 'monthly', '0.5'))
-    urls.push(urlElement(`${baseUrl}/privacy-policy`, currentDate, 'yearly', '0.3'))
-    urls.push(urlElement(`${baseUrl}/terms-and-conditions`, currentDate, 'yearly', '0.3'))
+    const staticPages = [
+      { url: '', priority: '1.0', changefreq: 'daily' },
+      { url: '/events', priority: '0.9', changefreq: 'daily' },
+      { url: '/calendar', priority: '0.8', changefreq: 'daily' },
+      { url: '/blog', priority: '0.7', changefreq: 'weekly' },
+      { url: '/about', priority: '0.7', changefreq: 'weekly' },
+      { url: '/contact', priority: '0.6', changefreq: 'monthly' },
+      { url: '/donate', priority: '0.8', changefreq: 'monthly' },
+      { url: '/event-guidelines', priority: '0.4', changefreq: 'yearly' },
+      { url: '/help-centre', priority: '0.5', changefreq: 'monthly' },
+      { url: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
+      { url: '/terms-and-conditions', priority: '0.3', changefreq: 'yearly' }
+    ]
 
-    // Dynamic event pages
+    // Add static pages
+    for (const page of staticPages) {
+      sitemap += `  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>
+`
+    }
+
+    // Add dynamic event pages
     if (events && events.length > 0) {
       for (const event of events) {
-        const eventUrl = `${baseUrl}/events/${event.id}`
         const lastmod = event.updated_at ? new Date(event.updated_at).toISOString() : currentDate
-        urls.push(urlElement(eventUrl, lastmod, 'daily', '0.8'))
+        sitemap += `  <url>
+    <loc>${baseUrl}/events/${event.id}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+`
       }
     }
 
-    // Dynamic blog post pages
+    // Add dynamic blog post pages
     if (blogPosts && blogPosts.length > 0) {
       for (const post of blogPosts) {
-        const blogUrl = `${baseUrl}/blog/${post.id}`
         const lastmod = post.updated_at ? new Date(post.updated_at).toISOString() : currentDate
-        urls.push(urlElement(blogUrl, lastmod, 'weekly', '0.7'))
+        sitemap += `  <url>
+    <loc>${baseUrl}/blog/${post.id}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+`
       }
     }
 
-    const sitemap = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">',
-      ...urls,
-      '</urlset>'
-    ].join('\n')
+    sitemap += `</urlset>`
 
     console.log(`Generated sitemap with ${events?.length || 0} events and ${blogPosts?.length || 0} blog posts`)
 
