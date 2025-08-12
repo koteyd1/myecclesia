@@ -20,15 +20,30 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split('T')[0]
 
     // Fetch active events (date >= today)
-    const { data: events, error } = await supabase
+    const { data: events, error: eventsError } = await supabase
       .from('events')
       .select('id, title, date, updated_at')
       .gte('date', today)
       .order('date', { ascending: true })
 
-    if (error) {
-      console.error('Error fetching events:', error)
+    // Fetch published blog posts
+    const { data: blogPosts, error: blogError } = await supabase
+      .from('blog_posts')
+      .select('id, title, updated_at')
+      .eq('published', true)
+      .order('updated_at', { ascending: false })
+
+    if (eventsError) {
+      console.error('Error fetching events:', eventsError)
       return new Response('Error fetching events', { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
+      })
+    }
+
+    if (blogError) {
+      console.error('Error fetching blog posts:', blogError)
+      return new Response('Error fetching blog posts', { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
       })
@@ -43,7 +58,7 @@ Deno.serve(async (req) => {
 
     const urls: string[] = []
 
-    // Static pages
+    // Static pages - matching actual routes from App.tsx
     urls.push(urlElement(`${baseUrl}`, currentDate, 'daily', '1.0'))
     urls.push(urlElement(`${baseUrl}/events`, currentDate, 'daily', '0.9'))
     urls.push(urlElement(`${baseUrl}/calendar`, currentDate, 'daily', '0.8'))
@@ -54,7 +69,7 @@ Deno.serve(async (req) => {
     urls.push(urlElement(`${baseUrl}/event-guidelines`, currentDate, 'yearly', '0.4'))
     urls.push(urlElement(`${baseUrl}/help-centre`, currentDate, 'monthly', '0.5'))
     urls.push(urlElement(`${baseUrl}/privacy-policy`, currentDate, 'yearly', '0.3'))
-    urls.push(urlElement(`${baseUrl}/terms`, currentDate, 'yearly', '0.3'))
+    urls.push(urlElement(`${baseUrl}/terms-and-conditions`, currentDate, 'yearly', '0.3'))
 
     // Dynamic event pages
     if (events && events.length > 0) {
@@ -65,6 +80,15 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Dynamic blog post pages
+    if (blogPosts && blogPosts.length > 0) {
+      for (const post of blogPosts) {
+        const blogUrl = `${baseUrl}/blog/${post.id}`
+        const lastmod = post.updated_at ? new Date(post.updated_at).toISOString() : currentDate
+        urls.push(urlElement(blogUrl, lastmod, 'weekly', '0.7'))
+      }
+    }
+
     const sitemap = [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">',
@@ -72,7 +96,7 @@ Deno.serve(async (req) => {
       '</urlset>'
     ].join('\n')
 
-    console.log(`Generated sitemap with ${events?.length || 0} events`)
+    console.log(`Generated sitemap with ${events?.length || 0} events and ${blogPosts?.length || 0} blog posts`)
 
     return new Response(sitemap, {
       headers: {
