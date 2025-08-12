@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://myecclesia.co.uk/sitemap.xml
+Sitemap: https://myecclesia.co.uk/sitemap
