@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+import { useEffect } from 'react';
+
+const SitemapXML = () => {
+  useEffect(() => {
+    // Create XML content
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://myecclesia.co.uk</loc>
@@ -55,4 +60,19 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-</urlset>
+</urlset>`;
+
+    // Replace the document content with XML
+    document.documentElement.innerHTML = `
+      <head>
+        <title>Sitemap</title>
+        <meta http-equiv="Content-Type" content="application/xml; charset=utf-8" />
+      </head>
+      <body style="font-family: monospace; white-space: pre; font-size: 12px;">${xmlContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</body>
+    `;
+  }, []);
+
+  return null;
+};
+
+export default SitemapXML;
