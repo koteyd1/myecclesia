@@ -33,19 +33,19 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.cleanup-old-events]
-verify_jwt = false
+verify_jwt = true
 
 [functions.schedule-cleanup]
-verify_jwt = false
+verify_jwt = true
 
 [functions.trigger-cleanup]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-welcome-email]
 verify_jwt = false
 
 [functions.delete-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.sitemap]
 verify_jwt = false
