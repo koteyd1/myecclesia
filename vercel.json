@@ -1,1 +1,16 @@
-{}
+{
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": false,
+      "statusCode": 302
+    },
+    {
+      "source": "/sitemap",
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": false,
+      "statusCode": 302
+    }
+  ]
+}
