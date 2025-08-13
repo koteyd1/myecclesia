@@ -1,12 +1,14 @@
 {
-  "rewrites": [
+  "redirects": [
     {
       "source": "/sitemap.xml",
-      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap"
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": false
     },
     {
       "source": "/sitemap",
-      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap"
+      "destination": "https://imwastdmyeaaslurcovw.supabase.co/functions/v1/sitemap",
+      "permanent": false
     }
   ]
 }
