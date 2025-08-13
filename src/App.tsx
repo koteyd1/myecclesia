@@ -23,7 +23,6 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 
 
 import NotFound from "./pages/NotFound";
-import Sitemap from "./pages/Sitemap";
 
 
 const queryClient = new QueryClient();
@@ -52,8 +51,6 @@ const App = () => (
             <Route path="/help-centre" element={<HelpCentre />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-            <Route path="/sitemap.xml" element={<Sitemap />} />
-            <Route path="/sitemap" element={<Sitemap />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
