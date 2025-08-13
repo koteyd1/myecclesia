@@ -30,6 +30,7 @@ export class SitemapGenerator {
       { loc: '/contact', changefreq: 'monthly' as const, priority: 0.7 },
       { loc: '/donate', changefreq: 'monthly' as const, priority: 0.8 },
       { loc: '/auth', changefreq: 'monthly' as const, priority: 0.5 },
+      { loc: '/dashboard', changefreq: 'weekly' as const, priority: 0.6 },
       { loc: '/help-centre', changefreq: 'weekly' as const, priority: 0.6 },
       { loc: '/privacy-policy', changefreq: 'yearly' as const, priority: 0.3 },
       { loc: '/terms-and-conditions', changefreq: 'yearly' as const, priority: 0.3 },
