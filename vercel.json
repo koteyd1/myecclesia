@@ -1,8 +1,9 @@
 {
   "rewrites": [
     {
-      "source": "/((?!sitemap\\.xml$).*)",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html",
+      "missing": [{ "type": "filesystem" }]
     }
   ]
 }
