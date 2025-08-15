@@ -67,16 +67,31 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 
   useEffect(() => {
     if (shouldLoad && src && !imageSrc) {
+      console.log('Setting imageSrc:', src);
       setImageSrc(src);
     }
   }, [shouldLoad, src, imageSrc]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('LazyImage state:', {
+      src,
+      shouldLoad,
+      imageSrc,
+      imageLoaded,
+      imageError,
+      optimizedSrc: imageSrc ? optimizeImageUrl(imageSrc) : ''
+    });
+  }, [src, shouldLoad, imageSrc, imageLoaded, imageError]);
+
   const handleLoad = () => {
+    console.log('Image loaded successfully:', src);
     setImageLoaded(true);
     onLoad?.();
   };
 
   const handleError = () => {
+    console.log('Image failed to load:', src);
     setImageError(true);
     setImageSrc(fallbackSrc);
     onError?.();
