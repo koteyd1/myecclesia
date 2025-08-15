@@ -473,6 +473,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_donation_admin_view: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          donation_type: string
+          email: string
+          full_name: string
+          id: string
+          message: string
+          phone: string
+          status: string
+          stripe_customer_id: string
+          stripe_session_id: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_user_donations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          donation_type: string
+          id: string
+          masked_email: string
+          message: string
+          status: string
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -483,6 +516,10 @@ export type Database = {
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      mask_stripe_data: {
+        Args: { stripe_id: string }
+        Returns: string
       }
     }
     Enums: {
