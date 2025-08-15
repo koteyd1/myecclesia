@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeInput, validateEmail, validateName, validatePhone, validateMessage, INPUT_LIMITS } from "@/utils/validation";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -127,13 +129,40 @@ const Contact = () => {
     });
   };
 
+  // Contact page schema
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact MyEcclesia",
+    "description": "Get in touch with MyEcclesia for questions, support, or partnership opportunities",
+    "url": "https://myecclesia.com/contact",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "MyEcclesia",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "English"
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <SEOHead 
+        title="Contact MyEcclesia – Get in Touch | Christian Events Platform"
+        description="Contact MyEcclesia for questions about Christian events, partnership opportunities, or support. We're here to help connect the UK Christian community."
+        keywords="contact MyEcclesia, Christian events support, partnership opportunities, church event platform contact"
+        canonicalUrl="https://myecclesia.com/contact"
+      />
+      <div className="min-h-screen bg-background">
+        <StructuredData data={contactSchema} />
+        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav />
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Contact Us</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Contact MyEcclesia</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             We'd love to hear from you! Reach out to us with any questions, prayer requests, or if you'd like to get involved.
           </p>
@@ -219,6 +248,7 @@ const Contact = () => {
       </main>
       <Footer />
     </div>
+    </>
   );
 };
 

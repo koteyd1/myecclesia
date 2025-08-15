@@ -24,19 +24,38 @@ export const createOrganizationSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "MyEcclesia",
+  "alternateName": "MyEcclesia Christian Events Platform",
   "url": "https://myecclesia.com",
-  "logo": "https://myecclesia.com/logo.png",
-  "description": "MyEcclesia - Bringing the UK Christian community together through meaningful events, worship services, and fellowship opportunities.",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://myecclesia.com/myecclesia-logo.png",
+    "width": "200",
+    "height": "200"
+  },
+  "description": "The UK's premier Christian events platform connecting believers across denominations. Discover, book, and attend Christian conferences, worship nights, and community gatherings.",
+  "foundingDate": "2024",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "GB",
+    "addressRegion": "United Kingdom"
+  },
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "customer service",
+    "url": "https://myecclesia.com/contact",
     "availableLanguage": "English"
   },
-  "sameAs": [
-    "https://facebook.com/myecclesia",
-    "https://twitter.com/myecclesia",
-    "https://instagram.com/myecclesia"
-  ]
+  "offers": {
+    "@type": "Offer",
+    "description": "Free and paid Christian event tickets",
+    "availability": "https://schema.org/InStock"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://myecclesia.com/events?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
+  "sameAs": []
 });
 
 export const createEventSchema = (event: any) => ({

@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,13 +54,55 @@ const Blog = () => {
     return matchesSearch && matchesCategory;
   });
 
+  // Generate blog schema for SEO
+  const blogSchema = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "MyEcclesia Christian Blog",
+    "description": "Inspiring Christian stories, faith reflections, and church community updates from MyEcclesia",
+    "url": "https://myecclesia.com/blog",
+    "author": {
+      "@type": "Organization",
+      "name": "MyEcclesia"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MyEcclesia",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://myecclesia.com/myecclesia-logo.png"
+      }
+    },
+    "blogPost": filteredPosts.slice(0, 5).map(post => ({
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt || post.content?.substring(0, 160),
+      "author": {
+        "@type": "Person",
+        "name": post.author
+      },
+      "datePublished": post.created_at,
+      "url": `https://myecclesia.com/blog/${post.id}`,
+      "articleSection": post.category
+    }))
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <SEOHead 
+        title="Christian Blog – Faith Stories & Community Updates | MyEcclesia"
+        description="Read inspiring Christian stories, faith reflections, and church community updates. Stay connected with the UK Christian community through our blog."
+        keywords="Christian blog, faith stories, church community, Christian testimony, spiritual growth, UK Christianity"
+        canonicalUrl="https://myecclesia.com/blog"
+      />
+      <div className="min-h-screen bg-background">
+        <StructuredData data={blogSchema} />
+        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav />
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Church Blog</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Christian Blog</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Stay connected with our community through inspiring stories, faith reflections, and updates on church life.
           </p>
@@ -165,6 +210,7 @@ const Blog = () => {
         )}
       </main>
     </div>
+    </>
   );
 };
 

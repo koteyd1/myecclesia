@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import EventCard from "@/components/EventCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -276,13 +279,53 @@ const Events = () => {
     );
   }
 
+  // Generate events schema for better SEO
+  const eventsSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Christian Events in the UK",
+    "description": "Upcoming Christian events, conferences, and church gatherings across the United Kingdom",
+    "numberOfItems": filteredEvents.length,
+    "itemListElement": filteredEvents.slice(0, 10).map((event, index) => ({
+      "@type": "Event",
+      "position": index + 1,
+      "name": event.title,
+      "description": event.description,
+      "startDate": `${event.date}T${event.time}`,
+      "location": {
+        "@type": "Place",
+        "name": event.location,
+        "address": event.location
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": event.price || 0,
+        "priceCurrency": "GBP",
+        "availability": (event.available_tickets || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut"
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": event.organizer || "MyEcclesia"
+      }
+    }))
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <SEOHead 
+        title="Christian Events UK – Book Tickets | MyEcclesia"
+        description="Browse and book tickets for Christian events across the UK. Find conferences, worship nights, retreats, and church gatherings in your area."
+        keywords="Christian events UK, church events, conference tickets, worship nights, Christian conferences, faith events"
+        canonicalUrl="https://myecclesia.com/events"
+      />
+      <div className="min-h-screen bg-background">
+        <StructuredData data={eventsSchema} />
+        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav />
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">All Events</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Christian Events UK</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover all upcoming events and activities at our church. Join us for worship, fellowship, and community outreach.
           </p>
@@ -561,6 +604,7 @@ const Events = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

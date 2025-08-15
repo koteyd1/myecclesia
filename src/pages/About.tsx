@@ -2,15 +2,27 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, Globe, BookOpen } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
+import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
+import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <SEOHead 
+        title="About MyEcclesia – UK's Premier Christian Events Platform"
+        description="Learn about MyEcclesia's mission to unite the UK Christian community through our dedicated events platform. Connecting believers across denominations since 2024."
+        keywords="About MyEcclesia, Christian community UK, church events platform, Christian fellowship, faith-based events"
+        canonicalUrl="https://myecclesia.com/about"
+      />
+      <div className="min-h-screen bg-background">
+        <StructuredData data={createOrganizationSchema()} />
+        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BreadcrumbNav />
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">About Our Church</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">About MyEcclesia</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Welcome to our church family! We are a community of believers dedicated to worship, fellowship, and serving others with love and compassion.
           </p>
@@ -105,6 +117,7 @@ const About = () => {
       </main>
       <Footer />
     </div>
+    </>
   );
 };
 

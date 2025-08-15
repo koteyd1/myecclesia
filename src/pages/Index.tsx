@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
+import { SEOOptimizations } from "@/components/SEOOptimizations";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingEventCard } from "@/components/LoadingStates";
@@ -83,6 +84,7 @@ const Index = () => {
         canonicalUrl="https://myecclesia.com/"
       />
       <div className="min-h-screen bg-background">
+        <SEOOptimizations />
         <StructuredData data={createOrganizationSchema()} />
         <Header />
         <Hero />

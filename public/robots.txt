@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -12,5 +14,30 @@ Allow: /
 
 User-agent: *
 Allow: /
+Crawl-delay: 2
 
-Sitemap: https://myecclesia.co.uk/sitemap.xml
+# Important pages
+Allow: /events
+Allow: /blog
+Allow: /about
+Allow: /contact
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /*.json$
+Disallow: /*?*
+
+# SEO optimizations
+Sitemap: https://myecclesia.com/sitemap.xml
+
+# Additional crawl directives
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
