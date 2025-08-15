@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AdminEvents } from "@/components/admin/AdminEvents";
 import { AdminBlogPosts } from "@/components/admin/AdminBlogPosts";
 import { AdminUsers } from "@/components/admin/AdminUsers";
-import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
+
 import { AdminEventReview } from "@/components/admin/AdminEventReview";
 
 const AdminDashboard = () => {
@@ -55,17 +55,16 @@ const AdminDashboard = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-center mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground text-center">
-            Manage events, blog posts, users, and registrations
+            Manage events, blog posts, and users
           </p>
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="registrations">Registrations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events">
@@ -82,10 +81,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="users">
             <AdminUsers user={user} />
-          </TabsContent>
-
-          <TabsContent value="registrations">
-            <AdminRegistrations user={user} />
           </TabsContent>
         </Tabs>
       </div>
