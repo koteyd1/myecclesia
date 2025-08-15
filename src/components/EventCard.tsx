@@ -85,13 +85,13 @@ const EventCard = ({
         <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-1 z-10 max-w-full overflow-hidden">
           {image ? image.substring(0, 50) + '...' : 'No image URL'}
         </div>
-        <LazyImage
+        {/* Test with regular img tag */}
+        <img
           src={image}
           alt={`${title} event image`}
-          className="w-full h-48 group-hover:scale-105 transition-transform duration-300"
-          width={400}
-          height={192}
-          loading="eager"
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          onLoad={() => console.log('Regular img loaded:', image)}
+          onError={() => console.log('Regular img failed:', image)}
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {category && (
