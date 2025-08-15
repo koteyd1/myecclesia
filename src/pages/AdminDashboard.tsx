@@ -22,7 +22,7 @@ import { format } from "date-fns";
 import { SearchBar } from "@/components/SearchBar";
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
     "Educational",
     "Fundraising"
   ];
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminVerified, setAdminVerified] = useState(false);
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [users, setUsers] = useState([]);
@@ -118,48 +118,41 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to load
+    
     if (!user) {
       navigate("/auth");
       return;
     }
-    checkAdminRole();
+    
+    if (!isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "You don't have admin privileges.",
+      });
+      navigate("/");
+      return;
+    }
+    
+    setAdminVerified(true);
     fetchEvents();
     fetchBlogPosts();
     fetchUsers();
     fetchRegistrations();
-  }, [user, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
-  const checkAdminRole = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error checking admin role:", error);
-        return;
-      }
-
-      if (data?.role !== "admin") {
-        toast({
-          variant: "destructive",
-          title: "Access Denied",
-          description: "You don't have admin privileges.",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-    } catch (error) {
-      console.error("Error:", error);
-      navigate("/");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Show loading state while authentication is being verified
+  if (authLoading || !adminVerified) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
 
   const fetchEvents = async () => {
     try {

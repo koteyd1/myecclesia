@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, X, Image } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validateImageFile, sanitizeFileName } from '@/utils/imageValidation';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -26,22 +27,13 @@ export function ImageUpload({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    // Enhanced security validation
+    const validation = await validateImageFile(file);
+    if (!validation.isValid) {
       toast({
         variant: "destructive",
-        title: "Invalid file type",
-        description: "Please select an image file."
-      });
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Please select an image smaller than 5MB."
+        title: "Invalid file",
+        description: validation.errors[0]
       });
       return;
     }
@@ -49,8 +41,9 @@ export function ImageUpload({
     setIsUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const sanitizedBaseName = sanitizeFileName(file.name.replace(/\.[^/.]+$/, ""));
+      const fileName = `${sanitizedBaseName}_${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `images/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -71,12 +64,12 @@ export function ImageUpload({
         title: "Success!",
         description: "Image uploaded successfully."
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
       toast({
         variant: "destructive",
         title: "Upload failed",
-        description: `Failed to upload image: ${error.message}`
+        description: `Failed to upload image: ${error?.message || 'Unknown error'}`
       });
     } finally {
       setIsUploading(false);

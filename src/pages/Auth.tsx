@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, ArrowLeft, Shield } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
-import { validateEmail, validatePassword, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
+import { validateEmail, validatePassword, validateName, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
+import { performSecureSignIn, cleanupAuthState } from "@/utils/authCleanup";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -65,10 +66,7 @@ const Auth = () => {
     authRateLimit.recordAttempt();
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: sanitizedEmail,
-        password: sanitizedPassword,
-      });
+      const { data, error } = await performSecureSignIn(supabase, sanitizedEmail, sanitizedPassword);
 
       if (error) throw error;
 
@@ -77,7 +75,7 @@ const Auth = () => {
         description: "You have been signed in successfully.",
       });
       
-      navigate("/");
+      // performSecureSignIn handles the redirect
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -138,6 +136,9 @@ const Auth = () => {
     authRateLimit.recordAttempt();
 
     try {
+      // Clean up any existing auth state before signing up
+      cleanupAuthState();
+      
       const { error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password: sanitizedPassword,
@@ -155,6 +156,11 @@ const Auth = () => {
         title: "Check your email",
         description: "We've sent you a confirmation link to complete your registration.",
       });
+      
+      // Clear form
+      setEmail("");
+      setPassword("");
+      setFullName("");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -171,6 +177,9 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      // Clean up auth state before password reset
+      cleanupAuthState();
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?reset=true`,
       });
@@ -181,6 +190,8 @@ const Auth = () => {
         title: "Password reset email sent",
         description: "Check your email for a link to reset your password.",
       });
+      
+      setEmail("");
     } catch (error: any) {
       toast({
         variant: "destructive",
