@@ -20,7 +20,7 @@ import EventGuidelines from "./pages/EventGuidelines";
 import HelpCentre from "./pages/HelpCentre";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
-
+import Sitemap from "./pages/Sitemap";
 
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +51,7 @@ const App = () => (
             <Route path="/help-centre" element={<HelpCentre />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
