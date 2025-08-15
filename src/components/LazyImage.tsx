@@ -32,8 +32,9 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    // For immediate loading if loading is not lazy or if we're on the homepage
-    if (loading === 'eager' || window.location.pathname === '/') {
+    // For immediate loading if loading is eager or if we're on the homepage
+    // Also load immediately if the image is in the visible area initially
+    if (loading === 'eager' || window.location.pathname === '/' || window.location.pathname === '') {
       setShouldLoad(true);
       return;
     }
@@ -42,7 +43,6 @@ export const LazyImage: React.FC<LazyImageProps> = ({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !shouldLoad) {
-            console.log('Image intersecting, should load:', src);
             setShouldLoad(true);
             observer.unobserve(entry.target);
           }

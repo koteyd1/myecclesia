@@ -87,7 +87,7 @@ const EventCard = ({
           className="w-full h-48 group-hover:scale-105 transition-transform duration-300"
           width={400}
           height={192}
-          loading="lazy"
+          loading="eager"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {category && (
