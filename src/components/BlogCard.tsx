@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { SocialShare } from "@/components/SocialShare";
+import { LazyImage } from "@/components/LazyImage";
 
 interface BlogCardProps {
   id: string;
@@ -47,10 +48,13 @@ const BlogCard = ({
       onClick={handleReadMore}
     >
       <div className="relative overflow-hidden">
-        <img 
+        <LazyImage
           src={image} 
-          alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          alt={`${title} - Blog post image`}
+          className="w-full h-48 group-hover:scale-105 transition-transform duration-300"
+          width={400}
+          height={192}
+          loading="eager"
         />
         <div className="absolute top-3 left-3">
           <Badge variant="secondary" className="bg-white/90 text-foreground">
