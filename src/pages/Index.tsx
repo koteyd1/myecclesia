@@ -12,6 +12,7 @@ import { StructuredData, createOrganizationSchema } from "@/components/Structure
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingEventCard } from "@/components/LoadingStates";
+import { SEOHead } from "@/components/SEOHead";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -74,131 +75,139 @@ const Index = () => {
     : events.filter(event => event.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-background">
-      <StructuredData data={createOrganizationSchema()} />
-      <Header />
-      <Hero />
-      
-      {/* Events Section */}
-      <section id="events" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Upcoming Events
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join us for these upcoming events and be part of our growing community of faith.
-            </p>
-          </div>
-          
-          {/* Event Categories Filter */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {categories.map((category) => (
-              <Badge 
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"} 
-                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                onClick={() => setSelectedCategory(category)}
+    <>
+      <SEOHead 
+        title="MyEcclesia – Book Christian Events & Tickets"
+        description="Discover, book, and attend top Christian events with MyEcclesia—your go-to platform for church gatherings, conferences, and community activities."
+        keywords="MyEcclesia, Christian events, church tickets, event platform, UK Christian community"
+        canonicalUrl="https://myecclesia.com/"
+      />
+      <div className="min-h-screen bg-background">
+        <StructuredData data={createOrganizationSchema()} />
+        <Header />
+        <Hero />
+        
+        {/* Events Section */}
+        <section id="events" className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Upcoming Events
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Join us for these upcoming events and be part of our growing community of faith.
+              </p>
+            </div>
+            
+            {/* Event Categories Filter */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              {categories.map((category) => (
+                <Badge 
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"} 
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Events Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {loading ? (
+                <>
+                  <LoadingEventCard />
+                  <LoadingEventCard />
+                  <LoadingEventCard />
+                </>
+              ) : filteredEvents.length > 0 ? (
+                filteredEvents.map((event) => (
+                  <EventCard key={event.id} {...event} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground text-lg">
+                    {selectedCategory === "All Events" 
+                      ? "No upcoming events found." 
+                      : `No upcoming events found in ${selectedCategory}.`}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="text-center">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => navigate("/events")}
               >
-                {category}
-              </Badge>
-            ))}
+                View All Events
+              </Button>
+            </div>
           </div>
-          
-          {/* Events Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {loading ? (
-              <>
-                <LoadingEventCard />
-                <LoadingEventCard />
-                <LoadingEventCard />
-              </>
-            ) : filteredEvents.length > 0 ? (
-              filteredEvents.map((event) => (
-                <EventCard key={event.id} {...event} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-muted-foreground text-lg">
-                  {selectedCategory === "All Events" 
-                    ? "No upcoming events found." 
-                    : `No upcoming events found in ${selectedCategory}.`}
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-center">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate("/events")}
-            >
-              View All Events
-            </Button>
-          </div>
-        </div>
-      </section>
-      
-      {/* Features Section */}
-      <section className="py-16 bg-muted">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Join Our Events?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Experience the warmth of our community and grow in your faith journey.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                <Calendar className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Easy Registration</h3>
-              <p className="text-muted-foreground">Simple, secure registration process for all events</p>
+        </section>
+        
+        {/* Features Section */}
+        <section className="py-16 bg-muted">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Why Join Our Events?
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Experience the warmth of our community and grow in your faith journey.
+              </p>
             </div>
             
-            <div className="text-center group">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                <Users className="h-8 w-8 text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="text-center group">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Calendar className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Easy Registration</h3>
+                <p className="text-muted-foreground">Simple, secure registration process for all events</p>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Community</h3>
-              <p className="text-muted-foreground">Connect with fellow believers and build lasting friendships</p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="bg-success/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-success/20 transition-colors">
-                <Heart className="h-8 w-8 text-success" />
+              
+              <div className="text-center group">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Community</h3>
+                <p className="text-muted-foreground">Connect with fellow believers and build lasting friendships</p>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Spiritual Growth</h3>
-              <p className="text-muted-foreground">Deepen your faith through meaningful experiences</p>
-            </div>
-            
-            <div className="text-center group">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                <Star className="h-8 w-8 text-primary" />
+              
+              <div className="text-center group">
+                <div className="bg-success/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-success/20 transition-colors">
+                  <Heart className="h-8 w-8 text-success" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Spiritual Growth</h3>
+                <p className="text-muted-foreground">Deepen your faith through meaningful experiences</p>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Quality Events</h3>
-              <p className="text-muted-foreground">Thoughtfully planned events for all ages and interests</p>
+              
+              <div className="text-center group">
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Star className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Quality Events</h3>
+                <p className="text-muted-foreground">Thoughtfully planned events for all ages and interests</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-      
-      {/* Newsletter Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto">
-          <div className="max-w-md mx-auto">
-            <NewsletterSignup />
+        </section>
+        
+        {/* Newsletter Section */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto">
+            <div className="max-w-md mx-auto">
+              <NewsletterSignup />
+            </div>
           </div>
-        </div>
-      </section>
-      
-      <Footer />
-    </div>
+        </section>
+        
+        <Footer />
+      </div>
+    </>
   );
 };
 

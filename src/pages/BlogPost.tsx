@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, User, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/SEOHead";
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -122,123 +123,150 @@ const BlogPost = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <p>Loading...</p>
+      <>
+        <SEOHead 
+          title="Loading... | MyEcclesia Blog"
+          description="Loading blog post content..."
+          canonicalUrl={`https://myecclesia.com/blog/${id}`}
+        />
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="container mx-auto px-4 py-8 text-center">
+            <p>Loading...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!blogPost) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Blog Post Not Found</h1>
-          <p className="text-muted-foreground mb-8">The blog post you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate("/blog")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Blog
-          </Button>
+      <>
+        <SEOHead 
+          title="Blog Post Not Found | MyEcclesia"
+          description="The blog post you're looking for doesn't exist."
+          canonicalUrl={`https://myecclesia.com/blog/${id}`}
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="container mx-auto px-4 py-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Blog Post Not Found</h1>
+            <p className="text-muted-foreground mb-8">The blog post you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate("/blog")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Blog
+            </Button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/blog")}
-          className="mb-8"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Blog
-        </Button>
+    <>
+      <SEOHead 
+        title={`${blogPost.title} | MyEcclesia Blog`}
+        description={blogPost?.excerpt || blogPost?.content?.slice(0, 160) || "Read inspiring Christian articles and faith stories on MyEcclesia blog."}
+        keywords={`${blogPost?.category || 'Christian'}, faith, blog, ${blogPost?.author || 'MyEcclesia'}`}
+        canonicalUrl={`https://myecclesia.com/blog/${id}`}
+        type="article"
+        publishedTime={blogPost?.created_at || blogPost?.date}
+        author={blogPost?.author}
+        ogImage={blogPost?.image}
+      />
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/blog")}
+            className="mb-8"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Blog
+          </Button>
 
-        <article className="max-w-4xl mx-auto">
-          {/* Hero Image */}
-          {blogPost.image && (
-            <div className="mb-8 rounded-lg overflow-hidden">
-              <img 
-                src={blogPost.image} 
-                alt={blogPost.title}
-                className="w-full h-64 md:h-96 object-cover"
-              />
-            </div>
-          )}
-
-          {/* Article Header */}
-          <header className="mb-8">
-            <div className="flex flex-wrap gap-2 mb-4">
-              {blogPost.category && (
-                <Badge variant="secondary">
-                  {blogPost.category}
-                </Badge>
-              )}
-            </div>
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-              {blogPost.title}
-            </h1>
-            
-            <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span>{blogPost.author}</span>
+          <article className="max-w-4xl mx-auto">
+            {/* Hero Image */}
+            {blogPost.image && (
+              <div className="mb-8 rounded-lg overflow-hidden">
+                <img 
+                  src={blogPost.image} 
+                  alt={blogPost.title}
+                  className="w-full h-64 md:h-96 object-cover"
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(blogPost.created_at || blogPost.date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{blogPost.readTime || `${Math.ceil((blogPost.content?.length || 0) / 200)} min read`}</span>
-              </div>
-            </div>
-          </header>
-
-          {/* Article Content */}
-          <div className="prose prose-lg max-w-none">
-            {blogPost.excerpt && (
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                {blogPost.excerpt}
-              </p>
             )}
-            
-            <div className="space-y-6 text-foreground leading-relaxed">
-              {blogPost.content.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="mb-4 whitespace-pre-wrap">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </div>
 
-          {/* Article Footer */}
-          <footer className="mt-12 pt-8 border-t">
-            <div className="flex justify-between items-center">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate("/blog")}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Blog
-              </Button>
+            {/* Article Header */}
+            <header className="mb-8">
+              <div className="flex flex-wrap gap-2 mb-4">
+                {blogPost.category && (
+                  <Badge variant="secondary">
+                    {blogPost.category}
+                  </Badge>
+                )}
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
+                {blogPost.title}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{blogPost.author}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{new Date(blogPost.created_at || blogPost.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{blogPost.readTime || `${Math.ceil((blogPost.content?.length || 0) / 200)} min read`}</span>
+                </div>
+              </div>
+            </header>
+
+            {/* Article Content */}
+            <div className="prose prose-lg max-w-none">
+              {blogPost.excerpt && (
+                <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                  {blogPost.excerpt}
+                </p>
+              )}
+              
+              <div className="space-y-6 text-foreground leading-relaxed">
+                {blogPost.content.split('\n\n').map((paragraph, index) => (
+                  <p key={index} className="mb-4 whitespace-pre-wrap">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
-          </footer>
-        </article>
-      </main>
-    </div>
+
+            {/* Article Footer */}
+            <footer className="mt-12 pt-8 border-t">
+              <div className="flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate("/blog")}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Blog
+                </Button>
+              </div>
+            </footer>
+          </article>
+        </main>
+      </div>
+    </>
   );
 };
 

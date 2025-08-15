@@ -8,6 +8,7 @@ import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, C
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/SEOHead";
 
 const EventDetail = () => {
   const { id } = useParams();
@@ -264,232 +265,255 @@ const EventDetail = () => {
     return eventDateTime <= now;
   };
 
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <div className="text-lg">Loading event details...</div>
+      <>
+        <SEOHead 
+          title="Loading Event... | MyEcclesia"
+          description="Loading event details..."
+          canonicalUrl={`https://myecclesia.com/events/${id}`}
+        />
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="container mx-auto px-4 py-8 text-center">
+            <div className="text-lg">Loading event details...</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
-          <Button onClick={() => navigate("/events")}>Back to Events</Button>
+      <>
+        <SEOHead 
+          title="Event Not Found | MyEcclesia"
+          description="The event you're looking for doesn't exist."
+          canonicalUrl={`https://myecclesia.com/events/${id}`}
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="container mx-auto px-4 py-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
+            <Button onClick={() => navigate("/events")}>Back to Events</Button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/events", { state: { from: 'event-detail' } })}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Events
-        </Button>
+    <>
+      <SEOHead 
+        title={`${event.title} | MyEcclesia Events`}
+        description={event?.description?.slice(0, 160) || "Join this Christian event with MyEcclesia. Book your tickets now!"}
+        keywords={`${event?.category || 'Christian event'}, ${event?.denominations || 'church'}, UK events, ${event?.location || 'community'}`}
+        canonicalUrl={`https://myecclesia.com/events/${id}`}
+        ogImage={event?.image}
+      />
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/events", { state: { from: 'event-detail' } })}
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Events
+          </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Event Details */}
-          <div className="lg:col-span-2">
-            <div className="relative mb-8">
-              <img 
-                src={event.image} 
-                alt={event.title}
-                className="w-full h-64 md:h-80 object-cover rounded-lg"
-                loading="lazy"
-                decoding="async"
-                style={{
-                  imageRendering: 'auto',
-                  WebkitBackfaceVisibility: 'hidden',
-                  backfaceVisibility: 'hidden'
-                }}
-              />
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <Badge variant="secondary" className="bg-white/90 text-foreground">
-                  {event.category}
-                </Badge>
-                {event.denominations && (
-                  <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
-                    {event.denominations}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Event Details */}
+            <div className="lg:col-span-2">
+              <div className="relative mb-8">
+                <img 
+                  src={event.image} 
+                  alt={event.title}
+                  className="w-full h-64 md:h-80 object-cover rounded-lg"
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    imageRendering: 'auto',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden'
+                  }}
+                />
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  <Badge variant="secondary" className="bg-white/90 text-foreground">
+                    {event.category}
                   </Badge>
-                )}
-              </div>
-              {event.price === 0 ? (
-                <div className="absolute top-4 right-4">
-                  <Badge className="bg-success text-success-foreground">
-                    Free
-                  </Badge>
+                  {event.denominations && (
+                    <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
+                      {event.denominations}
+                    </Badge>
+                  )}
                 </div>
-              ) : (
-                <div className="absolute top-4 right-4">
-                  <Badge variant="outline" className="bg-white/90 text-foreground">
-                    £{event.price}
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-4">{event.title}</h1>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  {event.description}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center text-muted-foreground">
-                  <Calendar className="h-5 w-5 mr-3 text-primary" />
-                  <span>{formatDate(event.date)}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <Clock className="h-5 w-5 mr-3 text-primary" />
-                  <span>{event.time} ({event.duration})</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <MapPin className="h-5 w-5 mr-3 text-primary" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <Users className="h-5 w-5 mr-3 text-primary" />
-                  <span>{event.availableTickets} spots available</span>
-                </div>
-              </div>
-
-              {(event.organizer || event.requirements || event.denominations) && (
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    {event.organizer && <p><strong>Organizer:</strong> {event.organizer}</p>}
-                    {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
-                    {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
-                    {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Event Registration */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-8">
-              <CardHeader>
-                <CardTitle>Event Registration</CardTitle>
-                <CardDescription>
-                  {event.price === 0 ? "This event is free to attend" : `Event fee: £${event.price}`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isSalesEnded() ? (
-                  <div className="p-4 bg-muted/50 border border-muted rounded-lg text-center">
-                    <h4 className="font-semibold text-muted-foreground mb-2">Sales Ended</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Registration for this event is no longer available.
-                    </p>
-                  </div>
-                ) : user ? (
-                  <div className="space-y-4">
-                    {isRegistered ? (
-                      <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-5 w-5 text-success" />
-                          <h4 className="font-semibold text-success">Registered!</h4>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          You're registered for this event. Check your dashboard for details.
-                        </p>
-                        <Button 
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => navigate("/dashboard")}
-                        >
-                          View in Dashboard
-                        </Button>
-                        {isRegistered && (
-                          <Button 
-                            variant={isInCalendar ? "destructive" : "outline"}
-                            className="w-full"
-                            onClick={handleAddToCalendar}
-                            disabled={calendarLoading}
-                          >
-                            {isInCalendar ? (
-                              <>
-                                <CalendarMinus className="h-4 w-4 mr-2" />
-                                {calendarLoading ? "Removing..." : "Remove from Calendar"}
-                              </>
-                            ) : (
-                              <>
-                                <CalendarPlus className="h-4 w-4 mr-2" />
-                                {calendarLoading ? "Adding..." : "Add to Calendar"}
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                          <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Click below to register for this event.
-                          </p>
-                          <Button 
-                            className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                            onClick={handleRegister}
-                            disabled={registering}
-                          >
-                            {registering ? "Registering..." : "Register Now"}
-                          </Button>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          <p>
-                            Registration is instant and you can manage your registrations from your dashboard.
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                {event.price === 0 ? (
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-success text-success-foreground">
+                      Free
+                    </Badge>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-muted/50 border border-muted rounded-lg">
-                      <h4 className="font-semibold mb-2">Sign Up Required</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Please create an account to register for events.
-                      </p>
-                      <Button 
-                        className="w-full"
-                        onClick={() => navigate("/auth")}
-                      >
-                        Sign Up / Sign In
-                      </Button>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      <p>
-                        Creating an account is quick and gives you access to all our events.
-                      </p>
+                  <div className="absolute top-4 right-4">
+                    <Badge variant="outline" className="bg-white/90 text-foreground">
+                      £{event.price}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-4">{event.title}</h1>
+                  <p className="text-muted-foreground text-lg leading-relaxed">
+                    {event.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center text-muted-foreground">
+                    <Calendar className="h-5 w-5 mr-3 text-primary" />
+                    <span>{formatDate(event.date)}</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock className="h-5 w-5 mr-3 text-primary" />
+                    <span>{event.time} ({event.duration})</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <MapPin className="h-5 w-5 mr-3 text-primary" />
+                    <span>{event.location}</span>
+                  </div>
+                  <div className="flex items-center text-muted-foreground">
+                    <Users className="h-5 w-5 mr-3 text-primary" />
+                    <span>{event.availableTickets} spots available</span>
+                  </div>
+                </div>
+
+                {(event.organizer || event.requirements || event.denominations) && (
+                  <div className="bg-muted/30 p-4 rounded-lg">
+                    <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      {event.organizer && <p><strong>Organizer:</strong> {event.organizer}</p>}
+                      {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
+                      {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
+                      {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Event Registration */}
+            <div className="lg:col-span-1">
+              <Card className="sticky top-8">
+                <CardHeader>
+                  <CardTitle>Event Registration</CardTitle>
+                  <CardDescription>
+                    {event.price === 0 ? "This event is free to attend" : `Event fee: £${event.price}`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isSalesEnded() ? (
+                    <div className="p-4 bg-muted/50 border border-muted rounded-lg text-center">
+                      <h4 className="font-semibold text-muted-foreground mb-2">Sales Ended</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Registration for this event is no longer available.
+                      </p>
+                    </div>
+                  ) : user ? (
+                    <div className="space-y-4">
+                      {isRegistered ? (
+                        <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-5 w-5 text-success" />
+                            <h4 className="font-semibold text-success">Registered!</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            You're registered for this event. Check your dashboard for details.
+                          </p>
+                          <Button 
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => navigate("/dashboard")}
+                          >
+                            View in Dashboard
+                          </Button>
+                          {isRegistered && (
+                            <Button 
+                              variant={isInCalendar ? "destructive" : "outline"}
+                              className="w-full"
+                              onClick={handleAddToCalendar}
+                              disabled={calendarLoading}
+                            >
+                              {isInCalendar ? (
+                                <>
+                                  <CalendarMinus className="h-4 w-4 mr-2" />
+                                  {calendarLoading ? "Removing..." : "Remove from Calendar"}
+                                </>
+                              ) : (
+                                <>
+                                  <CalendarPlus className="h-4 w-4 mr-2" />
+                                  {calendarLoading ? "Adding..." : "Add to Calendar"}
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                            <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Click below to register for this event.
+                            </p>
+                            <Button 
+                              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                              onClick={handleRegister}
+                              disabled={registering}
+                            >
+                              {registering ? "Registering..." : "Register Now"}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            <p>
+                              Registration is instant and you can manage your registrations from your dashboard.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-muted/50 border border-muted rounded-lg">
+                        <h4 className="font-semibold mb-2">Sign Up Required</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Please create an account to register for events.
+                        </p>
+                        <Button 
+                          className="w-full"
+                          onClick={() => navigate("/auth")}
+                        >
+                          Sign Up / Sign In
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <p>
+                          Creating an account is quick and gives you access to all our events.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 
