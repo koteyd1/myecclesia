@@ -58,6 +58,7 @@ export type Database = {
           id: string
           image: string | null
           published: boolean
+          slug: string
           title: string
           updated_at: string
         }
@@ -71,6 +72,7 @@ export type Database = {
           id?: string
           image?: string | null
           published?: boolean
+          slug: string
           title: string
           updated_at?: string
         }
@@ -84,6 +86,7 @@ export type Database = {
           id?: string
           image?: string | null
           published?: boolean
+          slug?: string
           title?: string
           updated_at?: string
         }
@@ -234,6 +237,7 @@ export type Database = {
           organizer: string | null
           price: number | null
           requirements: string | null
+          slug: string
           ticket_url: string | null
           time: string
           title: string
@@ -255,6 +259,7 @@ export type Database = {
           organizer?: string | null
           price?: number | null
           requirements?: string | null
+          slug: string
           ticket_url?: string | null
           time: string
           title: string
@@ -276,6 +281,7 @@ export type Database = {
           organizer?: string | null
           price?: number | null
           requirements?: string | null
+          slug?: string
           ticket_url?: string | null
           time?: string
           title?: string
@@ -473,6 +479,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_unique_slug: {
+        Args: { base_slug: string; record_id?: string; table_name: string }
+        Returns: string
+      }
+      generate_slug: {
+        Args: { input_text: string }
+        Returns: string
+      }
       get_donation_admin_view: {
         Args: Record<PropertyKey, never>
         Returns: {
