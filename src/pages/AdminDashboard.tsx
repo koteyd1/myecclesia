@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminEvents } from "@/components/admin/AdminEvents";
+import { AdminBlogPosts } from "@/components/admin/AdminBlogPosts";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 
 const AdminDashboard = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
@@ -68,21 +71,15 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="blog">
-            <div className="text-center py-8">
-              <p>Blog management coming soon...</p>
-            </div>
+            <AdminBlogPosts user={user} />
           </TabsContent>
 
           <TabsContent value="users">
-            <div className="text-center py-8">
-              <p>User management coming soon...</p>
-            </div>
+            <AdminUsers user={user} />
           </TabsContent>
 
           <TabsContent value="registrations">
-            <div className="text-center py-8">
-              <p>Registration management coming soon...</p>
-            </div>
+            <AdminRegistrations user={user} />
           </TabsContent>
         </Tabs>
       </div>

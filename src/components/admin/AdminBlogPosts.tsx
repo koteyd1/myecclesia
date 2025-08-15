@@ -1,0 +1,337 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
+import { SearchBar } from "@/components/SearchBar";
+
+interface AdminBlogPostsProps {
+  user: any;
+}
+
+export const AdminBlogPosts = ({ user }: AdminBlogPostsProps) => {
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [filteredBlogPosts, setFilteredBlogPosts] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingBlogPost, setEditingBlogPost] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const [blogFormData, setBlogFormData] = useState({
+    title: "",
+    content: "",
+    excerpt: "",
+    author: "",
+    category: "",
+    image: "",
+    published: false
+  });
+
+  const categoryOptions = [
+    "Faith & Spirituality",
+    "Community News", 
+    "Events",
+    "Ministry Updates",
+    "Bible Study",
+    "Prayer",
+    "Outreach",
+    "Youth Ministry",
+    "Music & Worship",
+    "Testimonies"
+  ];
+
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setBlogPosts(data || []);
+      setFilteredBlogPosts(data || []);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load blog posts.",
+      });
+    }
+  };
+
+  const handleBlogSearch = (query: string) => {
+    if (!query) {
+      setFilteredBlogPosts(blogPosts);
+    } else {
+      const filtered = blogPosts.filter(blog => 
+        blog.title.toLowerCase().includes(query.toLowerCase()) ||
+        blog.content.toLowerCase().includes(query.toLowerCase()) ||
+        blog.author.toLowerCase().includes(query.toLowerCase()) ||
+        blog.category?.toLowerCase().includes(query.toLowerCase()) ||
+        blog.excerpt?.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredBlogPosts(filtered);
+    }
+  };
+
+  const handleBlogSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const blogData = {
+        ...blogFormData,
+        created_by: user.id
+      };
+
+      let result;
+      if (editingBlogPost) {
+        result = await supabase
+          .from("blog_posts")
+          .update(blogData)
+          .eq("id", editingBlogPost.id);
+      } else {
+        result = await supabase
+          .from("blog_posts")
+          .insert(blogData);
+      }
+
+      if (result.error) throw result.error;
+
+      toast({
+        title: "Success!",
+        description: `Blog post ${editingBlogPost ? "updated" : "created"} successfully.`,
+      });
+
+      setShowCreateForm(false);
+      setEditingBlogPost(null);
+      resetBlogForm();
+      fetchBlogPosts();
+    } catch (error) {
+      console.error("Error saving blog post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save blog post.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetBlogForm = () => {
+    setBlogFormData({
+      title: "",
+      content: "",
+      excerpt: "",
+      author: "",
+      category: "",
+      image: "",
+      published: false
+    });
+  };
+
+  const handleEditBlog = (blogPost) => {
+    setBlogFormData(blogPost);
+    setEditingBlogPost(blogPost);
+    setShowCreateForm(true);
+  };
+
+  const handleDeleteBlog = async (blogPostId) => {
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("blog_posts")
+        .delete()
+        .eq("id", blogPostId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Blog post deleted successfully.",
+      });
+
+      fetchBlogPosts();
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete blog post.",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Blog Posts Management</h2>
+        <Button onClick={() => setShowCreateForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Blog Post
+        </Button>
+      </div>
+
+      <SearchBar
+        onSearch={handleBlogSearch}
+        placeholder="Search blog posts..."
+        className="max-w-md"
+      />
+
+      {showCreateForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingBlogPost ? "Edit Blog Post" : "Create New Blog Post"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleBlogSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={blogFormData.title}
+                    onChange={(e) => setBlogFormData({...blogFormData, title: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="author">Author</Label>
+                  <Input
+                    id="author"
+                    value={blogFormData.author}
+                    onChange={(e) => setBlogFormData({...blogFormData, author: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={blogFormData.category} onValueChange={(value) => setBlogFormData({...blogFormData, category: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoryOptions.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="published">Published</Label>
+                  <Switch
+                    id="published"
+                    checked={blogFormData.published}
+                    onCheckedChange={(checked) => setBlogFormData({...blogFormData, published: checked})}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="excerpt">Excerpt</Label>
+                <Textarea
+                  id="excerpt"
+                  value={blogFormData.excerpt}
+                  onChange={(e) => setBlogFormData({...blogFormData, excerpt: e.target.value})}
+                  rows={2}
+                  placeholder="Brief description of the blog post..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="content">Content</Label>
+                <Textarea
+                  id="content"
+                  value={blogFormData.content}
+                  onChange={(e) => setBlogFormData({...blogFormData, content: e.target.value})}
+                  rows={6}
+                  required
+                />
+              </div>
+
+              <ImageUpload
+                currentImageUrl={blogFormData.image}
+                onImageUrlChange={(url) => setBlogFormData({...blogFormData, image: url})}
+                label="Featured Image"
+              />
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : editingBlogPost ? "Update" : "Create"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setEditingBlogPost(null);
+                    resetBlogForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBlogPosts.map((blogPost) => (
+          <Card key={blogPost.id}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle className="text-lg line-clamp-2">{blogPost.title}</CardTitle>
+                  <CardDescription>By {blogPost.author}</CardDescription>
+                </div>
+                <Badge variant={blogPost.published ? "default" : "secondary"}>
+                  {blogPost.published ? "Published" : "Draft"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {blogPost.category && (
+                <Badge variant="outline">{blogPost.category}</Badge>
+              )}
+              {blogPost.excerpt && (
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {blogPost.excerpt}
+                </p>
+              )}
+              <div className="text-sm text-muted-foreground">
+                <p>Created: {new Date(blogPost.created_at).toLocaleDateString()}</p>
+                <p>Updated: {new Date(blogPost.updated_at).toLocaleDateString()}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => handleEditBlog(blogPost)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => handleDeleteBlog(blogPost.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
