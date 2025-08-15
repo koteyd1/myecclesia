@@ -146,6 +146,7 @@ const Blog = () => {
               <BlogCard 
                 key={post.id} 
                 {...post} 
+                slug={post.slug}
                 readTime={`${Math.ceil((post.content?.length || 0) / 200)} min read`}
                 date={new Date(post.created_at || post.date).toISOString().split('T')[0]}
               />

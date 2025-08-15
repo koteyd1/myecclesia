@@ -9,25 +9,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 
 const BlogPost = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [blogPost, setBlogPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchBlogPost();
     }
-  }, [id]);
+  }, [slug]);
 
   const fetchBlogPost = async () => {
     try {
-      // Try to fetch from database first
+      // Try to fetch from database first using slug
       const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
-        .eq("id", id)
+        .eq("slug", slug)
         .eq("published", true)
         .single();
 
@@ -35,13 +35,13 @@ const BlogPost = () => {
         setBlogPost(data);
       } else {
         // Fallback to hardcoded posts if not found in database
-        const fallbackPost = getFallbackPost(id);
+        const fallbackPost = getFallbackPost(slug);
         setBlogPost(fallbackPost);
       }
     } catch (error) {
       console.error("Error fetching blog post:", error);
       // Try fallback
-      const fallbackPost = getFallbackPost(id);
+      const fallbackPost = getFallbackPost(slug);
       setBlogPost(fallbackPost);
     } finally {
       setIsLoading(false);
@@ -127,7 +127,7 @@ const BlogPost = () => {
         <SEOHead 
           title="Loading... | MyEcclesia Blog"
           description="Loading blog post content..."
-          canonicalUrl={`https://myecclesia.com/blog/${id}`}
+          canonicalUrl={`https://myecclesia.com/blog/${slug}`}
         />
         <div className="min-h-screen bg-background">
           <Header />
@@ -145,7 +145,7 @@ const BlogPost = () => {
         <SEOHead 
           title="Blog Post Not Found | MyEcclesia"
           description="The blog post you're looking for doesn't exist."
-          canonicalUrl={`https://myecclesia.com/blog/${id}`}
+          canonicalUrl={`https://myecclesia.com/blog/${slug}`}
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
@@ -169,7 +169,7 @@ const BlogPost = () => {
         title={`${blogPost.title} | MyEcclesia Blog`}
         description={blogPost?.excerpt || blogPost?.content?.slice(0, 160) || "Read inspiring Christian articles and faith stories on MyEcclesia blog."}
         keywords={`${blogPost?.category || 'Christian'}, faith, blog, ${blogPost?.author || 'MyEcclesia'}`}
-        canonicalUrl={`https://myecclesia.com/blog/${id}`}
+        canonicalUrl={`https://myecclesia.com/blog/${slug}`}
         type="article"
         publishedTime={blogPost?.created_at || blogPost?.date}
         author={blogPost?.author}

@@ -46,7 +46,7 @@ const Events = () => {
 
       const { data, error } = await supabase
         .from("events")
-        .select("id, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets")
+        .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets")
         .order("date", { ascending: true });
 
       if (error) throw error;
@@ -496,19 +496,20 @@ const Events = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentEvents.map((event) => (
                   <div key={event.id} id={`event-${event.id}`}>
-                    <EventCard 
-                      id={event.id}
-                      title={event.title}
-                      date={event.date}
-                      time={event.time}
-                      location={event.location}
-                      description={event.description}
-                      image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
-                      price={event.price || 0}
-                      availableTickets={event.available_tickets || 0}
-                      category={event.category || "Event"}
-                      denominations={event.denominations || ""}
-                    />
+                     <EventCard 
+                       id={event.id}
+                       slug={event.slug}
+                       title={event.title}
+                       date={event.date}
+                       time={event.time}
+                       location={event.location}
+                       description={event.description}
+                       image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                       price={event.price || 0}
+                       availableTickets={event.available_tickets || 0}
+                       category={event.category || "Event"}
+                       denominations={event.denominations || ""}
+                     />
                   </div>
                 ))}
               </div>

@@ -28,7 +28,7 @@ const Index = () => {
     async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("id, title, date, time, location, description, image, price, category, denominations, organizer")
+        .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
         .gte("date", new Date().toISOString().split('T')[0])
         .order("date", { ascending: true })
         .order("time", { ascending: true })

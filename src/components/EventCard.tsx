@@ -7,6 +7,7 @@ import { SocialShare } from "@/components/SocialShare";
 
 interface EventCardProps {
   id: string;
+  slug?: string;
   title: string;
   date: string;
   time: string;
@@ -21,6 +22,7 @@ interface EventCardProps {
 
 const EventCard = ({ 
   id,
+  slug,
   title, 
   date, 
   time, 
@@ -39,7 +41,7 @@ const EventCard = ({
     sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
     const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
     sessionStorage.setItem('eventsCurrentPage', currentPage);
-    navigate(`/events/${id}`);
+    navigate(`/events/${slug || id}`);
   };
 
   const handleRegisterNow = (e: React.MouseEvent) => {
@@ -48,7 +50,7 @@ const EventCard = ({
     sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
     const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
     sessionStorage.setItem('eventsCurrentPage', currentPage);
-    navigate(`/events/${id}#register`);
+    navigate(`/events/${slug || id}#register`);
   };
 
   const formatDate = (dateStr: string) => {
@@ -155,7 +157,7 @@ const EventCard = ({
             )}
             <div onClick={(e) => e.stopPropagation()}>
               <SocialShare
-                url={`/events/${id}`}
+                url={`/events/${slug || id}`}
                 title={title}
                 description={description}
                 className="h-10"

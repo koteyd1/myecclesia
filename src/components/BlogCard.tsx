@@ -8,6 +8,7 @@ import { LazyImage } from "@/components/LazyImage";
 
 interface BlogCardProps {
   id: string;
+  slug?: string;
   title: string;
   excerpt: string;
   author: string;
@@ -19,6 +20,7 @@ interface BlogCardProps {
 
 const BlogCard = ({ 
   id,
+  slug,
   title, 
   excerpt, 
   author, 
@@ -39,7 +41,7 @@ const BlogCard = ({
   };
 
   const handleReadMore = () => {
-    navigate(`/blog/${id}`);
+    navigate(`/blog/${slug || id}`);
   };
 
   return (
@@ -100,7 +102,7 @@ const BlogCard = ({
             </Button>
             <div onClick={(e) => e.stopPropagation()}>
               <SocialShare
-                url={`/blog/${id}`}
+                url={`/blog/${slug || id}`}
                 title={title}
                 description={excerpt}
                 className="h-8"

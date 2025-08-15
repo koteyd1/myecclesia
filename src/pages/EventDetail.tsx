@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 
 const EventDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -23,21 +23,24 @@ const EventDetail = () => {
   const [calendarLoading, setCalendarLoading] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchEvent();
-      if (user) {
-        checkRegistrationStatus();
-        checkCalendarStatus();
-      }
     }
-  }, [id, user]);
+  }, [slug]);
+
+  useEffect(() => {
+    if (event && user) {
+      checkRegistrationStatus();
+      checkCalendarStatus();
+    }
+  }, [event, user]);
 
   const fetchEvent = async () => {
     try {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq("id", id)
+        .eq("slug", slug)
         .single();
 
       if (error) throw error;
@@ -55,14 +58,14 @@ const EventDetail = () => {
   };
 
   const checkRegistrationStatus = async () => {
-    if (!user || !id) return;
+    if (!user || !event?.id) return;
 
     try {
       const { data, error } = await supabase
         .from("event_registrations")
         .select("id")
         .eq("user_id", user.id)
-        .eq("event_id", id)
+        .eq("event_id", event.id)
         .eq("status", "registered")
         .single();
 
@@ -74,14 +77,14 @@ const EventDetail = () => {
   };
 
   const checkCalendarStatus = async () => {
-    if (!user || !id) return;
+    if (!user || !event?.id) return;
 
     try {
       const { data, error } = await supabase
         .from("user_calendar")
         .select("id")
         .eq("user_id", user.id)
-        .eq("event_id", id)
+        .eq("event_id", event.id)
         .single();
 
       setIsInCalendar(!!data);
@@ -271,7 +274,7 @@ const EventDetail = () => {
         <SEOHead 
           title="Loading Event... | MyEcclesia"
           description="Loading event details..."
-          canonicalUrl={`https://myecclesia.com/events/${id}`}
+          canonicalUrl={`https://myecclesia.com/events/${slug}`}
         />
         <div className="min-h-screen bg-background">
           <Header />
@@ -289,7 +292,7 @@ const EventDetail = () => {
         <SEOHead 
           title="Event Not Found | MyEcclesia"
           description="The event you're looking for doesn't exist."
-          canonicalUrl={`https://myecclesia.com/events/${id}`}
+          canonicalUrl={`https://myecclesia.com/events/${slug}`}
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
@@ -309,7 +312,7 @@ const EventDetail = () => {
         title={`${event.title} | MyEcclesia Events`}
         description={event?.description?.slice(0, 160) || "Join this Christian event with MyEcclesia. Book your tickets now!"}
         keywords={`${event?.category || 'Christian event'}, ${event?.denominations || 'church'}, UK events, ${event?.location || 'community'}`}
-        canonicalUrl={`https://myecclesia.com/events/${id}`}
+        canonicalUrl={`https://myecclesia.com/events/${slug}`}
         ogImage={event?.image}
       />
       <div className="min-h-screen bg-background">
