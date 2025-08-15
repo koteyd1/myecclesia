@@ -23,9 +23,9 @@ const Hero = () => {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl md:text-6xl font-bold text-white leading-[1.5] overflow-visible">
-              <span className="block mb-6">Bringing Our</span>
+              <span className="block mb-6">Join the Worship</span>
               <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
-                Community Together
+                Find Church Events Near You
               </span>
             </h1>
           </div>
