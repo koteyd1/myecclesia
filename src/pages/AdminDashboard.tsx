@@ -9,6 +9,7 @@ import { AdminBlogPosts } from "@/components/admin/AdminBlogPosts";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminEventReview } from "@/components/admin/AdminEventReview";
+import { SecurityReport } from "@/components/admin/SecurityReport";
 
 const AdminDashboard = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
@@ -60,9 +61,10 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="registrations">Registrations</TabsTrigger>
@@ -74,6 +76,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="review">
             <AdminEventReview user={user} />
+          </TabsContent>
+
+          <TabsContent value="security">
+            <SecurityReport />
           </TabsContent>
 
           <TabsContent value="blog">
