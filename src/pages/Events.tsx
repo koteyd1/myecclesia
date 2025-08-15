@@ -125,6 +125,11 @@ const Events = () => {
 
   // Memoize the duplicate removal and filtering for performance
   const filteredEvents = useMemo(() => {
+    // Return empty array if events is null or undefined
+    if (!events || !Array.isArray(events)) {
+      return [];
+    }
+
     // Remove duplicates based on title and date
     const removeDuplicates = (events: any[]) => {
       const seen = new Set();
