@@ -32,17 +32,25 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    // For immediate loading if loading is not lazy or if we're on the homepage
+    if (loading === 'eager' || window.location.pathname === '/') {
+      setShouldLoad(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !shouldLoad) {
+            console.log('Image intersecting, should load:', src);
             setShouldLoad(true);
             observer.unobserve(entry.target);
           }
         });
       },
       {
-        rootMargin: '100px', // Start loading 100px before the image enters viewport
+        rootMargin: '50px', // Reduced margin for faster loading
+        threshold: 0.1, // Load when 10% of image is visible
       }
     );
 
@@ -55,7 +63,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         observer.unobserve(imgRef.current);
       }
     };
-  }, [shouldLoad]);
+  }, [shouldLoad, loading]);
 
   useEffect(() => {
     if (shouldLoad && src && !imageSrc) {
