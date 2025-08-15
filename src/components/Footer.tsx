@@ -60,6 +60,14 @@ const Footer = () => {
                   Terms & Conditions
                 </button>
               </li>
+              <li>
+                <button 
+                  onClick={() => navigate("/sitemap")}
+                  className="hover:text-primary transition-colors text-left"
+                >
+                  Site Map
+                </button>
+              </li>
             </ul>
           </div>
           
