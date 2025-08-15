@@ -165,6 +165,37 @@ ${sanitizedMessage || 'None provided'}
         return;
       }
 
+      // Send email notification
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-contact-notification', {
+          body: {
+            type: 'partnership',
+            name: sanitizedName,
+            email: sanitizedEmail,
+            phone: sanitizedPhone,
+            message: sanitizedMessage || 'Partnership application submitted.',
+            organizationName: sanitizedOrgName,
+            organizationType: formData.organizationType,
+            partnershipDetails: {
+              denomination: formData.denomination,
+              location: formData.location,
+              website: formData.website,
+              estimatedEvents: formData.estimatedEvents,
+              partnershipInterest: formData.partnershipInterest,
+              experience: formData.experience
+            }
+          }
+        });
+
+        if (emailError) {
+          console.error('Email notification error:', emailError);
+          // Don't fail the form submission if email fails, just log it
+        }
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the form submission if email fails
+      }
+
       toast({
         title: "Partnership Inquiry Submitted!",
         description: "Thank you for your interest in partnering with us. We'll get back to you within 2 business days.",

@@ -106,6 +106,27 @@ const Contact = () => {
         return;
       }
 
+      // Send email notification
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-contact-notification', {
+          body: {
+            type: 'contact',
+            name: sanitizedName,
+            email: sanitizedEmail,
+            phone: sanitizedPhone,
+            message: sanitizedMessage
+          }
+        });
+
+        if (emailError) {
+          console.error('Email notification error:', emailError);
+          // Don't fail the form submission if email fails, just log it
+        }
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the form submission if email fails
+      }
+
       toast({
         title: "Message sent!",
         description: "Thank you for your message. We'll get back to you soon.",
