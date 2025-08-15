@@ -65,6 +65,11 @@ const Header = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to="/partnership" className="w-full">
+                      Partner with Us
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to="/help-centre" className="w-full">
                       Help Centre
                     </Link>
@@ -136,6 +141,9 @@ const Header = () => {
             </Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
+            </Link>
+            <Link to="/partnership" className="text-foreground hover:text-primary transition-colors">
+              Partner with Us
             </Link>
             <Link to="/help-centre" className="text-foreground hover:text-primary transition-colors">
               Help Centre

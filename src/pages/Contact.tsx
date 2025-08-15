@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeInput, validateEmail, validateName, validatePhone, validateMessage, INPUT_LIMITS } from "@/utils/validation";
@@ -245,6 +246,26 @@ const Contact = () => {
             </Card>
           </div>
         </div>
+        
+        {/* Partnership CTA */}
+        <section className="mt-12">
+          <Card className="max-w-2xl mx-auto bg-primary/5 border-primary/20">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">Interested in Partnership?</CardTitle>
+              <CardDescription>
+                Are you a church or ministry looking to partner with MyEcclesia? We'd love to work together to grow the Christian community.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button asChild>
+                <a href="/partnership" className="inline-flex items-center gap-2">
+                  Explore Partnership Opportunities
+                  <ChevronRight className="h-4 w-4" />
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
       </main>
       <Footer />
     </div>
