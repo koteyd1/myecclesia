@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { SocialShare } from "@/components/SocialShare";
+import { LazyImage } from "@/components/LazyImage";
 
 interface EventCardProps {
   id: string;
@@ -80,19 +81,13 @@ const EventCard = ({
       onClick={handleViewEvent}
     >
       <div className="relative overflow-hidden">
-        <img 
-          src={image} 
-          alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+        <LazyImage
+          src={image}
+          alt={`${title} event image`}
+          className="w-full h-48 group-hover:scale-105 transition-transform duration-300"
+          width={400}
+          height={192}
           loading="lazy"
-          decoding="async"
-          style={{
-            imageRendering: 'auto',
-            WebkitBackfaceVisibility: 'hidden',
-            backfaceVisibility: 'hidden',
-            WebkitTransform: 'translateZ(0)',
-            transform: 'translateZ(0)'
-          }}
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {category && (

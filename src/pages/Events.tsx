@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
@@ -12,12 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { useCache } from "@/utils/cache";
+import { performanceUtils } from "@/utils/performance";
 
 const Events = () => {
   const { toast } = useToast();
   const location = useLocation();
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDenomination, setSelectedDenomination] = useState("");
@@ -32,6 +32,48 @@ const Events = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const eventsPerPage = 30;
+
+  // Use cached events data
+  const { data: events = [], loading, error } = useCache(
+    'events-page',
+    async () => {
+      // Trigger cleanup first
+      try {
+        await supabase.functions.invoke('trigger-cleanup');
+      } catch (error) {
+        console.warn('Cleanup failed:', error);
+      }
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("id, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets")
+        .order("date", { ascending: true });
+
+      if (error) throw error;
+      
+      // Filter out events that have already passed their start time
+      const now = new Date();
+      
+      const upcomingEvents = (data || []).filter(event => {
+        const eventDateTime = new Date(`${event.date}T${event.time}`);
+        return eventDateTime > now;
+      });
+      
+      return upcomingEvents;
+    },
+    {
+      ttl: 2 * 60 * 1000, // Cache for 2 minutes
+    }
+  );
+
+  // Debounced search function
+  const debouncedSearch = useMemo(
+    () => performanceUtils.debounce((term: string) => {
+      setSearchTerm(term);
+      setCurrentPage(1);
+    }, 300),
+    []
+  );
 
   const categoryOptions = [
     "Church Service",
@@ -69,167 +111,82 @@ const Events = () => {
     "Interfaith"
   ];
 
+  // Handle errors
   useEffect(() => {
-    // Trigger cleanup first, then fetch events
-    triggerCleanup().then(() => {
-      fetchEvents();
-    });
-  }, []);
-
-  // Handle initial page restoration only once
-  useEffect(() => {
-    if (!isInitialized && location.state?.from === 'event-detail') {
-      const savedPage = sessionStorage.getItem('eventsCurrentPage');
-      const savedScrollPosition = sessionStorage.getItem('eventsScrollPosition');
-      
-      if (savedPage) {
-        setCurrentPage(parseInt(savedPage, 10));
-      }
-      
-      if (savedScrollPosition) {
-        setTimeout(() => {
-          window.scrollTo(0, parseInt(savedScrollPosition, 10));
-        }, 100);
-      }
-    }
-    setIsInitialized(true);
-  }, [location.state, isInitialized]);
-
-  // Save current page and scroll position
-  useEffect(() => {
-    if (isInitialized) {
-      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
-    }
-    
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
-      sessionStorage.setItem('eventsCurrentPage', currentPage.toString());
-    };
-
-    const handleScroll = () => {
-      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [currentPage, isInitialized]);
-
-  const triggerCleanup = async () => {
-    try {
-      console.log('Triggering automatic cleanup of past events...');
-      const { data, error } = await supabase.functions.invoke('trigger-cleanup');
-      
-      if (error) {
-        console.error('Cleanup error:', error);
-        return;
-      }
-      
-      console.log('Cleanup completed:', data);
-    } catch (error) {
-      console.error('Error triggering cleanup:', error);
-      // Don't show error to user - this is a background operation
-    }
-  };
-
-  const fetchEvents = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("date", { ascending: true });
-
-      if (error) throw error;
-      
-      // Filter out events that have already passed their start time
-      const now = new Date();
-      console.log("Current time:", now.toISOString());
-      console.log("Raw events from database:", data?.length);
-      
-      const upcomingEvents = (data || []).filter(event => {
-        const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const isUpcoming = eventDateTime > now;
-        console.log(`Event "${event.title}" at ${eventDateTime.toISOString()} - Upcoming: ${isUpcoming}`);
-        return isUpcoming;
-      });
-      
-      console.log("Filtered upcoming events:", upcomingEvents.length);
-      setEvents(upcomingEvents);
-    } catch (error) {
+    if (error) {
       console.error("Error fetching events:", error);
       toast({
         title: "Error",
         description: "Failed to load events",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, toast]);
 
-  // Remove duplicates based on title and date
-  const removeDuplicates = (events) => {
-    const seen = new Set();
-    return events.filter(event => {
-      const key = `${event.title.toLowerCase()}-${event.date}`;
-      if (seen.has(key)) {
-        return false;
-      }
-      seen.add(key);
-      return true;
+  // Memoize the duplicate removal and filtering for performance
+  const filteredEvents = useMemo(() => {
+    // Remove duplicates based on title and date
+    const removeDuplicates = (events: any[]) => {
+      const seen = new Set();
+      return events.filter(event => {
+        const key = `${event.title.toLowerCase()}-${event.date}`;
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
+    };
+
+    const uniqueEvents = removeDuplicates(events);
+
+    return uniqueEvents.filter((event) => {
+      // Basic search
+      const matchesSearch = searchTerm === "" || 
+        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.organizer?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Category filter
+      const matchesCategory = selectedCategory === "" || event.category === selectedCategory;
+      
+      // Denomination filter
+      const matchesDenomination = selectedDenomination === "" || 
+        event.denominations?.includes(selectedDenomination);
+
+      // Price filter
+      const matchesPrice = priceFilter === "" || 
+        (priceFilter === "free" && (event.price === 0 || event.price === null)) ||
+        (priceFilter === "paid" && event.price > 0);
+
+      // Date range filter
+      const eventDate = new Date(event.date);
+      const matchesStartDate = startDate === "" || eventDate >= new Date(startDate);
+      const matchesEndDate = endDate === "" || eventDate <= new Date(endDate);
+
+      // Price range filter
+      const eventPrice = event.price || 0;
+      const matchesMinPrice = minPrice === "" || eventPrice >= parseFloat(minPrice);
+      const matchesMaxPrice = maxPrice === "" || eventPrice <= parseFloat(maxPrice);
+
+      // Location filter
+      const matchesLocation = locationFilter === "" || 
+        event.location.toLowerCase().includes(locationFilter.toLowerCase());
+
+      // Availability filter
+      const matchesAvailability = availabilityFilter === "" ||
+        (availabilityFilter === "available" && (event.available_tickets || 0) > 0) ||
+        (availabilityFilter === "full" && (event.available_tickets || 0) === 0);
+
+      return matchesSearch && matchesCategory && matchesDenomination && matchesPrice &&
+             matchesStartDate && matchesEndDate && matchesMinPrice && matchesMaxPrice &&
+             matchesLocation && matchesAvailability;
     });
-  };
+  }, [events, searchTerm, selectedCategory, selectedDenomination, priceFilter, 
+      startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter]);
 
-  // Filter events based on search term and filters
-  const filteredEvents = removeDuplicates(events).filter((event) => {
-    // Basic search
-    const matchesSearch = searchTerm === "" || 
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.organizer?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Category filter
-    const matchesCategory = selectedCategory === "" || event.category === selectedCategory;
-    
-    // Denomination filter
-    const matchesDenomination = selectedDenomination === "" || 
-      event.denominations?.includes(selectedDenomination);
-
-    // Price filter
-    const matchesPrice = priceFilter === "" || 
-      (priceFilter === "free" && (event.price === 0 || event.price === null)) ||
-      (priceFilter === "paid" && event.price > 0);
-
-    // Date range filter
-    const eventDate = new Date(event.date);
-    const matchesStartDate = startDate === "" || eventDate >= new Date(startDate);
-    const matchesEndDate = endDate === "" || eventDate <= new Date(endDate);
-
-    // Price range filter
-    const eventPrice = event.price || 0;
-    const matchesMinPrice = minPrice === "" || eventPrice >= parseFloat(minPrice);
-    const matchesMaxPrice = maxPrice === "" || eventPrice <= parseFloat(maxPrice);
-
-    // Location filter
-    const matchesLocation = locationFilter === "" || 
-      event.location.toLowerCase().includes(locationFilter.toLowerCase());
-
-    // Availability filter
-    const matchesAvailability = availabilityFilter === "" ||
-      (availabilityFilter === "available" && (event.available_tickets || 0) > 0) ||
-      (availabilityFilter === "full" && (event.available_tickets || 0) === 0);
-
-    return matchesSearch && matchesCategory && matchesDenomination && matchesPrice &&
-           matchesStartDate && matchesEndDate && matchesMinPrice && matchesMaxPrice &&
-           matchesLocation && matchesAvailability;
-  });
-
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchTerm("");
     setSelectedCategory("");
     setSelectedDenomination("");
@@ -240,31 +197,42 @@ const Events = () => {
     setMaxPrice("");
     setLocationFilter("");
     setAvailabilityFilter("");
-  };
+    setCurrentPage(1);
+  }, []);
 
-  const hasActiveFilters = searchTerm !== "" || selectedCategory !== "" || 
+  const hasActiveFilters = useMemo(() => 
+    searchTerm !== "" || selectedCategory !== "" || 
     selectedDenomination !== "" || priceFilter !== "" || startDate !== "" ||
     endDate !== "" || minPrice !== "" || maxPrice !== "" || locationFilter !== "" ||
-    availabilityFilter !== "";
+    availabilityFilter !== "",
+    [searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, 
+     endDate, minPrice, maxPrice, locationFilter, availabilityFilter]
+  );
 
-  // Use filtered events directly without distance sorting
+  // Use filtered events directly
   const sortedEvents = filteredEvents;
 
-  // Pagination logic
-  const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
-  const startIndex = (currentPage - 1) * eventsPerPage;
-  const endIndex = startIndex + eventsPerPage;
-  const currentEvents = sortedEvents.slice(startIndex, endIndex);
+  // Memoize pagination calculations
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(sortedEvents.length / eventsPerPage);
+    const startIndex = (currentPage - 1) * eventsPerPage;
+    const endIndex = startIndex + eventsPerPage;
+    const currentEvents = sortedEvents.slice(startIndex, endIndex);
+    
+    return { totalPages, startIndex, endIndex, currentEvents };
+  }, [sortedEvents, currentPage, eventsPerPage]);
+
+  const { totalPages, startIndex, endIndex, currentEvents } = paginationData;
 
   // Reset to first page when filters change and scroll to top when page changes
-  const handleFilterChange = () => {
+  const handleFilterChange = useCallback(() => {
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -339,7 +307,7 @@ const Events = () => {
             <Input
               placeholder="Search events..."
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); handleFilterChange(); }}
+              onChange={(e) => debouncedSearch(e.target.value)}
               className="pl-10"
             />
           </div>

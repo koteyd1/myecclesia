@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
 import { SEOOptimizations } from "@/components/SEOOptimizations";
@@ -14,27 +14,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingEventCard } from "@/components/LoadingStates";
 import { SEOHead } from "@/components/SEOHead";
+import { useCache } from "@/utils/cache";
+import { performanceUtils } from "@/utils/performance";
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("All Events");
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
+  // Use cached events data
+  const { data: events = [], loading, error } = useCache(
+    'homepage-events',
+    async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("*")
-        .gte("date", new Date().toISOString().split('T')[0]) // Get events from today onwards
+        .select("id, title, date, time, location, description, image, price, category, denominations, organizer")
+        .gte("date", new Date().toISOString().split('T')[0])
         .order("date", { ascending: true })
         .order("time", { ascending: true })
-        .limit(20); // Get more events to filter from
+        .limit(12);
 
       if (error) throw error;
       
@@ -42,8 +40,7 @@ const Index = () => {
       const now = new Date();
       
       if (!data || data.length === 0) {
-        setEvents([]);
-        return;
+        return [];
       }
       
       const upcomingEvents = data.filter(event => {
@@ -60,25 +57,46 @@ const Index = () => {
         index === self.findIndex(e => e.id === event.id)
       ).slice(0, 6);
       
-      setEvents(uniqueEvents);
-    } catch (error) {
+      return uniqueEvents;
+    },
+    {
+      ttl: 2 * 60 * 1000, // Cache for 2 minutes
+      enabled: true
+    }
+  );
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
       console.error("Error fetching events:", error);
       toast({
         title: "Error",
         description: "Failed to load events",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, toast]);
 
-  // Get unique categories from events
-  const categories = ["All Events", ...new Set(events.map(event => event.category).filter(Boolean))];
+  // Memoize expensive calculations
+  const categories = useMemo(() => 
+    ["All Events", ...new Set(events.map(event => event.category).filter(Boolean))],
+    [events]
+  );
 
-  const filteredEvents = selectedCategory === "All Events" 
-    ? events 
-    : events.filter(event => event.category === selectedCategory);
+  const filteredEvents = useMemo(() => 
+    selectedCategory === "All Events" 
+      ? events 
+      : events.filter(event => event.category === selectedCategory),
+    [events, selectedCategory]
+  );
+
+  // Debounced category selection to prevent excessive re-renders
+  const debouncedCategorySelect = useMemo(
+    () => performanceUtils.debounce((category: string) => {
+      setSelectedCategory(category);
+    }, 150),
+    []
+  );
 
   return (
     <>
@@ -113,7 +131,7 @@ const Index = () => {
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"} 
                   className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => debouncedCategorySelect(category)}
                 >
                   {category}
                 </Badge>
@@ -123,14 +141,16 @@ const Index = () => {
             {/* Events Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {loading ? (
-                <>
-                  <LoadingEventCard />
-                  <LoadingEventCard />
-                  <LoadingEventCard />
-                </>
+                Array.from({ length: 6 }).map((_, index) => (
+                  <LoadingEventCard key={index} />
+                ))
               ) : filteredEvents.length > 0 ? (
                 filteredEvents.map((event) => (
-                  <EventCard key={event.id} {...event} />
+                  <EventCard 
+                    key={event.id} 
+                    {...event} 
+                    availableTickets={0}
+                  />
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
