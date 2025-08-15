@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,33 +13,51 @@ const Sitemap = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching sitemap data...');
+        
         // Get current date to filter future events
         const today = new Date().toISOString().split('T')[0];
 
         // Fetch active events
-        const { data: eventsData } = await supabase
+        const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select('id, title, date')
           .gte('date', today)
           .order('date', { ascending: true })
           .limit(10);
 
+        if (eventsError) {
+          console.error('Error fetching events:', eventsError);
+          setError(`Error fetching events: ${eventsError.message}`);
+        } else {
+          console.log('Events fetched:', eventsData);
+          setEvents(eventsData || []);
+        }
+
         // Fetch published blog posts
-        const { data: blogData } = await supabase
+        const { data: blogData, error: blogError } = await supabase
           .from('blog_posts')
           .select('id, title')
           .eq('published', true)
           .order('updated_at', { ascending: false })
           .limit(10);
 
-        setEvents(eventsData || []);
-        setBlogPosts(blogData || []);
+        if (blogError) {
+          console.error('Error fetching blog posts:', blogError);
+          setError(`Error fetching blog posts: ${blogError.message}`);
+        } else {
+          console.log('Blog posts fetched:', blogData);
+          setBlogPosts(blogData || []);
+        }
+
       } catch (error) {
         console.error('Error fetching sitemap data:', error);
+        setError('Failed to load sitemap data');
       } finally {
         setLoading(false);
       }
@@ -75,6 +94,14 @@ const Sitemap = () => {
               Navigate through all pages and content on MyEcclesia
             </p>
           </div>
+
+          {error && (
+            <Card className="mb-8 border-destructive">
+              <CardContent className="p-4">
+                <p className="text-destructive">{error}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Static Pages */}
           <Card className="mb-8">
@@ -156,11 +183,30 @@ const Sitemap = () => {
                       <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
                   ))}
+                  {events.length === 10 && (
+                    <div className="text-center pt-2">
+                      <Link 
+                        to="/events" 
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        View all events →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No upcoming events found
-                </p>
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">
+                    No upcoming events found
+                  </p>
+                  <Link 
+                    to="/events" 
+                    className="text-sm text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                  >
+                    Check all events →
+                  </Link>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -198,11 +244,30 @@ const Sitemap = () => {
                       <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Link>
                   ))}
+                  {blogPosts.length === 10 && (
+                    <div className="text-center pt-2">
+                      <Link 
+                        to="/blog" 
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        View all blog posts →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No blog posts found
-                </p>
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">
+                    No blog posts found
+                  </p>
+                  <Link 
+                    to="/blog" 
+                    className="text-sm text-primary hover:text-primary/80 transition-colors inline-block mt-2"
+                  >
+                    Check all blog posts →
+                  </Link>
+                </div>
               )}
             </CardContent>
           </Card>
