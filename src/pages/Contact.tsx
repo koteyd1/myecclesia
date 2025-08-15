@@ -28,42 +28,69 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      // Simple validation
-      if (!formData.name.trim()) {
+      // Comprehensive validation using utility functions
+      const sanitizedName = sanitizeInput(formData.name, INPUT_LIMITS.NAME_MAX);
+      const sanitizedEmail = sanitizeInput(formData.email, INPUT_LIMITS.EMAIL_MAX);
+      const sanitizedPhone = sanitizeInput(formData.phone, INPUT_LIMITS.PHONE_MAX);
+      const sanitizedMessage = sanitizeInput(formData.message, INPUT_LIMITS.MESSAGE_MAX);
+      
+      // Validate name
+      if (!validateName(sanitizedName)) {
         toast({
           variant: "destructive",
-          title: "Name required",
-          description: "Please enter your name.",
+          title: "Invalid Name",
+          description: "Please enter a valid name (letters, spaces, hyphens, and apostrophes only).",
         });
         return;
       }
       
-      if (!formData.email.trim()) {
+      // Validate email
+      if (!validateEmail(sanitizedEmail)) {
         toast({
           variant: "destructive",
-          title: "Email required", 
-          description: "Please enter your email.",
+          title: "Invalid Email", 
+          description: "Please enter a valid email address.",
         });
         return;
       }
       
-      if (!formData.message.trim()) {
+      // Validate phone (optional field)
+      if (sanitizedPhone && !validatePhone(sanitizedPhone)) {
         toast({
           variant: "destructive",
-          title: "Message required",
+          title: "Invalid Phone",
+          description: "Please enter a valid phone number.",
+        });
+        return;
+      }
+      
+      // Validate message
+      if (!validateMessage(sanitizedMessage)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Message",
+          description: `Message must be less than ${INPUT_LIMITS.MESSAGE_MAX} characters.`,
+        });
+        return;
+      }
+      
+      if (!sanitizedMessage.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Message Required",
           description: "Please enter a message.",
         });
         return;
       }
 
-      // Save to database with minimal data
+      // Save to database with sanitized data
       const { error } = await supabase
         .from('contact_messages')
         .insert({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
-          message: formData.message.trim()
+          name: sanitizedName,
+          email: sanitizedEmail,
+          phone: sanitizedPhone || null,
+          message: sanitizedMessage
         });
 
       if (error) {

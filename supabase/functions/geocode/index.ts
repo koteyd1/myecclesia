@@ -25,6 +25,7 @@ serve(async (req) => {
 
     const apiKey = Deno.env.get('GOOGLE_GEOCODING_API_KEY');
     if (!apiKey) {
+      console.error('Google Geocoding API key not configured');
       return new Response(
         JSON.stringify({ error: 'Google Geocoding API key not configured' }),
         { 
