@@ -79,14 +79,14 @@ const Index = () => {
 
   // Memoize expensive calculations
   const categories = useMemo(() => 
-    ["All Events", ...new Set(events.map(event => event.category).filter(Boolean))],
+    ["All Events", ...new Set((events || []).map(event => event.category).filter(Boolean))],
     [events]
   );
 
   const filteredEvents = useMemo(() => 
     selectedCategory === "All Events" 
-      ? events 
-      : events.filter(event => event.category === selectedCategory),
+      ? (events || [])
+      : (events || []).filter(event => event.category === selectedCategory),
     [events, selectedCategory]
   );
 
