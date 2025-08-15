@@ -81,6 +81,10 @@ const EventCard = ({
       onClick={handleViewEvent}
     >
       <div className="relative overflow-hidden">
+        {/* Debug: Show image URL */}
+        <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-1 z-10 max-w-full overflow-hidden">
+          {image ? image.substring(0, 50) + '...' : 'No image URL'}
+        </div>
         <LazyImage
           src={image}
           alt={`${title} event image`}
