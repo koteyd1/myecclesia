@@ -16,6 +16,8 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
+    console.log('Generating sitemap...')
+
     // Get current date to filter future events
     const today = new Date().toISOString().split('T')[0]
 
@@ -35,27 +37,17 @@ Deno.serve(async (req) => {
 
     if (eventsError) {
       console.error('Error fetching events:', eventsError)
-      return new Response('Error fetching events', { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
-      })
     }
 
     if (blogError) {
       console.error('Error fetching blog posts:', blogError)
-      return new Response('Error fetching blog posts', { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
-      })
     }
 
     // Generate sitemap XML
     const baseUrl = 'https://myecclesia.co.uk'
     const currentDate = new Date().toISOString()
     
-    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-`
+    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 
     // Static pages - matching actual routes from App.tsx
     const staticPages = [
@@ -111,7 +103,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    sitemap += `</urlset>`
+    sitemap += '</urlset>'
 
     console.log(`Generated sitemap with ${events?.length || 0} events and ${blogPosts?.length || 0} blog posts`)
 
@@ -119,7 +111,7 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+        'Cache-Control': 'public, max-age=3600',
       },
     })
 
