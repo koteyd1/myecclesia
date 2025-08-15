@@ -28,14 +28,15 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const [imageSrc, setImageSrc] = useState<string>('');
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !imageSrc) {
-            setImageSrc(src);
+          if (entry.isIntersecting && !shouldLoad) {
+            setShouldLoad(true);
             observer.unobserve(entry.target);
           }
         });
@@ -54,7 +55,13 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         observer.unobserve(imgRef.current);
       }
     };
-  }, [src, imageSrc]);
+  }, [shouldLoad]);
+
+  useEffect(() => {
+    if (shouldLoad && src && !imageSrc) {
+      setImageSrc(src);
+    }
+  }, [shouldLoad, src, imageSrc]);
 
   const handleLoad = () => {
     setImageLoaded(true);
@@ -69,14 +76,21 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 
   // Optimize external Eventbrite images
   const optimizeImageUrl = (url: string) => {
+    if (!url) return url;
+    
     if (url.includes('evbuc.com') || url.includes('eventbrite')) {
       // For Eventbrite images, use their optimization parameters
-      const optimizedUrl = new URL(url);
-      optimizedUrl.searchParams.set('w', width?.toString() || '400');
-      optimizedUrl.searchParams.set('auto', 'format,compress');
-      optimizedUrl.searchParams.set('q', '75');
-      optimizedUrl.searchParams.set('sharp', '10');
-      return optimizedUrl.toString();
+      try {
+        const optimizedUrl = new URL(url);
+        optimizedUrl.searchParams.set('w', width?.toString() || '400');
+        optimizedUrl.searchParams.set('auto', 'format,compress');
+        optimizedUrl.searchParams.set('q', '75');
+        optimizedUrl.searchParams.set('sharp', '10');
+        return optimizedUrl.toString();
+      } catch (e) {
+        // If URL parsing fails, return original
+        return url;
+      }
     }
     return url;
   };
