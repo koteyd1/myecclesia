@@ -53,9 +53,14 @@ const Index = () => {
         
         // Show events that are in the future
         return eventDate > now;
-      }).slice(0, 6); // Limit to 6 events for homepage
+      });
       
-      setEvents(upcomingEvents);
+      // Remove duplicates based on event ID and limit to 6 events
+      const uniqueEvents = upcomingEvents.filter((event, index, self) => 
+        index === self.findIndex(e => e.id === event.id)
+      ).slice(0, 6);
+      
+      setEvents(uniqueEvents);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
