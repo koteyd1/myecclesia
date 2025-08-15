@@ -1,0 +1,376 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
+import { SearchBar } from "@/components/SearchBar";
+
+interface AdminEventsProps {
+  user: any;
+}
+
+export const AdminEvents = ({ user }: AdminEventsProps) => {
+  const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    date: "",
+    time: "",
+    location: "",
+    image: "",
+    price: 0,
+    category: "",
+    denominations: "",
+    organizer: "",
+    duration: "",
+    requirements: "",
+    external_url: ""
+  });
+
+  const denominationOptions = [
+    "All Welcome", "Baptist", "Methodist", "Presbyterian", "Lutheran", 
+    "Episcopal", "Catholic", "Pentecostal", "Orthodox", "Anglican", 
+    "Congregational", "Reformed", "Evangelical", "Non-denominational", "Interfaith"
+  ];
+
+  const categoryOptions = [
+    "Church Service", "Bible Study", "Prayer Meeting", "Youth Events",
+    "Children's Ministry", "Community Outreach", "Missions", "Concerts and Festivals",
+    "Camps and Retreats", "Conference", "Fellowship", "Worship and Music",
+    "Tours", "Special Events", "Holiday Celebrations", "Educational", "Fundraising"
+  ];
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+      setFilteredEvents(data || []);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load events.",
+      });
+    }
+  };
+
+  const handleEventSearch = (query: string) => {
+    if (!query) {
+      setFilteredEvents(events);
+    } else {
+      const filtered = events.filter(event => 
+        event.title.toLowerCase().includes(query.toLowerCase()) ||
+        event.description?.toLowerCase().includes(query.toLowerCase()) ||
+        event.location.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredEvents(filtered);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const eventData = {
+        ...formData,
+        created_by: user.id,
+        price: parseFloat(formData.price.toString())
+      };
+
+      let result;
+      if (editingEvent) {
+        result = await supabase
+          .from("events")
+          .update(eventData)
+          .eq("id", editingEvent.id);
+      } else {
+        result = await supabase
+          .from("events")
+          .insert(eventData);
+      }
+
+      if (result.error) throw result.error;
+
+      toast({
+        title: "Success!",
+        description: `Event ${editingEvent ? "updated" : "created"} successfully.`,
+      });
+
+      setShowCreateForm(false);
+      setEditingEvent(null);
+      resetForm();
+      fetchEvents();
+    } catch (error) {
+      console.error("Error saving event:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save event.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      date: "",
+      time: "",
+      location: "",
+      image: "",
+      price: 0,
+      category: "",
+      denominations: "",
+      organizer: "",
+      duration: "",
+      requirements: "",
+      external_url: ""
+    });
+  };
+
+  const handleEdit = (event) => {
+    setFormData(event);
+    setEditingEvent(event);
+    setShowCreateForm(true);
+  };
+
+  const handleDelete = async (eventId) => {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event deleted successfully.",
+      });
+
+      fetchEvents();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete event.",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Events Management</h2>
+        <Button onClick={() => setShowCreateForm(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Event
+        </Button>
+      </div>
+
+      <SearchBar
+        onSearch={handleEventSearch}
+        placeholder="Search events..."
+        className="max-w-md"
+      />
+
+      {showCreateForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingEvent ? "Edit Event" : "Create New Event"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="organizer">Organizer</Label>
+                  <Input
+                    id="organizer"
+                    value={formData.organizer}
+                    onChange={(e) => setFormData({...formData, organizer: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="time">Time</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={formData.time}
+                    onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="price">Price (£)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoryOptions.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="denominations">Denominations</Label>
+                  <Select value={formData.denominations} onValueChange={(value) => setFormData({...formData, denominations: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select denomination" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {denominationOptions.map((denomination) => (
+                        <SelectItem key={denomination} value={denomination}>
+                          {denomination}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <ImageUpload
+                currentImageUrl={formData.image}
+                onImageUrlChange={(url) => setFormData({...formData, image: url})}
+                label="Event Image"
+              />
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : editingEvent ? "Update" : "Create"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setEditingEvent(null);
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEvents.map((event) => (
+          <Card key={event.id}>
+            <CardHeader>
+              <CardTitle className="text-lg">{event.title}</CardTitle>
+              <CardDescription>{event.organizer}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Badge>{event.category}</Badge>
+                <Badge variant="outline">{event.denominations}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {event.description}
+              </p>
+              <div className="text-sm">
+                <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
+                <p><strong>Time:</strong> {event.time}</p>
+                <p><strong>Location:</strong> {event.location}</p>
+                <p><strong>Price:</strong> £{event.price}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => handleEdit(event)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(event.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
