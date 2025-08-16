@@ -301,6 +301,16 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label htmlFor="external_url">External URL</Label>
+                  <Input
+                    id="external_url"
+                    type="url"
+                    placeholder="https://example.com"
+                    value={formData.external_url}
+                    onChange={(e) => setFormData({...formData, external_url: e.target.value})}
+                  />
+                </div>
               </div>
               
               <div>
