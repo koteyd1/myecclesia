@@ -32,7 +32,7 @@ const Index = () => {
         .gte("date", new Date().toISOString().split('T')[0])
         .order("date", { ascending: true })
         .order("time", { ascending: true })
-        .limit(12);
+        .limit(20); // Increased limit to get more variety
 
       if (error) throw error;
       
@@ -52,10 +52,13 @@ const Index = () => {
         return eventDate > now;
       });
       
-      // Remove duplicates based on event ID and limit to 6 events
+      // Remove duplicates based on event ID, title, and date to ensure truly unique events
       const uniqueEvents = upcomingEvents.filter((event, index, self) => 
-        index === self.findIndex(e => e.id === event.id)
-      ).slice(0, 6);
+        index === self.findIndex(e => 
+          e.id === event.id || 
+          (e.title === event.title && e.date === event.date && e.time === event.time)
+        )
+      ).slice(0, 6); // Limit to 6 unique events
       
       return uniqueEvents;
     },
