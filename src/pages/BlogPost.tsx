@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, User, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
+import { linkifyText } from "@/utils/linkify";
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -245,7 +246,7 @@ const BlogPost = () => {
               <div className="space-y-6 text-foreground leading-relaxed">
                 {blogPost.content.split('\n\n').map((paragraph, index) => (
                   <p key={index} className="mb-4 whitespace-pre-wrap">
-                    {paragraph}
+                    {linkifyText(paragraph)}
                   </p>
                 ))}
               </div>
