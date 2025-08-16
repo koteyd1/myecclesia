@@ -373,7 +373,7 @@ const EventDetail = () => {
                 <div>
                   <h1 className="text-3xl font-bold text-foreground mb-4">{event.title}</h1>
                   <div 
-                    className="text-muted-foreground text-lg leading-relaxed prose prose-lg max-w-none"
+                    className="text-muted-foreground text-lg leading-relaxed prose prose-lg max-w-none prose-p:mb-4 prose-headings:mb-4 prose-headings:mt-6 prose-ul:my-4 prose-ol:my-4"
                     dangerouslySetInnerHTML={{ __html: event.description }}
                   />
                 </div>
