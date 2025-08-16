@@ -243,13 +243,10 @@ const BlogPost = () => {
                 </p>
               )}
               
-              <div className="space-y-6 text-foreground leading-relaxed">
-                {blogPost.content.split('\n\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4 whitespace-pre-wrap">
-                    {linkifyText(paragraph)}
-                  </p>
-                ))}
-              </div>
+              <div 
+                className="space-y-6 text-foreground leading-relaxed prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: blogPost.content }}
+              />
             </div>
 
             {/* Article Footer */}

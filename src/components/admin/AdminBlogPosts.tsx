@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -260,12 +261,11 @@ export const AdminBlogPosts = ({ user }: AdminBlogPostsProps) => {
 
               <div>
                 <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
+                <RichTextEditor
                   value={blogFormData.content}
-                  onChange={(e) => setBlogFormData({...blogFormData, content: e.target.value})}
-                  rows={6}
-                  required
+                  onChange={(value) => setBlogFormData({...blogFormData, content: value})}
+                  placeholder="Write your blog post content..."
+                  height="300px"
                 />
               </div>
 

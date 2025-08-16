@@ -372,9 +372,10 @@ const EventDetail = () => {
               <div className="space-y-6">
                 <div>
                   <h1 className="text-3xl font-bold text-foreground mb-4">{event.title}</h1>
-                  <p className="text-muted-foreground text-lg leading-relaxed">
-                    {event.description}
-                  </p>
+                  <div 
+                    className="text-muted-foreground text-lg leading-relaxed prose prose-lg max-w-none"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
