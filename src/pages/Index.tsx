@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
@@ -112,7 +111,6 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <SEOOptimizations />
         <StructuredData data={createOrganizationSchema()} />
-        <Header />
         <Hero />
         
         {/* Events Section */}

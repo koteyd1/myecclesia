@@ -14,7 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { EventManagement } from '@/components/EventManagement';
 
@@ -179,8 +178,6 @@ export default function OrganizationProfile() {
       />
 
       <StructuredData data={createOrganizationSchema()} />
-
-      <Header />
 
       <main className="min-h-screen bg-background">
         {/* Banner Section */}

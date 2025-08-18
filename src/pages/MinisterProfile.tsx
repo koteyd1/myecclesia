@@ -13,7 +13,6 @@ import EventCard from "@/components/EventCard";
 import { SocialShare } from "@/components/SocialShare";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { EventManagement } from "@/components/EventManagement";
 
@@ -184,7 +183,6 @@ export default function MinisterProfile() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-64 bg-muted rounded-lg"></div>
@@ -199,7 +197,6 @@ export default function MinisterProfile() {
   if (!minister) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Minister Not Found</h1>
           <p className="text-muted-foreground mb-4">
@@ -246,8 +243,6 @@ export default function MinisterProfile() {
           "url": shareUrl
         }}
       />
-
-      <Header />
 
       <main>
         {/* Banner Section */}
