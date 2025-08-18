@@ -58,11 +58,15 @@ const App = () => (
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
             <Route path="/partnership" element={<Partnership />} />
             <Route path="/sitemap" element={<Sitemap />} />
-            <Route path="/organization/:slug" element={<OrganizationProfile />} />
-            <Route path="/create-organization" element={<OrganizationForm />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+          <Route path="/organization/:slug" element={<OrganizationProfile />} />
+          <Route path="/organization/new" element={<OrganizationForm />} />
+          <Route path="/organization/edit/:id" element={<OrganizationForm />} />
+          <Route path="/minister/:slug" element={<MinisterProfile />} />
+          <Route path="/minister/new" element={<MinisterForm />} />
+          <Route path="/minister/edit/:id" element={<MinisterForm />} />
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
