@@ -22,6 +22,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import Partnership from "./pages/Partnership";
 import Sitemap from "./pages/Sitemap";
+import OrganizationProfile from "./pages/OrganizationProfile";
+import OrganizationForm from "./pages/OrganizationForm";
 
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +56,8 @@ const App = () => (
             <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
             <Route path="/partnership" element={<Partnership />} />
             <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/organization/:slug" element={<OrganizationProfile />} />
+            <Route path="/create-organization" element={<OrganizationForm />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

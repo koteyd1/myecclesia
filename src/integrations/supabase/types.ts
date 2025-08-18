@@ -234,6 +234,7 @@ export type Database = {
           id: string
           image: string | null
           location: string
+          organization_id: string | null
           organizer: string | null
           price: number | null
           requirements: string | null
@@ -256,6 +257,7 @@ export type Database = {
           id?: string
           image?: string | null
           location: string
+          organization_id?: string | null
           organizer?: string | null
           price?: number | null
           requirements?: string | null
@@ -278,6 +280,7 @@ export type Database = {
           id?: string
           image?: string | null
           location?: string
+          organization_id?: string | null
           organizer?: string | null
           price?: number | null
           requirements?: string | null
@@ -287,7 +290,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       files: {
         Row: {
@@ -325,6 +336,95 @@ export type Database = {
           priority?: number | null
           updated_at?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      organization_followers: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_followers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          address: string
+          banner_url: string | null
+          country: string
+          created_at: string
+          denomination: string | null
+          id: string
+          is_verified: boolean | null
+          logo_url: string | null
+          mission_statement: string | null
+          name: string
+          postcode: string
+          safeguarding_contact: string | null
+          services_offered: string[] | null
+          slug: string
+          social_media_links: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          banner_url?: string | null
+          country?: string
+          created_at?: string
+          denomination?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          mission_statement?: string | null
+          name: string
+          postcode: string
+          safeguarding_contact?: string | null
+          services_offered?: string[] | null
+          slug: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          banner_url?: string | null
+          country?: string
+          created_at?: string
+          denomination?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          mission_statement?: string | null
+          name?: string
+          postcode?: string
+          safeguarding_contact?: string | null
+          services_offered?: string[] | null
+          slug?: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
