@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
+import { useEventTracking } from "@/hooks/useEventTracking";
 
 const EventDetail = () => {
   const { slug } = useParams();
@@ -21,6 +22,9 @@ const EventDetail = () => {
   const [registering, setRegistering] = useState(false);
   const [isInCalendar, setIsInCalendar] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  
+  // Track event views
+  useEventTracking(event?.id);
 
   useEffect(() => {
     if (slug) {

@@ -6,10 +6,12 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EventAnalytics } from "@/components/EventAnalytics";
 
 interface EventRegistration {
   id: string;
@@ -190,12 +192,19 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary" />
-            My Registered Events ({registrations.length})
-          </h2>
-        </div>
+        <Tabs defaultValue="events" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="events">My Events</TabsTrigger>
+            <TabsTrigger value="analytics">Event Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="events">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <Users className="h-6 w-6 text-primary" />
+                My Registered Events ({registrations.length})
+              </h2>
+            </div>
 
         {registrations.length === 0 ? (
           <Card>
@@ -309,7 +318,13 @@ const Dashboard = () => {
               </Card>
             ))}
           </div>
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <EventAnalytics />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

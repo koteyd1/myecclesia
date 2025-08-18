@@ -11,6 +11,7 @@ import AdminMinisters from "@/components/admin/AdminMinisters";
 import AdminOrganizations from "@/components/admin/AdminOrganizations";
 
 import { AdminEventReview } from "@/components/admin/AdminEventReview";
+import { EventAnalytics } from "@/components/EventAnalytics";
 
 const AdminDashboard = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
@@ -61,8 +62,9 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="organizations">Organizations</TabsTrigger>
@@ -72,6 +74,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="events">
             <AdminEvents user={user} />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <EventAnalytics />
           </TabsContent>
 
           <TabsContent value="review">
