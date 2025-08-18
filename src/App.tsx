@@ -24,6 +24,8 @@ import Partnership from "./pages/Partnership";
 import Sitemap from "./pages/Sitemap";
 import OrganizationProfile from "./pages/OrganizationProfile";
 import OrganizationForm from "./pages/OrganizationForm";
+import MinisterProfile from "./pages/MinisterProfile";
+import MinisterForm from "./pages/MinisterForm";
 
 import NotFound from "./pages/NotFound";
 

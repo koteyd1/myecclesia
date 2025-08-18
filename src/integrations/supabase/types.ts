@@ -234,6 +234,7 @@ export type Database = {
           id: string
           image: string | null
           location: string
+          minister_id: string | null
           organization_id: string | null
           organizer: string | null
           price: number | null
@@ -257,6 +258,7 @@ export type Database = {
           id?: string
           image?: string | null
           location: string
+          minister_id?: string | null
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
@@ -280,6 +282,7 @@ export type Database = {
           id?: string
           image?: string | null
           location?: string
+          minister_id?: string | null
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
@@ -291,6 +294,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "events_minister_id_fkey"
+            columns: ["minister_id"]
+            isOneToOne: false
+            referencedRelation: "ministers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_organization_id_fkey"
             columns: ["organization_id"]
@@ -336,6 +346,92 @@ export type Database = {
           priority?: number | null
           updated_at?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      minister_followers: {
+        Row: {
+          created_at: string
+          id: string
+          minister_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          minister_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          minister_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "minister_followers_minister_id_fkey"
+            columns: ["minister_id"]
+            isOneToOne: false
+            referencedRelation: "ministers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministers: {
+        Row: {
+          banner_url: string | null
+          booking_links: Json | null
+          created_at: string
+          denomination: string | null
+          full_name: string
+          id: string
+          is_verified: boolean | null
+          location: string
+          ministry_focus: string
+          mission_statement: string | null
+          profile_image_url: string | null
+          services_offered: string[] | null
+          slug: string
+          social_media_links: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          banner_url?: string | null
+          booking_links?: Json | null
+          created_at?: string
+          denomination?: string | null
+          full_name: string
+          id?: string
+          is_verified?: boolean | null
+          location: string
+          ministry_focus: string
+          mission_statement?: string | null
+          profile_image_url?: string | null
+          services_offered?: string[] | null
+          slug: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          banner_url?: string | null
+          booking_links?: Json | null
+          created_at?: string
+          denomination?: string | null
+          full_name?: string
+          id?: string
+          is_verified?: boolean | null
+          location?: string
+          ministry_focus?: string
+          mission_statement?: string | null
+          profile_image_url?: string | null
+          services_offered?: string[] | null
+          slug?: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
