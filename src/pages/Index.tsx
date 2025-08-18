@@ -51,13 +51,25 @@ const Index = () => {
         return eventDate > now;
       });
       
-      // Remove duplicates based on event ID, title, and date to ensure truly unique events
-      const uniqueEvents = upcomingEvents.filter((event, index, self) => 
-        index === self.findIndex(e => 
-          e.id === event.id || 
-          (e.title === event.title && e.date === event.date && e.time === event.time)
-        )
-      ).slice(0, 6); // Limit to 6 unique events
+      // Enhanced deduplication: remove duplicates based on normalized title, date, time, and location
+      const seenEvents = new Set();
+      const uniqueEvents = upcomingEvents.filter((event) => {
+        // Create a unique key based on normalized title, date, time, and location
+        const normalizedTitle = event.title
+          .toLowerCase()
+          .replace(/\s*-\s*\d+$/, '') // Remove trailing " - 1", " - 2", etc.
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        const eventKey = `${normalizedTitle}|${event.date}|${event.time}|${event.location}`;
+        
+        if (seenEvents.has(eventKey)) {
+          return false; // Skip duplicate
+        }
+        
+        seenEvents.add(eventKey);
+        return true;
+      }).slice(0, 6); // Limit to 6 unique events
       
       return uniqueEvents;
     },
