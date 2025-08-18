@@ -95,30 +95,55 @@ const Header = () => {
               </Button>
             )}
             
-            {/* Auth Button */}
-            <Button variant="ghost" size="sm" onClick={handleAuthAction}>
-              {user ? (
-                <>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Sign Out</span>
-                </>
-              ) : (
-                <>
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Login</span>
-                </>
-              )}
-            </Button>
-            
-            {/* Admin Button */}
-            {user && isAdmin && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate("/admin")}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Admin</span>
+            {/* Profile Dropdown for authenticated users */}
+            {user ? (
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline">Account</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-profiles" className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        My Profiles
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile/edit" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Edit Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center gap-2">
+                          <Settings className="h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={handleAuthAction} className="flex items-center gap-2 text-red-600">
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <Button onClick={handleAuthAction} variant="outline" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Sign In</span>
               </Button>
             )}
           </div>

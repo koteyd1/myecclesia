@@ -26,6 +26,8 @@ import OrganizationProfile from "./pages/OrganizationProfile";
 import OrganizationForm from "./pages/OrganizationForm";
 import MinisterProfile from "./pages/MinisterProfile";
 import MinisterForm from "./pages/MinisterForm";
+import MyProfiles from "./pages/MyProfiles";
+import ProfileEdit from "./pages/ProfileEdit";
 
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +66,8 @@ const App = () => (
           <Route path="/minister/:slug" element={<MinisterProfile />} />
           <Route path="/minister/new" element={<MinisterForm />} />
           <Route path="/minister/edit/:id" element={<MinisterForm />} />
+          <Route path="/my-profiles" element={<MyProfiles />} />
+          <Route path="/profile/edit" element={<ProfileEdit />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

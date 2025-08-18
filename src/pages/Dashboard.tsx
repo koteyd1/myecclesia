@@ -6,7 +6,8 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -148,6 +149,18 @@ const Dashboard = () => {
               <CardTitle className="text-lg">Quick Links</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
+              <Link to="/my-profiles">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  My Profiles
+                </Button>
+              </Link>
+              <Link to="/profile/edit">
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
