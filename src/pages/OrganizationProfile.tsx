@@ -14,12 +14,16 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { EventManagement } from '@/components/EventManagement';
 
 export default function OrganizationProfile() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFollowing, setIsFollowing] = useState(false);
+  const [showEventManagement, setShowEventManagement] = useState(false);
   
   useCanonical({ customUrl: `/organization/${slug}` });
 
@@ -161,8 +165,11 @@ export default function OrganizationProfile() {
   const socialLinks = organization.social_media_links as Record<string, string> || {};
   const currentUrl = `${window.location.origin}/organization/${organization.slug}`;
 
+  // Check if current user is the organization owner
+  const isOwner = user && organization && user.id === organization.user_id;
+
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <SEOHead
         title={`${organization.name} - Faith-Based Organization Profile`}
         description={organization.mission_statement || `Learn about ${organization.name}, a ${organization.denomination || 'faith-based'} organization in ${organization.address}`}
@@ -172,6 +179,8 @@ export default function OrganizationProfile() {
       />
 
       <StructuredData data={createOrganizationSchema()} />
+
+      <Header />
 
       <main className="min-h-screen bg-background">
         {/* Banner Section */}
@@ -224,6 +233,16 @@ export default function OrganizationProfile() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
+                  {isOwner && (
+                    <Button
+                      onClick={() => setShowEventManagement(!showEventManagement)}
+                      variant="secondary"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {showEventManagement ? 'Hide' : 'Manage Events'}
+                    </Button>
+                  )}
+                  
                   <Button
                     onClick={handleFollow}
                     variant={userFollowing ? "outline" : "default"}
@@ -246,6 +265,16 @@ export default function OrganizationProfile() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Event Management - Only visible to organization owner */}
+              {isOwner && showEventManagement && (
+                <EventManagement 
+                  organizationId={organization.id}
+                  onEventCreated={() => {
+                    // Refresh events data
+                    window.location.reload();
+                  }}
+                />
+              )}
               {/* Mission Statement */}
               {organization.mission_statement && (
                 <Card>
@@ -366,6 +395,8 @@ export default function OrganizationProfile() {
           </div>
         </div>
       </main>
-    </>
+
+      <Footer />
+    </div>
   );
 }

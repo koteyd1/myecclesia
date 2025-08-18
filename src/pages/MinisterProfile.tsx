@@ -15,9 +15,11 @@ import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { EventManagement } from "@/components/EventManagement";
 
 interface Minister {
   id: string;
+  user_id: string;
   full_name: string;
   location: string;
   denomination: string | null;
@@ -54,6 +56,7 @@ export default function MinisterProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [followersCount, setFollowersCount] = useState(0);
+  const [showEventManagement, setShowEventManagement] = useState(false);
 
   useEffect(() => {
     fetchMinisterData();
@@ -213,6 +216,9 @@ export default function MinisterProfile() {
   const shareUrl = `${window.location.origin}/minister/${minister.slug}`;
   const shareTitle = `${minister.full_name} - Ministry Profile`;
   const shareDescription = minister.mission_statement || `${minister.ministry_focus} minister in ${minister.location}`;
+  
+  // Check if current user is the minister owner
+  const isOwner = user && minister && user.id === minister.user_id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -285,6 +291,16 @@ export default function MinisterProfile() {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
+                    {isOwner && (
+                      <Button
+                        onClick={() => setShowEventManagement(!showEventManagement)}
+                        variant="secondary"
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {showEventManagement ? 'Hide' : 'Manage Events'}
+                      </Button>
+                    )}
+                    
                     <Button onClick={handleFollow} variant={isFollowing ? "outline" : "default"}>
                       <Heart className={`w-4 h-4 mr-2 ${isFollowing ? "fill-current" : ""}`} />
                       {isFollowing ? "Following" : "Follow"}
@@ -318,6 +334,16 @@ export default function MinisterProfile() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
+              {/* Event Management - Only visible to minister owner */}
+              {isOwner && showEventManagement && (
+                <EventManagement 
+                  ministerId={minister.id}
+                  onEventCreated={() => {
+                    // Refresh events data
+                    window.location.reload();
+                  }}
+                />
+              )}
               {/* Mission Statement */}
               {minister.mission_statement && (
                 <Card>
