@@ -182,6 +182,47 @@ export type Database = {
         }
         Relationships: []
       }
+      event_analytics: {
+        Row: {
+          calendar_add_count: number | null
+          created_at: string | null
+          event_id: string
+          id: string
+          registration_count: number | null
+          updated_at: string | null
+          view_count: number | null
+          view_date: string
+        }
+        Insert: {
+          calendar_add_count?: number | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          registration_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+          view_date?: string
+        }
+        Update: {
+          calendar_add_count?: number | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          registration_count?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+          view_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_analytics_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_registrations: {
         Row: {
           created_at: string
@@ -705,6 +746,29 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_event_organizer_analytics: {
+        Args: { organizer_id: string }
+        Returns: {
+          event_date: string
+          event_id: string
+          event_title: string
+          recent_views: number
+          registration_rate: number
+          total_calendar_adds: number
+          total_registrations: number
+          total_views: number
+        }[]
+      }
+      get_organizer_analytics_summary: {
+        Args: { organizer_id: string }
+        Returns: {
+          avg_registration_rate: number
+          total_events: number
+          total_registrations: number
+          total_views: number
+          upcoming_events: number
+        }[]
+      }
       get_user_donations: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -725,6 +789,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_event_view: {
+        Args: { event_id_param: string }
+        Returns: undefined
       }
       is_admin_user: {
         Args: Record<PropertyKey, never>
