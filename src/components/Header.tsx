@@ -38,15 +38,29 @@ const Header = () => {
           {/* Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 ml-16">
             <div className="flex items-center space-x-6 border-r border-border pr-6">
-              <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Events
-              </Link>
-              <Link to="/ministers" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Ministers
-              </Link>
-              <Link to="/organizations" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Organizations
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                  <span>Browse</span>
+                  <ChevronDown className="h-3 w-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to="/events" className="w-full">
+                      Events
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/ministers" className="w-full">
+                      Ministers
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/organizations" className="w-full">
+                      Organizations
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link to="/calendar" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Calendar
               </Link>
@@ -158,15 +172,29 @@ const Header = () => {
         {/* Mobile Navigation */}
         <div className="lg:hidden border-t border-border">
           <div className="py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <Link to="/events" className="text-foreground hover:text-primary transition-colors">
-              Events
-            </Link>
-            <Link to="/ministers" className="text-foreground hover:text-primary transition-colors">
-              Ministers
-            </Link>
-            <Link to="/organizations" className="text-foreground hover:text-primary transition-colors">
-              Organizations
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
+                <span>Browse</span>
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link to="/events" className="w-full">
+                    Events
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ministers" className="w-full">
+                    Ministers
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/organizations" className="w-full">
+                    Organizations
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
               Calendar
             </Link>
