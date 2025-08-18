@@ -28,6 +28,8 @@ import MinisterProfile from "./pages/MinisterProfile";
 import MinisterForm from "./pages/MinisterForm";
 import MyProfiles from "./pages/MyProfiles";
 import ProfileEdit from "./pages/ProfileEdit";
+import Ministers from "./pages/Ministers";
+import Organizations from "./pages/Organizations";
 
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +65,8 @@ const App = () => (
           <Route path="/organization/:slug" element={<OrganizationProfile />} />
           <Route path="/organization/new" element={<OrganizationForm />} />
           <Route path="/organization/edit/:id" element={<OrganizationForm />} />
+          <Route path="/ministers" element={<Ministers />} />
+          <Route path="/organizations" element={<Organizations />} />
           <Route path="/minister/:slug" element={<MinisterProfile />} />
           <Route path="/minister/new" element={<MinisterForm />} />
           <Route path="/minister/edit/:id" element={<MinisterForm />} />

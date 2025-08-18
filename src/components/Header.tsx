@@ -41,6 +41,12 @@ const Header = () => {
               <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Events
               </Link>
+              <Link to="/ministers" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Ministers
+              </Link>
+              <Link to="/organizations" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+                Organizations
+              </Link>
               <Link to="/calendar" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Calendar
               </Link>
@@ -154,6 +160,12 @@ const Header = () => {
           <div className="py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <Link to="/events" className="text-foreground hover:text-primary transition-colors">
               Events
+            </Link>
+            <Link to="/ministers" className="text-foreground hover:text-primary transition-colors">
+              Ministers
+            </Link>
+            <Link to="/organizations" className="text-foreground hover:text-primary transition-colors">
+              Organizations
             </Link>
             <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
               Calendar
