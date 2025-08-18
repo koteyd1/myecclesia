@@ -277,7 +277,6 @@ const EventDetail = () => {
           canonicalUrl={`https://myecclesia.com/events/${slug}`}
         />
         <div className="min-h-screen bg-background">
-          <Header />
           <div className="container mx-auto px-4 py-8 text-center">
             <div className="text-lg">Loading event details...</div>
           </div>
@@ -296,7 +295,6 @@ const EventDetail = () => {
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
-          <Header />
           <div className="container mx-auto px-4 py-8 text-center">
             <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
             <Button onClick={() => navigate("/events")}>Back to Events</Button>
@@ -316,7 +314,6 @@ const EventDetail = () => {
         ogImage={event?.image}
       />
       <div className="min-h-screen bg-background">
-        <Header />
         
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Button 

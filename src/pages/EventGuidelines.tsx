@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Heart, AlertTriangle, Clock, MapPin, Phone, FileText } from "lucide-react";
@@ -6,7 +5,6 @@ import { Shield, Users, Heart, AlertTriangle, Clock, MapPin, Phone, FileText } f
 const EventGuidelines = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto">

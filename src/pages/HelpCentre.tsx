@@ -2,13 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, BookOpen, Heart, Mail, Gift, MapPin, Clock, Search } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const HelpCentre = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}

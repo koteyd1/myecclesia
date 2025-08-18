@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +81,6 @@ const Sitemap = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

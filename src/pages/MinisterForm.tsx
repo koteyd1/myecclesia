@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ImageUpload } from "@/components/ImageUpload";
 
@@ -222,7 +221,6 @@ export default function MinisterForm() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-4xl mx-auto">

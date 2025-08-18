@@ -111,7 +111,6 @@ const Dashboard = () => {
   if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">Loading your dashboard...</div>
         </div>
@@ -122,7 +121,6 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
@@ -135,7 +133,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">My Dashboard</h1>

@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, Globe, BookOpen } from "lucide-react";
@@ -17,7 +16,6 @@ const About = () => {
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={createOrganizationSchema()} />
-        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BreadcrumbNav />

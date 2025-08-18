@@ -17,7 +17,6 @@ import {
   Clock,
   Settings
 } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 
@@ -112,7 +111,6 @@ export default function MyProfiles() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
           <p className="text-muted-foreground mb-4">
@@ -129,7 +127,6 @@ export default function MyProfiles() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
@@ -166,8 +163,6 @@ export default function MyProfiles() {
         description="Manage your minister and organization profiles"
         canonicalUrl={`${window.location.origin}/my-profiles`}
       />
-
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">

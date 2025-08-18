@@ -30,7 +30,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
@@ -354,7 +353,6 @@ export default function Organizations() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
@@ -387,8 +385,6 @@ export default function Organizations() {
           "url": `${window.location.origin}/organizations`
         }}
       />
-
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">

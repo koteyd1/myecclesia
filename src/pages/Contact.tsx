@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,7 +178,6 @@ const Contact = () => {
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={contactSchema} />
-        <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BreadcrumbNav />

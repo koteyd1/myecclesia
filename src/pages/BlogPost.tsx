@@ -131,7 +131,6 @@ const BlogPost = () => {
           canonicalUrl={`https://myecclesia.com/blog/${slug}`}
         />
         <div className="min-h-screen bg-background">
-          <Header />
           <div className="container mx-auto px-4 py-8 text-center">
             <p>Loading...</p>
           </div>
@@ -150,7 +149,6 @@ const BlogPost = () => {
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
-          <Header />
           <div className="container mx-auto px-4 py-8 text-center">
             <h1 className="text-2xl font-bold mb-4">Blog Post Not Found</h1>
             <p className="text-muted-foreground mb-8">The blog post you're looking for doesn't exist.</p>
@@ -177,7 +175,6 @@ const BlogPost = () => {
         ogImage={blogPost?.image}
       />
       <div className="min-h-screen bg-background">
-        <Header />
         
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Button 

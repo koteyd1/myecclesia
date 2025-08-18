@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, User } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 
@@ -168,8 +167,6 @@ export default function ProfileEdit() {
         description="Edit your personal profile information"
         canonicalUrl={`${window.location.origin}/profile/edit`}
       />
-
-      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
