@@ -85,10 +85,9 @@ const Events = () => {
     navigate(newUrl, { replace: true });
   }, [location.pathname, navigate]);
 
-  // Debounced search function
+  // Debounced search function - only handles URL update, not state
   const debouncedSearch = useMemo(
     () => performanceUtils.debounce((term: string) => {
-      setSearchTerm(term);
       setCurrentPage(1);
       updateURL({
         search: term,
@@ -382,7 +381,11 @@ const Events = () => {
             <Input
               placeholder="Search events..."
               value={searchTerm}
-              onChange={(e) => debouncedSearch(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchTerm(value); // Update state immediately for UI
+                debouncedSearch(value); // Debounce the URL update
+              }}
               className="pl-10"
             />
           </div>
