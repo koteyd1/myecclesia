@@ -63,14 +63,12 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="site-analytics">Site Analytics</TabsTrigger>
-            <TabsTrigger value="analytics">Event Analytics</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="organizations">Organizations</TabsTrigger>
-            <TabsTrigger value="ministers">Ministers</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
 
@@ -78,12 +76,13 @@ const AdminDashboard = () => {
             <AdminEvents user={user} />
           </TabsContent>
 
-          <TabsContent value="site-analytics">
-            <SiteAnalytics />
-          </TabsContent>
-
           <TabsContent value="analytics">
-            <EventAnalytics />
+            <div className="space-y-6">
+              <SiteAnalytics />
+              <div className="border-t pt-6">
+                <EventAnalytics />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="review">
@@ -96,10 +95,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="organizations">
             <AdminOrganizations />
-          </TabsContent>
-
-          <TabsContent value="ministers">
-            <AdminMinisters user={user} />
           </TabsContent>
 
           <TabsContent value="users">

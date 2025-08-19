@@ -240,9 +240,7 @@ export function SiteAnalytics() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="chart">Performance Chart</TabsTrigger>
-          <TabsTrigger value="pages">Top Pages</TabsTrigger>
-          <TabsTrigger value="content">Content Performance</TabsTrigger>
-          <TabsTrigger value="trends">Daily Trends</TabsTrigger>
+          <TabsTrigger value="content">Top Content</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -417,53 +415,45 @@ export function SiteAnalytics() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pages" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Most Viewed Pages</CardTitle>
-              <CardDescription>
-                Top performing pages on your website
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {analyticsData?.most_viewed_pages.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No page data available for the selected period.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {analyticsData?.most_viewed_pages.map((page, index) => (
-                    <div
-                      key={page.page_path}
-                      className="flex items-center justify-between border rounded-lg p-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="w-8 h-8 flex items-center justify-center">
-                          {index + 1}
-                        </Badge>
-                        <div>
-                          <h3 className="font-medium">
-                            {page.page_title || page.page_path}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {page.page_path}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold">{page.total_views}</div>
-                        <div className="text-sm text-muted-foreground">views</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="content" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Pages</CardTitle>
+                <CardDescription>
+                  Most viewed pages on your website
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analyticsData?.most_viewed_pages.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">
+                    No page data available.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {analyticsData?.most_viewed_pages.slice(0, 5).map((page, index) => (
+                      <div key={page.page_path} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="w-6 h-6 flex items-center justify-center text-xs">
+                            {index + 1}
+                          </Badge>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-medium truncate block">
+                              {page.page_title || page.page_path}
+                            </span>
+                            <span className="text-xs text-muted-foreground truncate block">
+                              {page.page_path}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium">{page.total_views}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Top Blog Posts</CardTitle>
@@ -473,7 +463,7 @@ export function SiteAnalytics() {
               </CardHeader>
               <CardContent>
                 {analyticsData?.most_viewed_blogs.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="text-center text-muted-foreground py-4">
                     No blog data available.
                   </p>
                 ) : (
@@ -484,7 +474,7 @@ export function SiteAnalytics() {
                           <Badge variant="outline" className="w-6 h-6 flex items-center justify-center text-xs">
                             {index + 1}
                           </Badge>
-                          <span className="text-sm truncate max-w-48">
+                          <span className="text-sm truncate max-w-32">
                             {blog.title}
                           </span>
                         </div>
@@ -505,7 +495,7 @@ export function SiteAnalytics() {
               </CardHeader>
               <CardContent>
                 {analyticsData?.most_viewed_events.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="text-center text-muted-foreground py-4">
                     No event data available.
                   </p>
                 ) : (
@@ -516,7 +506,7 @@ export function SiteAnalytics() {
                           <Badge variant="outline" className="w-6 h-6 flex items-center justify-center text-xs">
                             {index + 1}
                           </Badge>
-                          <span className="text-sm truncate max-w-48">
+                          <span className="text-sm truncate max-w-32">
                             {event.title}
                           </span>
                         </div>
@@ -528,12 +518,10 @@ export function SiteAnalytics() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        <TabsContent value="trends" className="space-y-4">
+          
           <Card>
             <CardHeader>
-              <CardTitle>Daily Activity Trends</CardTitle>
+              <CardTitle>Recent Daily Activity</CardTitle>
               <CardDescription>
                 Daily breakdown of website activity
               </CardDescription>
@@ -545,7 +533,7 @@ export function SiteAnalytics() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {dailyViewsArray.map((day) => (
+                  {dailyViewsArray.slice(0, 7).map((day) => (
                     <div key={day.date} className="border rounded-lg p-4">
                       <div className="flex justify-between items-center mb-3">
                         <h3 className="font-medium">
