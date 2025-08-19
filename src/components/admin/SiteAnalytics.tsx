@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, Users, Calendar, TrendingUp, BarChart3, Globe, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface SiteAnalyticsData {
   total_page_views: number;
@@ -37,9 +38,19 @@ interface SiteAnalyticsData {
   }>;
 }
 
+interface ChartDataPoint {
+  date: string;
+  page_views: number;
+  blog_views: number;
+  event_views: number;
+  unique_visitors: number;
+  total_views: number;
+}
+
 export function SiteAnalytics() {
   const { toast } = useToast();
   const [analyticsData, setAnalyticsData] = useState<SiteAnalyticsData | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('30');
 
@@ -51,10 +62,17 @@ export function SiteAnalytics() {
     try {
       setIsLoading(true);
 
+      // Fetch site analytics summary
       const { data, error } = await supabase
         .rpc('get_site_analytics_summary', { days_back: parseInt(selectedPeriod) });
 
       if (error) throw error;
+
+      // Fetch chart data
+      const { data: chartData, error: chartError } = await supabase
+        .rpc('get_daily_analytics_chart', { days_back: parseInt(selectedPeriod) });
+
+      if (chartError) throw chartError;
 
       const analyticsData = data?.[0];
       if (analyticsData) {
@@ -70,6 +88,22 @@ export function SiteAnalytics() {
           most_viewed_events: (analyticsData.most_viewed_events as any[]) || [],
           daily_views: (analyticsData.daily_views as Record<string, any>) || {},
         });
+      }
+
+      // Process chart data
+      if (chartData) {
+        const formattedChartData = chartData.map((point: any) => ({
+          date: new Date(point.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          page_views: point.page_views || 0,
+          blog_views: point.blog_views || 0,
+          event_views: point.event_views || 0,
+          unique_visitors: point.unique_visitors || 0,
+          total_views: point.total_views || 0,
+        }));
+        setChartData(formattedChartData);
       }
     } catch (error) {
       console.error('Error fetching site analytics:', error);
@@ -205,6 +239,7 @@ export function SiteAnalytics() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="chart">Performance Chart</TabsTrigger>
           <TabsTrigger value="pages">Top Pages</TabsTrigger>
           <TabsTrigger value="content">Content Performance</TabsTrigger>
           <TabsTrigger value="trends">Daily Trends</TabsTrigger>
@@ -274,6 +309,112 @@ export function SiteAnalytics() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="chart" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Over Time</CardTitle>
+              <CardDescription>
+                Daily trends showing website engagement metrics (excluding admin activity)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {chartData.length === 0 ? (
+                <div className="flex items-center justify-center h-64">
+                  <p className="text-muted-foreground">No data available for the selected period</p>
+                </div>
+              ) : (
+                <div className="h-80 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="total_views" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={3}
+                        name="Total Views"
+                        dot={{ fill: 'hsl(var(--primary))' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="page_views" 
+                        stroke="hsl(var(--chart-1))" 
+                        strokeWidth={2}
+                        name="Page Views"
+                        dot={{ fill: 'hsl(var(--chart-1))' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="blog_views" 
+                        stroke="hsl(var(--chart-2))" 
+                        strokeWidth={2}
+                        name="Blog Views"
+                        dot={{ fill: 'hsl(var(--chart-2))' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="event_views" 
+                        stroke="hsl(var(--chart-3))" 
+                        strokeWidth={2}
+                        name="Event Views"
+                        dot={{ fill: 'hsl(var(--chart-3))' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="unique_visitors" 
+                        stroke="hsl(var(--chart-4))" 
+                        strokeWidth={2}
+                        name="Unique Visitors"
+                        dot={{ fill: 'hsl(var(--chart-4))' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+              
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-lg font-bold text-primary">
+                    {chartData.reduce((sum, point) => sum + point.total_views, 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Views</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-lg font-bold" style={{ color: 'hsl(var(--chart-1))' }}>
+                    {chartData.reduce((sum, point) => sum + point.page_views, 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Page Views</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-lg font-bold" style={{ color: 'hsl(var(--chart-2))' }}>
+                    {chartData.reduce((sum, point) => sum + point.blog_views, 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Blog Views</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-lg font-bold" style={{ color: 'hsl(var(--chart-3))' }}>
+                    {chartData.reduce((sum, point) => sum + point.event_views, 0)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Event Views</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="pages" className="space-y-4">

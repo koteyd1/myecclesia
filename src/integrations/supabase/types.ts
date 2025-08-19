@@ -808,6 +808,17 @@ export type Database = {
         Args: { input_text: string }
         Returns: string
       }
+      get_daily_analytics_chart: {
+        Args: { days_back?: number }
+        Returns: {
+          blog_views: number
+          date: string
+          event_views: number
+          page_views: number
+          total_views: number
+          unique_visitors: number
+        }[]
+      }
       get_donation_admin_view: {
         Args: Record<PropertyKey, never>
         Returns: {
