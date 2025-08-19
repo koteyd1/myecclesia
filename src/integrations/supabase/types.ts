@@ -809,6 +809,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_admin_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       ensure_unique_slug: {
         Args: { base_slug: string; record_id?: string; table_name: string }
         Returns: string

@@ -213,6 +213,28 @@ export function SiteAnalytics() {
             <TrendingUp className="h-4 w-4 mr-2" />
             Refresh
           </Button>
+          <Button 
+            onClick={async () => {
+              try {
+                await supabase.rpc('cleanup_admin_analytics');
+                toast({
+                  title: "Admin data cleaned",
+                  description: "Admin analytics data has been removed from reports.",
+                });
+                fetchAnalytics();
+              } catch (error) {
+                toast({
+                  variant: "destructive",
+                  title: "Cleanup failed",
+                  description: "Failed to clean admin data from analytics.",
+                });
+              }
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Clean Test Data
+          </Button>
         </div>
       </div>
 
