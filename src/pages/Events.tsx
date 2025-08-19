@@ -142,6 +142,22 @@ const Events = () => {
     "Interfaith"
   ];
 
+  // Effect to sync state with URL parameters when navigating back
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    setSearchTerm(urlParams.get("search") || "");
+    setSelectedCategory(urlParams.get("category") || "");
+    setSelectedDenomination(urlParams.get("denomination") || "");
+    setPriceFilter(urlParams.get("price") || "");
+    setStartDate(urlParams.get("startDate") || "");
+    setEndDate(urlParams.get("endDate") || "");
+    setMinPrice(urlParams.get("minPrice") || "");
+    setMaxPrice(urlParams.get("maxPrice") || "");
+    setLocationFilter(urlParams.get("location") || "");
+    setAvailabilityFilter(urlParams.get("availability") || "");
+    setCurrentPage(parseInt(urlParams.get("page") || "1"));
+  }, [location.search]);
+
   // Handle errors
   useEffect(() => {
     if (error) {
