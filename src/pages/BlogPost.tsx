@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 import { linkifyText } from "@/utils/linkify";
+import { useSiteTracking, useBlogTracking } from "@/hooks/useSiteTracking";
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -15,6 +16,9 @@ const BlogPost = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  useSiteTracking(blogPost?.title ? `${blogPost.title} - Blog` : "Blog Post");
+  useBlogTracking(blogPost?.id);
 
   useEffect(() => {
     if (slug) {

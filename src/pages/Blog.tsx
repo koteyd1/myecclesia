@@ -9,12 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { useSiteTracking } from "@/hooks/useSiteTracking";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [blogPosts, setBlogPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  useSiteTracking("Blog - myEcclesia");
 
 
   useEffect(() => {

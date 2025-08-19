@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_analytics: {
+        Row: {
+          blog_post_id: string
+          created_at: string
+          id: string
+          session_id: string | null
+          time_spent_seconds: number | null
+          updated_at: string
+          user_id: string | null
+          view_count: number
+          view_date: string
+        }
+        Insert: {
+          blog_post_id: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          time_spent_seconds?: number | null
+          updated_at?: string
+          user_id?: string | null
+          view_count?: number
+          view_date?: string
+        }
+        Update: {
+          blog_post_id?: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          time_spent_seconds?: number | null
+          updated_at?: string
+          user_id?: string | null
+          view_count?: number
+          view_date?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
@@ -565,6 +601,51 @@ export type Database = {
         }
         Relationships: []
       }
+      page_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+          view_count: number
+          view_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          view_count?: number
+          view_date?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          view_count?: number
+          view_date?: string
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           changefreq: string | null
@@ -769,6 +850,21 @@ export type Database = {
           upcoming_events: number
         }[]
       }
+      get_site_analytics_summary: {
+        Args: { days_back?: number }
+        Returns: {
+          daily_views: Json
+          most_viewed_blogs: Json
+          most_viewed_events: Json
+          most_viewed_pages: Json
+          total_blog_views: number
+          total_event_views: number
+          total_page_views: number
+          total_registrations: number
+          total_sessions: number
+          unique_visitors: number
+        }[]
+      }
       get_user_donations: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -790,8 +886,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_blog_view: {
+        Args: {
+          blog_post_id_param: string
+          session_id_param?: string
+          user_id_param?: string
+        }
+        Returns: undefined
+      }
       increment_event_view: {
         Args: { event_id_param: string }
+        Returns: undefined
+      }
+      increment_page_view: {
+        Args: {
+          ip_address_param?: unknown
+          page_path_param: string
+          page_title_param?: string
+          referrer_param?: string
+          session_id_param?: string
+          user_agent_param?: string
+          user_id_param?: string
+        }
         Returns: undefined
       }
       is_admin_user: {

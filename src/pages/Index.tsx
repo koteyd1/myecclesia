@@ -15,9 +15,11 @@ import { LoadingEventCard } from "@/components/LoadingStates";
 import { SEOHead } from "@/components/SEOHead";
 import { useCache } from "@/utils/cache";
 import { performanceUtils } from "@/utils/performance";
+import { useSiteTracking } from "@/hooks/useSiteTracking";
 
 const Index = () => {
   const navigate = useNavigate();
+  useSiteTracking("Home - myEcclesia");
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("All Events");
 

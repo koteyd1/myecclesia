@@ -14,10 +14,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCache } from "@/utils/cache";
 import { performanceUtils } from "@/utils/performance";
+import { useSiteTracking } from "@/hooks/useSiteTracking";
 
 const Events = () => {
   const { toast } = useToast();
   const location = useLocation();
+  useSiteTracking("Events - myEcclesia");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedDenomination, setSelectedDenomination] = useState("");
