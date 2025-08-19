@@ -603,6 +603,9 @@ export type Database = {
       }
       page_analytics: {
         Row: {
+          city: string | null
+          country: string | null
+          country_code: string | null
           created_at: string
           id: string
           ip_address: unknown | null
@@ -617,6 +620,9 @@ export type Database = {
           view_date: string
         }
         Insert: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown | null
@@ -631,6 +637,9 @@ export type Database = {
           view_date?: string
         }
         Update: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           id?: string
           ip_address?: unknown | null
@@ -890,6 +899,16 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_visitor_geography: {
+        Args: { days_back?: number }
+        Returns: {
+          city: string
+          country: string
+          country_code: string
+          page_views: number
+          visitor_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -910,15 +929,28 @@ export type Database = {
         Returns: undefined
       }
       increment_page_view: {
-        Args: {
-          ip_address_param?: unknown
-          page_path_param: string
-          page_title_param?: string
-          referrer_param?: string
-          session_id_param?: string
-          user_agent_param?: string
-          user_id_param?: string
-        }
+        Args:
+          | {
+              city_param?: string
+              country_code_param?: string
+              country_param?: string
+              ip_address_param?: unknown
+              page_path_param: string
+              page_title_param?: string
+              referrer_param?: string
+              session_id_param?: string
+              user_agent_param?: string
+              user_id_param?: string
+            }
+          | {
+              ip_address_param?: unknown
+              page_path_param: string
+              page_title_param?: string
+              referrer_param?: string
+              session_id_param?: string
+              user_agent_param?: string
+              user_id_param?: string
+            }
         Returns: undefined
       }
       is_admin_user: {

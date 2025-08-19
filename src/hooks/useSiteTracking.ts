@@ -21,6 +21,23 @@ export const useSiteTracking = (pageTitle?: string) => {
         const pagePath = window.location.pathname;
         const sessionId = getSessionId();
         
+        // Get visitor's approximate location
+        let locationData = { country: null, country_code: null, city: null };
+        try {
+          // Get user's IP and fetch location data
+          const response = await fetch('https://api.ipify.org?format=json');
+          const { ip } = await response.json();
+          
+          const { data: location } = await supabase.functions.invoke('get-visitor-location', {
+            body: { ip }
+          });
+          if (location && !location.error) {
+            locationData = location;
+          }
+        } catch (locationError) {
+          console.debug('Location detection failed:', locationError);
+        }
+        
         await supabase.rpc('increment_page_view', {
           page_path_param: pagePath,
           page_title_param: pageTitle || document.title,
@@ -28,6 +45,9 @@ export const useSiteTracking = (pageTitle?: string) => {
           session_id_param: sessionId,
           referrer_param: document.referrer || null,
           user_agent_param: navigator.userAgent,
+          country_param: locationData.country,
+          country_code_param: locationData.country_code,
+          city_param: locationData.city,
         });
       } catch (error) {
         // Silently fail - don't disrupt user experience

@@ -36,6 +36,13 @@ interface SiteAnalyticsData {
     blog_views: number;
     event_views: number;
   }>;
+  visitor_geography: Array<{
+    country: string;
+    country_code: string;
+    city: string;
+    visitor_count: number;
+    page_views: number;
+  }>;
 }
 
 interface ChartDataPoint {
@@ -51,6 +58,13 @@ export function SiteAnalytics() {
   const { toast } = useToast();
   const [analyticsData, setAnalyticsData] = useState<SiteAnalyticsData | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [geographyData, setGeographyData] = useState<Array<{
+    country: string;
+    country_code: string;
+    city: string;
+    visitor_count: number;
+    page_views: number;
+  }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('30');
 
@@ -74,6 +88,12 @@ export function SiteAnalytics() {
 
       if (chartError) throw chartError;
 
+      // Fetch geography data
+      const { data: geoData, error: geoError } = await supabase
+        .rpc('get_visitor_geography', { days_back: parseInt(selectedPeriod) });
+
+      if (geoError) throw geoError;
+
       const analyticsData = data?.[0];
       if (analyticsData) {
         setAnalyticsData({
@@ -87,6 +107,7 @@ export function SiteAnalytics() {
           most_viewed_blogs: (analyticsData.most_viewed_blogs as any[]) || [],
           most_viewed_events: (analyticsData.most_viewed_events as any[]) || [],
           daily_views: (analyticsData.daily_views as Record<string, any>) || {},
+          visitor_geography: (geoData as any[]) || [],
         });
       }
 
@@ -241,6 +262,7 @@ export function SiteAnalytics() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="chart">Performance Chart</TabsTrigger>
           <TabsTrigger value="content">Top Content</TabsTrigger>
+          <TabsTrigger value="geography">Visitor Countries</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -564,6 +586,142 @@ export function SiteAnalytics() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="geography" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visitor Geography</CardTitle>
+              <CardDescription>
+                Countries and cities where your visitors are from
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {geographyData.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No geographic data available yet.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Location data will appear as visitors access your site.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <h4 className="font-medium mb-3">Top Countries</h4>
+                      <div className="space-y-2">
+                        {geographyData
+                          .reduce((countries: any[], location) => {
+                            const existing = countries.find(c => c.country === location.country);
+                            if (existing) {
+                              existing.visitor_count += Number(location.visitor_count);
+                              existing.page_views += Number(location.page_views);
+                            } else {
+                              countries.push({
+                                country: location.country,
+                                country_code: location.country_code,
+                                visitor_count: Number(location.visitor_count),
+                                page_views: Number(location.page_views)
+                              });
+                            }
+                            return countries;
+                          }, [])
+                          .sort((a, b) => b.visitor_count - a.visitor_count)
+                          .slice(0, 10)
+                          .map((country, index) => (
+                            <div key={country.country} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline" className="w-6 h-6 flex items-center justify-center text-xs">
+                                  {index + 1}
+                                </Badge>
+                                <div>
+                                  <div className="font-medium">
+                                    {country.country_code && (
+                                      <span className="mr-2">
+                                        {String.fromCodePoint(...country.country_code.toUpperCase().split('').map((char: string) => 0x1F1E6 + char.charCodeAt(0) - 65))}
+                                      </span>
+                                    )}
+                                    {country.country}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-medium">{country.visitor_count} visitors</div>
+                                <div className="text-sm text-muted-foreground">{country.page_views} views</div>
+                              </div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-3">Top Cities</h4>
+                      <div className="space-y-2">
+                        {geographyData
+                          .filter(location => location.city)
+                          .sort((a, b) => Number(b.visitor_count) - Number(a.visitor_count))
+                          .slice(0, 10)
+                          .map((location, index) => (
+                            <div key={`${location.city}-${location.country}`} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline" className="w-6 h-6 flex items-center justify-center text-xs">
+                                  {index + 1}
+                                </Badge>
+                                <div>
+                                  <div className="font-medium">{location.city}</div>
+                                  <div className="text-sm text-muted-foreground">{location.country}</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-medium">{location.visitor_count} visitors</div>
+                                <div className="text-sm text-muted-foreground">{location.page_views} views</div>
+                              </div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 p-4 border rounded-lg bg-muted/50">
+                    <h4 className="font-medium mb-2">Geographic Summary</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-primary">
+                          {geographyData.reduce((countries, location) => {
+                            if (!countries.includes(location.country)) {
+                              countries.push(location.country);
+                            }
+                            return countries;
+                          }, [] as string[]).length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Countries</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-primary">
+                          {geographyData.filter(location => location.city).length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Cities</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-primary">
+                          {geographyData.reduce((sum, location) => sum + Number(location.visitor_count), 0)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Total Visitors</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-primary">
+                          {geographyData.reduce((sum, location) => sum + Number(location.page_views), 0)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Total Views</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
