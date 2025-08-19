@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
@@ -19,19 +19,23 @@ import { useSiteTracking } from "@/hooks/useSiteTracking";
 const Events = () => {
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   useSiteTracking("Events - myEcclesia");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedDenomination, setSelectedDenomination] = useState("");
-  const [priceFilter, setPriceFilter] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [availabilityFilter, setAvailabilityFilter] = useState("");
+  
+  // Initialize state from URL parameters
+  const urlParams = new URLSearchParams(location.search);
+  const [searchTerm, setSearchTerm] = useState(urlParams.get("search") || "");
+  const [selectedCategory, setSelectedCategory] = useState(urlParams.get("category") || "");
+  const [selectedDenomination, setSelectedDenomination] = useState(urlParams.get("denomination") || "");
+  const [priceFilter, setPriceFilter] = useState(urlParams.get("price") || "");
+  const [startDate, setStartDate] = useState(urlParams.get("startDate") || "");
+  const [endDate, setEndDate] = useState(urlParams.get("endDate") || "");
+  const [minPrice, setMinPrice] = useState(urlParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(urlParams.get("maxPrice") || "");
+  const [locationFilter, setLocationFilter] = useState(urlParams.get("location") || "");
+  const [availabilityFilter, setAvailabilityFilter] = useState(urlParams.get("availability") || "");
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(parseInt(urlParams.get("page") || "1"));
   const [isInitialized, setIsInitialized] = useState(false);
   const eventsPerPage = 30;
 
@@ -68,13 +72,38 @@ const Events = () => {
     }
   );
 
+  // Function to update URL with current filter state
+  const updateURL = useCallback((filters: Record<string, string>, page = 1) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    if (page > 1) params.set("page", page.toString());
+    
+    const newSearch = params.toString();
+    const newUrl = `${location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+    navigate(newUrl, { replace: true });
+  }, [location.pathname, navigate]);
+
   // Debounced search function
   const debouncedSearch = useMemo(
     () => performanceUtils.debounce((term: string) => {
       setSearchTerm(term);
       setCurrentPage(1);
+      updateURL({
+        search: term,
+        category: selectedCategory,
+        denomination: selectedDenomination,
+        price: priceFilter,
+        startDate,
+        endDate,
+        minPrice,
+        maxPrice,
+        location: locationFilter,
+        availability: availabilityFilter
+      }, 1);
     }, 300),
-    []
+    [selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, updateURL]
   );
 
   const categoryOptions = [
@@ -205,7 +234,8 @@ const Events = () => {
     setLocationFilter("");
     setAvailabilityFilter("");
     setCurrentPage(1);
-  }, []);
+    updateURL({}, 1);
+  }, [updateURL]);
 
   const hasActiveFilters = useMemo(() => 
     searchTerm !== "" || selectedCategory !== "" || 
@@ -231,15 +261,39 @@ const Events = () => {
 
   const { totalPages, startIndex, endIndex, currentEvents } = paginationData;
 
-  // Reset to first page when filters change and scroll to top when page changes
+  // Update URL when any filter changes
   const handleFilterChange = useCallback(() => {
     setCurrentPage(1);
-  }, []);
+    updateURL({
+      search: searchTerm,
+      category: selectedCategory,
+      denomination: selectedDenomination,
+      price: priceFilter,
+      startDate,
+      endDate,
+      minPrice,
+      maxPrice,
+      location: locationFilter,
+      availability: availabilityFilter
+    }, 1);
+  }, [searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, updateURL]);
 
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
+    updateURL({
+      search: searchTerm,
+      category: selectedCategory,
+      denomination: selectedDenomination,
+      price: priceFilter,
+      startDate,
+      endDate,
+      minPrice,
+      maxPrice,
+      location: locationFilter,
+      availability: availabilityFilter
+    }, newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, updateURL]);
 
   if (loading) {
     return (
@@ -324,7 +378,7 @@ const Events = () => {
               <span className="text-sm font-medium text-muted-foreground">Quick Filters:</span>
             </div>
             
-            <Select value={selectedCategory} onValueChange={(value) => { setSelectedCategory(value); handleFilterChange(); }}>
+            <Select value={selectedCategory} onValueChange={(value) => { setSelectedCategory(value); setTimeout(handleFilterChange, 0); }}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -337,7 +391,7 @@ const Events = () => {
               </SelectContent>
             </Select>
 
-            <Select value={priceFilter} onValueChange={(value) => { setPriceFilter(value); handleFilterChange(); }}>
+            <Select value={priceFilter} onValueChange={(value) => { setPriceFilter(value); setTimeout(handleFilterChange, 0); }}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="All Events" />
               </SelectTrigger>
@@ -384,14 +438,14 @@ const Events = () => {
                       type="date"
                       placeholder="Start Date"
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      onChange={(e) => { setStartDate(e.target.value); setTimeout(handleFilterChange, 0); }}
                       className="text-sm"
                     />
                     <Input
                       type="date"
                       placeholder="End Date"
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
+                      onChange={(e) => { setEndDate(e.target.value); setTimeout(handleFilterChange, 0); }}
                       className="text-sm"
                     />
                   </div>
@@ -408,7 +462,7 @@ const Events = () => {
                       type="number"
                       placeholder="Min Price"
                       value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
+                      onChange={(e) => { setMinPrice(e.target.value); setTimeout(handleFilterChange, 0); }}
                       min="0"
                       step="0.01"
                       className="text-sm"
@@ -417,7 +471,7 @@ const Events = () => {
                       type="number"
                       placeholder="Max Price"
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
+                      onChange={(e) => { setMaxPrice(e.target.value); setTimeout(handleFilterChange, 0); }}
                       min="0"
                       step="0.01"
                       className="text-sm"
@@ -434,7 +488,7 @@ const Events = () => {
                   <Input
                     placeholder="Search by location..."
                     value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
+                    onChange={(e) => { setLocationFilter(e.target.value); setTimeout(handleFilterChange, 0); }}
                     className="text-sm"
                   />
                 </div>
@@ -442,7 +496,7 @@ const Events = () => {
                 {/* Denomination */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Denomination</label>
-                  <Select value={selectedDenomination} onValueChange={setSelectedDenomination}>
+                  <Select value={selectedDenomination} onValueChange={(value) => { setSelectedDenomination(value); setTimeout(handleFilterChange, 0); }}>
                     <SelectTrigger className="text-sm">
                       <SelectValue placeholder="All Denominations" />
                     </SelectTrigger>
@@ -462,7 +516,7 @@ const Events = () => {
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <label className="text-sm font-medium">Availability</label>
                   </div>
-                  <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+                  <Select value={availabilityFilter} onValueChange={(value) => { setAvailabilityFilter(value); setTimeout(handleFilterChange, 0); }}>
                     <SelectTrigger className="text-sm">
                       <SelectValue placeholder="All Events" />
                     </SelectTrigger>
