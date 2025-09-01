@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -44,47 +44,45 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">
-              <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/events/:slug" element={<EventDetail />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/donate" element={<Donate />} />
-            <Route path="/event-guidelines" element={<EventGuidelines />} />
-            <Route path="/help-centre" element={<HelpCentre />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-            <Route path="/partnership" element={<Partnership />} />
-            <Route path="/sitemap" element={<Sitemap />} />
-          <Route path="/organization/:slug" element={<OrganizationProfile />} />
-          <Route path="/organization/new" element={<OrganizationForm />} />
-          <Route path="/organization/edit/:id" element={<OrganizationForm />} />
-          <Route path="/ministers" element={<Ministers />} />
-          <Route path="/organizations" element={<Organizations />} />
-          <Route path="/minister/:slug" element={<MinisterProfile />} />
-          <Route path="/minister/new" element={<MinisterForm />} />
-          <Route path="/minister/edit/:id" element={<MinisterForm />} />
-          <Route path="/my-profiles" element={<MyProfiles />} />
-          <Route path="/profile/edit" element={<ProfileEdit />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/events/:slug" element={<EventDetail />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/donate" element={<Donate />} />
+              <Route path="/event-guidelines" element={<EventGuidelines />} />
+              <Route path="/help-centre" element={<HelpCentre />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/partnership" element={<Partnership />} />
+              <Route path="/sitemap" element={<Sitemap />} />
+              <Route path="/organization/:slug" element={<OrganizationProfile />} />
+              <Route path="/organization/new" element={<OrganizationForm />} />
+              <Route path="/organization/edit/:id" element={<OrganizationForm />} />
+              <Route path="/ministers" element={<Ministers />} />
+              <Route path="/organizations" element={<Organizations />} />
+              <Route path="/minister/:slug" element={<MinisterProfile />} />
+              <Route path="/minister/new" element={<MinisterForm />} />
+              <Route path="/minister/edit/:id" element={<MinisterForm />} />
+              <Route path="/my-profiles" element={<MyProfiles />} />
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
