@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode, command }) => ({
+export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
@@ -19,11 +19,4 @@ export default defineConfig(({ mode, command }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html')
-      }
-    }
-  }
 }));
