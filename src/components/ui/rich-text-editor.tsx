@@ -1,6 +1,4 @@
-import React from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -18,6 +16,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className,
   height = "200px"
 }) => {
+  const [ReactQuill, setReactQuill] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    // Dynamic import to avoid SSR issues
+    import('react-quill').then((mod) => {
+      setReactQuill(() => mod.default);
+      // Import CSS dynamically as well
+      import('react-quill/dist/quill.snow.css');
+    });
+  }, []);
+
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -40,6 +51,21 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     'align',
     'link', 'image'
   ];
+
+  // Don't render anything during SSR or while loading
+  if (!isClient || !ReactQuill) {
+    return (
+      <div 
+        className={cn(
+          "min-h-[200px] border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 p-3",
+          className
+        )}
+        style={{ height }}
+      >
+        <div className="text-muted-foreground">Loading editor...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("rich-text-editor", className)}>
