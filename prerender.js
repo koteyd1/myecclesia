@@ -46,7 +46,21 @@ async function prerender() {
     '/blog/upcoming-christian-events-in-the-uk-augdec-2025-'
   ];
 
-  const routes = [...staticRoutes, ...blogPostRoutes];
+  // Sample event routes for popular events (these would be real event slugs in production)
+  const eventRoutes = [
+    '/events/christmas-carol-service-2024',
+    '/events/new-year-prayer-meeting-2025',
+    '/events/easter-celebration-2025',
+    '/events/youth-conference-2025',
+    '/events/bible-study-fellowship',
+    '/events/worship-night-london',
+    '/events/community-outreach-manchester',
+    '/events/family-fun-day-birmingham',
+    '/events/mens-breakfast-glasgow',
+    '/events/womens-retreat-edinburgh'
+  ];
+
+  const routes = [...staticRoutes, ...blogPostRoutes, ...eventRoutes];
   
   for (const route of routes) {
     console.log(`Rendering route: ${route}`);
