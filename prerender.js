@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function prerender() {
   const { render } = await import('./dist/server/entry-server.js');
   
-  const template = fs.readFileSync(path.resolve(__dirname, 'dist/client/index.html'), 'utf-8');
+  const template = fs.readFileSync(path.resolve(__dirname, 'dist/index.html'), 'utf-8');
   
   // Static routes from App.tsx (excluding dynamic routes with :slug, :id)
   const staticRoutes = [
@@ -58,7 +58,7 @@ async function prerender() {
     const h1Match = finalHtml.match(/<h1[^>]*>(.*?)<\/h1>/);
     console.log(`Route ${route} - Title: ${titleMatch ? titleMatch[1] : 'Not found'}, H1: ${h1Match ? h1Match[1] : 'Not found'}`);
     
-    const filePath = path.resolve(__dirname, `dist/client${route === '/' ? '/index' : route}.html`);
+    const filePath = path.resolve(__dirname, `dist${route === '/' ? '/index' : route}.html`);
     
     // Ensure directory exists before writing file
     const dir = path.dirname(filePath);
