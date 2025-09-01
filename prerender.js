@@ -36,8 +36,14 @@ async function prerender() {
   ];
   
   for (const route of routes) {
+    console.log(`Rendering route: ${route}`);
     const { html } = render(route);
     const finalHtml = template.replace('<!--ssr-outlet-->', html);
+    
+    // Debug: Check if the HTML contains route-specific content
+    const titleMatch = finalHtml.match(/<title>(.*?)<\/title>/);
+    const h1Match = finalHtml.match(/<h1[^>]*>(.*?)<\/h1>/);
+    console.log(`Route ${route} - Title: ${titleMatch ? titleMatch[1] : 'Not found'}, H1: ${h1Match ? h1Match[1] : 'Not found'}`);
     
     const filePath = path.resolve(__dirname, `dist/client${route === '/' ? '/index' : route}.html`);
     
