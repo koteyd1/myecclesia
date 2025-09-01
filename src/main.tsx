@@ -14,9 +14,20 @@ const app = (
   </BrowserRouter>
 );
 
-// Use hydration for SSR in production
-if (import.meta.env.PROD) {
-  hydrateRoot(root, app);
+// Check if the root element has pre-rendered content
+const hasSSRContent = root.innerHTML.includes('<!--app-html-->') === false && 
+                      root.innerHTML.trim() !== '' && 
+                      root.innerHTML.length > 50;
+
+// Always use createRoot to avoid hydration mismatches during development
+// Only use hydration in production when we're sure there's SSR content
+if (import.meta.env.PROD && hasSSRContent) {
+  try {
+    hydrateRoot(root, app);
+  } catch (error) {
+    console.warn('Hydration failed, falling back to createRoot:', error);
+    createRoot(root).render(app);
+  }
 } else {
   createRoot(root).render(app);
 }
