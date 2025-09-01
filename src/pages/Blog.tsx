@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+
 import BlogCard from "@/components/BlogCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
