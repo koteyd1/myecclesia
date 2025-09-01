@@ -1,5 +1,5 @@
 [build]
-  publish = "dist"
+  publish = "dist/client"
   command = "npm run build"
 
 [build.environment]
@@ -15,7 +15,21 @@
   to = "/robots.txt"
   status = 200
 
-# Handle SPA routing - this should come last
+# Handle prerendered blog posts first
+[[redirects]]
+  from = "/blog/*"
+  to = "/blog/:splat.html"
+  status = 200
+  conditions = {file_exists = true}
+
+# Handle other prerendered pages
+[[redirects]]
+  from = "/*"
+  to = "/:splat.html"
+  status = 200
+  conditions = {file_exists = true}
+
+# SPA fallback - this should come last
 [[redirects]]
   from = "/*"
   to = "/index.html"
