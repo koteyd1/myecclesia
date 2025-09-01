@@ -61,7 +61,54 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root"><!--ssr-outlet--></div>
+    
+    <!-- Fallback content for search engines and users without JavaScript -->
+    <noscript>
+      <header>
+        <h1>MyEcclesia – Book Christian Events & Tickets | UK Christian Community</h1>
+        <nav>
+          <a href="/events">Events</a>
+          <a href="/ministers">Ministers</a>
+          <a href="/organizations">Organizations</a>
+          <a href="/calendar">Calendar</a>
+          <a href="/blog">Blog</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </header>
+      
+      <main>
+        <section>
+          <h2>Discover Christian Events Across the UK</h2>
+          <p>MyEcclesia is your premier platform for discovering, booking, and attending Christian events throughout the United Kingdom. From worship services and conferences to community gatherings and fellowship opportunities, we connect you with your local church community.</p>
+          
+          <h3>Featured Services</h3>
+          <ul>
+            <li><strong>Event Discovery:</strong> Find Christian events, conferences, and worship services in your area</li>
+            <li><strong>Minister Directory:</strong> Connect with pastors, speakers, and Christian leaders</li>
+            <li><strong>Organization Profiles:</strong> Explore churches and Christian organizations</li>
+            <li><strong>Community Calendar:</strong> Stay updated with upcoming Christian events</li>
+            <li><strong>Blog & Resources:</strong> Read inspiring content and spiritual guidance</li>
+          </ul>
+          
+          <h3>Join the Christian Community</h3>
+          <p>Whether you're looking for weekly worship services, special conferences, youth events, or fellowship opportunities, MyEcclesia helps you find and connect with the Christian community that's right for you.</p>
+          
+          <p><strong>Contact us:</strong> Get in touch to learn more about our platform and how we can help you grow in your faith journey.</p>
+        </section>
+      </main>
+      
+      <footer>
+        <p>&copy; 2024 MyEcclesia. Connecting the UK Christian Community.</p>
+        <nav>
+          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="/terms-and-conditions">Terms & Conditions</a>
+          <a href="/help-centre">Help Centre</a>
+        </nav>
+      </footer>
+    </noscript>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
