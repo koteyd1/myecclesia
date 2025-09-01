@@ -1,6 +1,8 @@
 // Authentication cleanup utilities to prevent limbo states
 
 export const cleanupAuthState = () => {
+  if (typeof window === 'undefined') return;
+  
   try {
     // Remove standard auth tokens
     localStorage.removeItem('supabase.auth.token');
@@ -26,6 +28,8 @@ export const cleanupAuthState = () => {
 };
 
 export const performSecureSignOut = async (supabase: any) => {
+  if (typeof window === 'undefined') return;
+  
   try {
     // Clean up existing state first
     cleanupAuthState();
@@ -48,6 +52,8 @@ export const performSecureSignOut = async (supabase: any) => {
 };
 
 export const performSecureSignIn = async (supabase: any, email: string, password: string) => {
+  if (typeof window === 'undefined') return { data: null, error: new Error('Server environment') };
+  
   try {
     // Clean up existing state
     cleanupAuthState();

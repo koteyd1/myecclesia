@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Generate a session ID for anonymous users
 const getSessionId = () => {
+  if (typeof window === 'undefined') return 'ssr_session';
+  
   let sessionId = sessionStorage.getItem('analytics_session_id');
   if (!sessionId) {
     sessionId = 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
@@ -16,6 +18,8 @@ export const useSiteTracking = (pageTitle?: string) => {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const trackPageView = async () => {
       try {
         const pagePath = window.location.pathname;
