@@ -64,6 +64,7 @@ const BlogPost = () => {
         readTime: "5 min read",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=600&fit=crop",
         category: "Faith",
+        slug: "finding-hope-in-difficult-times",
         excerpt: "Life can be challenging, and we all face moments when hope seems distant. In this post, we explore how faith can be an anchor during storms and how our community can support one another through prayer and fellowship."
       },
       {
@@ -75,6 +76,7 @@ const BlogPost = () => {
         readTime: "7 min read",
         image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1200&h=600&fit=crop",
         category: "Service",
+        slug: "the-power-of-community-service",
         excerpt: "Discover how serving others transforms not only the lives we touch but our own hearts as well. Learn about our recent community outreach programs and how you can get involved in making a difference."
       },
       {
@@ -86,6 +88,7 @@ const BlogPost = () => {
         readTime: "6 min read",
         image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1200&h=600&fit=crop",
         category: "Family",
+        slug: "building-strong-family-foundations",
         excerpt: "Strong families are the cornerstone of our community. Explore practical ways to strengthen family bonds through faith-based principles, communication, and shared values that last a lifetime."
       },
       {
@@ -97,6 +100,7 @@ const BlogPost = () => {
         readTime: "4 min read",
         image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?w=1200&h=600&fit=crop",
         category: "Youth",
+        slug: "youth-ministry-nurturing-the-next-generation",
         excerpt: "Our youth are the future of our church and community. Learn about our youth programs, upcoming events, and how we're helping young people develop their faith and leadership skills."
       },
       {
@@ -108,6 +112,7 @@ const BlogPost = () => {
         readTime: "5 min read",
         image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=600&fit=crop",
         category: "Worship",
+        slug: "the-art-of-worship-music-and-praise",
         excerpt: "Music has always been a powerful way to connect with God and express our faith. Discover the history and meaning behind our worship songs and how music ministry enriches our spiritual journey."
       },
       {
@@ -118,13 +123,30 @@ const BlogPost = () => {
         date: "2024-01-01",
         readTime: "8 min read",
         image: "https://images.unsplash.com/photo-1460904577954-8fadb262612c?w=1200&h=600&fit=crop",
-        category: "Faith",
-        excerpt: "As we approach the Easter season, it's time to prepare our hearts for reflection and renewal. Join us in exploring the significance of this holy time and how we can make the most of this spiritual journey."
-      }
-    ];
+         category: "Faith",
+         slug: "preparing-for-easter-a-season-of-reflection",
+         excerpt: "As we approach the Easter season, it's time to prepare our hearts for reflection and renewal. Join us in exploring the significance of this holy time and how we can make the most of this spiritual journey."
+       },
+       {
+         id: "7",
+         title: "Upcoming Christian Events in the UK: Aug-Dec 2025",
+         content: "<p>Exciting Christian events are coming to the UK in the second half of 2025! From inspiring conferences to local church gatherings, there's something for every believer looking to grow in their faith and connect with fellow Christians.</p><h3>Major Conferences</h3><p>Several major Christian conferences are scheduled for this period, featuring renowned speakers, worship leaders, and opportunities for spiritual growth. These events bring together thousands of believers from across the nation.</p><h3>Local Church Events</h3><p>Beyond the large conferences, numerous local churches are hosting special events including:</p><ul><li>Revival meetings and prayer gatherings</li><li>Community outreach programs</li><li>Youth camps and family retreats</li><li>Worship nights and concert events</li><li>Bible study conferences</li></ul><h3>How to Stay Updated</h3><p>To stay informed about these upcoming events, make sure to check our events calendar regularly. You can also subscribe to our newsletter for the latest updates on Christian events happening near you.</p><p>Don't miss out on these incredible opportunities to grow in your faith, make new connections, and be part of the vibrant UK Christian community. Book your tickets early as popular events tend to sell out quickly!</p>",
+         author: "Events Team",
+         date: "2024-08-15",
+         readTime: "4 min read",
+         image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=600&fit=crop",
+         category: "Events",
+         slug: "upcoming-christian-events-in-the-uk-augdec-2025-",
+         excerpt: "Discover the most exciting Christian events coming to the UK from August to December 2025. From major conferences to local church gatherings, find opportunities to grow in faith."
+       }
+     ];
 
-    return fallbackPosts.find(post => post.id === postId) || null;
-  };
+     return fallbackPosts.find(post => 
+       post.slug === postId || 
+       post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === postId ||
+       post.id === postId
+     ) || null;
+   };
 
   if (isLoading) {
     return (

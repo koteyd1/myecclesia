@@ -42,7 +42,8 @@ async function prerender() {
     '/blog/building-strong-family-foundations',
     '/blog/youth-ministry-nurturing-the-next-generation',
     '/blog/the-art-of-worship-music-and-praise',
-    '/blog/preparing-for-easter-a-season-of-reflection'
+    '/blog/preparing-for-easter-a-season-of-reflection',
+    '/blog/upcoming-christian-events-in-the-uk-augdec-2025-'
   ];
 
   const routes = [...staticRoutes, ...blogPostRoutes];
