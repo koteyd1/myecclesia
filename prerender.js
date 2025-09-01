@@ -2,9 +2,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import url from 'node:url'
+import { createClient } from '@supabase/supabase-js'
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const toAbsolute = (p) => path.resolve(__dirname, p)
+
+// Initialize Supabase client for fetching dynamic content
+const supabaseUrl = 'https://api.myecclesia.co.uk'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFra2VlYnVheHJjYXlid2V6anZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzAyNzQsImV4cCI6MjA0OTg0NjI3NH0.9OJCLlDxbFxrVzg1zPy9Z0hGR0sBP7FoWXnKz7Y5nII'
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Function to ensure directory exists
 const ensureDirectoryExists = (filePath) => {
@@ -46,10 +52,45 @@ const extractRoutesFromApp = () => {
 const template = fs.readFileSync(toAbsolute('dist/index.html'), 'utf-8')
 const { render } = await import('./dist/server/entry-server.js')
 
-// Get routes from App.tsx
-const routesToPrerender = extractRoutesFromApp();
+// Fetch dynamic content for prerendering
+const fetchDynamicRoutes = async () => {
+  try {
+    // Fetch blog posts
+    const { data: blogPosts } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('published', true);
 
-console.log('Routes to prerender:', routesToPrerender);
+    // Fetch events
+    const { data: events } = await supabase
+      .from('events')
+      .select('slug')
+      .gte('event_date', new Date().toISOString());
+
+    const blogRoutes = blogPosts?.map(post => `/blog/${post.slug}`) || [];
+    const eventRoutes = events?.map(event => `/events/${event.slug}`) || [];
+
+    return [...blogRoutes, ...eventRoutes];
+  } catch (error) {
+    console.warn('Could not fetch dynamic routes from database:', error);
+    
+    // Fallback to hardcoded routes for essential pages
+    return [
+      '/blog/welcome-to-myecclesia-connecting-faith-communities',
+      '/blog/building-stronger-communities-through-technology',
+      '/blog/the-future-of-digital-ministry'
+    ];
+  }
+};
+
+// Get static routes from App.tsx and dynamic routes from database
+const staticRoutes = extractRoutesFromApp();
+const dynamicRoutes = await fetchDynamicRoutes();
+const routesToPrerender = [...staticRoutes, ...dynamicRoutes];
+
+console.log('Static routes to prerender:', staticRoutes);
+console.log('Dynamic routes to prerender:', dynamicRoutes);
+console.log('Total routes to prerender:', routesToPrerender.length);
 
 ;(async () => {
   try {
