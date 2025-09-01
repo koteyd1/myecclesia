@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SEOOptimizations } from "@/components/SEOOptimizations";
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Header from "@/components/Header";
@@ -32,6 +33,7 @@ import MyProfiles from "./pages/MyProfiles";
 import ProfileEdit from "./pages/ProfileEdit";
 import Ministers from "./pages/Ministers";
 import Organizations from "./pages/Organizations";
+import SiteAnalytics from "./pages/SiteAnalytics";
 
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +44,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <SEOOptimizations />
         <Toaster />
         <Sonner />
         <div className="min-h-screen flex flex-col">
@@ -76,6 +79,7 @@ const App = () => (
               <Route path="/minister/edit/:id" element={<MinisterForm />} />
               <Route path="/my-profiles" element={<MyProfiles />} />
               <Route path="/profile/edit" element={<ProfileEdit />} />
+              <Route path="/site-analytics" element={<SiteAnalytics />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

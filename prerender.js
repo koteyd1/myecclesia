@@ -1,88 +1,27 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs'
+import path from 'node:path'
+import url from 'node:url'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
+const toAbsolute = (p) => path.resolve(__dirname, p)
 
-async function prerender() {
-  const { render } = await import('./dist/server/entry-server.js');
-  
-  const template = fs.readFileSync(path.resolve(__dirname, 'dist/index.html'), 'utf-8');
-  
-  // Static routes from App.tsx (excluding dynamic routes with :slug, :id)
-  const staticRoutes = [
-    '/',
-    '/auth',
-    '/events',
-    '/calendar',
-    '/dashboard',
-    '/blog',
-    '/admin',
-    '/about',
-    '/contact',
-    '/donate',
-    '/event-guidelines',
-    '/help-centre',
-    '/privacy-policy',
-    '/terms-and-conditions',
-    '/partnership',
-    '/sitemap',
-    '/organization/new',
-    '/ministers',
-    '/organizations',
-    '/minister/new',
-    '/my-profiles',
-    '/profile/edit'
-  ];
+const template = fs.readFileSync(toAbsolute('dist/index.html'), 'utf-8')
+const { render } = await import('./dist/server/entry-server.js')
 
-  // Blog post routes - these should match the fallback data in BlogPost.tsx
-  const blogPostRoutes = [
-    '/blog/finding-hope-in-difficult-times',
-    '/blog/the-power-of-community-service', 
-    '/blog/building-strong-family-foundations',
-    '/blog/youth-ministry-nurturing-the-next-generation',
-    '/blog/the-art-of-worship-music-and-praise',
-    '/blog/preparing-for-easter-a-season-of-reflection',
-    '/blog/upcoming-christian-events-in-the-uk-augdec-2025-'
-  ];
+const routesToPrerender = fs
+  .readdirSync(toAbsolute('src/pages'))
+  .map((file) => {
+    const name = file.replace(/\.tsx$/, '').toLowerCase()
+    return name === 'index' ? `/` : `/${name}`
+  })
 
-  // Sample event routes for popular events (these would be real event slugs in production)
-  const eventRoutes = [
-    '/events/christmas-carol-service-2024',
-    '/events/new-year-prayer-meeting-2025',
-    '/events/easter-celebration-2025',
-    '/events/youth-conference-2025',
-    '/events/bible-study-fellowship',
-    '/events/worship-night-london',
-    '/events/community-outreach-manchester',
-    '/events/family-fun-day-birmingham',
-    '/events/mens-breakfast-glasgow',
-    '/events/womens-retreat-edinburgh'
-  ];
+;(async () => {
+  for (const url of routesToPrerender) {
+    const appHtml = render(url);
+    const html = template.replace(`<!--app-html-->`, appHtml)
 
-  const routes = [...staticRoutes, ...blogPostRoutes, ...eventRoutes];
-  
-  for (const route of routes) {
-    console.log(`Rendering route: ${route}`);
-    const { html } = render(route);
-    const finalHtml = template.replace('<!--ssr-outlet-->', html);
-    
-    // Debug: Check if the HTML contains route-specific content
-    const titleMatch = finalHtml.match(/<title>(.*?)<\/title>/);
-    const h1Match = finalHtml.match(/<h1[^>]*>(.*?)<\/h1>/);
-    console.log(`Route ${route} - Title: ${titleMatch ? titleMatch[1] : 'Not found'}, H1: ${h1Match ? h1Match[1] : 'Not found'}`);
-    
-    const filePath = path.resolve(__dirname, `dist${route === '/' ? '/index' : route}.html`);
-    
-    // Ensure directory exists before writing file
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    fs.writeFileSync(filePath, finalHtml);
-    console.log(`Generated: ${filePath}`);
+    const filePath = `dist${url === '/' ? '/index' : url}.html`
+    fs.writeFileSync(toAbsolute(filePath), html)
+    console.log('pre-rendered:', filePath)
   }
-}
-
-prerender().catch(console.error);
+})()
