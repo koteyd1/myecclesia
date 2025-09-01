@@ -10,7 +10,7 @@ async function prerender() {
   const template = fs.readFileSync(path.resolve(__dirname, 'dist/client/index.html'), 'utf-8');
   
   // Static routes from App.tsx (excluding dynamic routes with :slug, :id)
-  const routes = [
+  const staticRoutes = [
     '/',
     '/auth',
     '/events',
@@ -34,6 +34,18 @@ async function prerender() {
     '/my-profiles',
     '/profile/edit'
   ];
+
+  // Blog post routes - these should match the fallback data in BlogPost.tsx
+  const blogPostRoutes = [
+    '/blog/finding-hope-in-difficult-times',
+    '/blog/the-power-of-community-service', 
+    '/blog/building-strong-family-foundations',
+    '/blog/youth-ministry-nurturing-the-next-generation',
+    '/blog/the-art-of-worship-music-and-praise',
+    '/blog/preparing-for-easter-a-season-of-reflection'
+  ];
+
+  const routes = [...staticRoutes, ...blogPostRoutes];
   
   for (const route of routes) {
     console.log(`Rendering route: ${route}`);
