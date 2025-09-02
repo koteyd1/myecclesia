@@ -114,10 +114,6 @@ const Footer = () => {
                 Sitemap
               </Link>
               <span>|</span>
-              <a href="/robots.txt" className="hover:text-primary transition-colors text-sm">
-                Robots.txt
-              </a>
-              <span>|</span>
               <Link to="/privacy-policy" className="hover:text-primary transition-colors text-sm">
                 Privacy
               </Link>
