@@ -15,19 +15,22 @@ const app = (
 );
 
 // Check if the root element has pre-rendered content
-const hasSSRContent = root.innerHTML.includes('<!--app-html-->') === false && 
-                      root.innerHTML.trim() !== '' && 
-                      root.innerHTML.length > 50;
+const hasSSRContent = root.innerHTML.trim() !== '' && 
+                      !root.innerHTML.includes('<!--app-html-->') &&
+                      root.querySelector('[data-reactroot], [data-reactroot] *, .react-root, main, section') !== null;
 
-// Always use createRoot to avoid hydration mismatches during development
-// Only use hydration in production when we're sure there's SSR content
+// Use hydration in production when there's pre-rendered content
 if (import.meta.env.PROD && hasSSRContent) {
   try {
+    console.log('Hydrating pre-rendered content');
     hydrateRoot(root, app);
   } catch (error) {
     console.warn('Hydration failed, falling back to createRoot:', error);
+    // Clear the root and use createRoot as fallback
+    root.innerHTML = '';
     createRoot(root).render(app);
   }
 } else {
+  console.log('Using createRoot for client-side rendering');
   createRoot(root).render(app);
 }

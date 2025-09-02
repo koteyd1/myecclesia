@@ -100,6 +100,7 @@ console.log('Total routes to prerender:', routesToPrerender.length);
       try {
         const appHtml = render(url);
         const html = template.replace(`<!--app-html-->`, appHtml)
+          .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`)
 
         // Determine output file path
         let filePath;
