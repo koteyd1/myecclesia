@@ -1,8 +1,44 @@
 import { useNavigate, Link } from "react-router-dom";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
   const navigate = useNavigate();
+  const [featuredBlogs, setFeaturedBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchFeaturedBlogs = async () => {
+      try {
+        // First get admin user IDs
+        const { data: adminUsers, error: adminError } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+
+        if (adminError) throw adminError;
+
+        const adminUserIds = adminUsers?.map(user => user.user_id) || [];
+
+        // Then fetch the latest 4 published blog posts created by admins
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("id, title, slug")
+          .eq("published", true)
+          .in("created_by", adminUserIds)
+          .order("created_at", { ascending: false })
+          .limit(4);
+
+        if (error) throw error;
+        setFeaturedBlogs(data || []);
+      } catch (error) {
+        console.error("Error fetching featured blogs:", error);
+        setFeaturedBlogs([]);
+      }
+    };
+
+    fetchFeaturedBlogs();
+  }, []);
 
   return (
     <footer className="bg-foreground text-white py-12">
@@ -64,40 +100,29 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Blog Articles</h4>
+            <h4 className="font-semibold mb-4">Latest Blog Articles</h4>
             <ul className="space-y-2 text-gray-300">
-              <li>
-                <Link 
-                  to="/blog/finding-hope-in-difficult-times"
-                  className="hover:text-primary transition-colors"
-                >
-                  Finding Hope in Difficult Times
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/blog/the-power-of-community-service"
-                  className="hover:text-primary transition-colors"
-                >
-                  The Power of Community Service
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/blog/youth-ministry-nurturing-the-next-generation"
-                  className="hover:text-primary transition-colors"
-                >
-                  Youth Ministry
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/blog/building-strong-family-foundations"
-                  className="hover:text-primary transition-colors"
-                >
-                  Building Strong Family Foundations
-                </Link>
-              </li>
+              {featuredBlogs.length > 0 ? (
+                featuredBlogs.map((blog) => (
+                  <li key={blog.id}>
+                    <Link 
+                      to={`/blog/${blog.slug}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {blog.title}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li>
+                  <Link 
+                    to="/blog"
+                    className="hover:text-primary transition-colors"
+                  >
+                    View All Blog Posts
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
           
