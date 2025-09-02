@@ -3,10 +3,46 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const [featuredBlogs, setFeaturedBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchFeaturedBlogs = async () => {
+      try {
+        // First get admin user IDs
+        const { data: adminUsers, error: adminError } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+
+        if (adminError) throw adminError;
+
+        const adminUserIds = adminUsers?.map(user => user.user_id) || [];
+
+        // Then fetch the latest 2 published blog posts created by admins
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("id, title, slug")
+          .eq("published", true)
+          .in("created_by", adminUserIds)
+          .order("created_at", { ascending: false })
+          .limit(2);
+
+        if (error) throw error;
+        setFeaturedBlogs(data || []);
+      } catch (error) {
+        console.error("Error fetching featured blogs:", error);
+        setFeaturedBlogs([]);
+      }
+    };
+
+    fetchFeaturedBlogs();
+  }, []);
 
   const handleAuthAction = () => {
     if (user) {
@@ -80,16 +116,13 @@ const Header = () => {
                       All Articles
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/blog/finding-hope-in-difficult-times" className="w-full">
-                      Finding Hope in Difficult Times
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/blog/the-power-of-community-service" className="w-full">
-                      Community Service
-                    </Link>
-                  </DropdownMenuItem>
+                  {featuredBlogs.map((blog) => (
+                    <DropdownMenuItem key={blog.id} asChild>
+                      <Link to={`/blog/${blog.slug}`} className="w-full">
+                        {blog.title.length > 25 ? `${blog.title.substring(0, 25)}...` : blog.title}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -239,11 +272,13 @@ const Header = () => {
                     All Articles
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/blog/finding-hope-in-difficult-times" className="w-full">
-                    Finding Hope
-                  </Link>
-                </DropdownMenuItem>
+                {featuredBlogs.map((blog) => (
+                  <DropdownMenuItem key={blog.id} asChild>
+                    <Link to={`/blog/${blog.slug}`} className="w-full">
+                      {blog.title.length > 20 ? `${blog.title.substring(0, 20)}...` : blog.title}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors">
