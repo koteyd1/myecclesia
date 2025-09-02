@@ -10,22 +10,11 @@ const Footer = () => {
   useEffect(() => {
     const fetchFeaturedBlogs = async () => {
       try {
-        // First get admin user IDs
-        const { data: adminUsers, error: adminError } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-
-        if (adminError) throw adminError;
-
-        const adminUserIds = adminUsers?.map(user => user.user_id) || [];
-
-        // Then fetch the latest 4 published blog posts created by admins
+        // Fetch the latest 4 published blog posts (no admin restriction for footer)
         const { data, error } = await supabase
           .from("blog_posts")
           .select("id, title, slug")
           .eq("published", true)
-          .in("created_by", adminUserIds)
           .order("created_at", { ascending: false })
           .limit(4);
 
