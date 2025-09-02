@@ -16,11 +16,22 @@ User-agent: *
 Allow: /
 Crawl-delay: 2
 
-# Important pages
-Allow: /events
-Allow: /blog
+# Important pages and dynamic content
+Allow: /events/
+Allow: /events/christmas-carol-service-2024
+Allow: /events/new-year-prayer-meeting-2025
+Allow: /events/easter-celebration-2025
+Allow: /blog/
+Allow: /blog/finding-hope-in-difficult-times
+Allow: /blog/the-power-of-community-service
+Allow: /blog/youth-ministry-nurturing-the-next-generation
+Allow: /blog/building-strong-family-foundations
 Allow: /about
 Allow: /contact
+Allow: /calendar
+Allow: /donate
+Allow: /ministers
+Allow: /organizations
 
 # Disallow admin and sensitive areas
 Disallow: /admin/

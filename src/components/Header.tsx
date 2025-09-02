@@ -46,7 +46,12 @@ const Header = () => {
                 <DropdownMenuContent>
                   <DropdownMenuItem asChild>
                     <Link to="/events" className="w-full">
-                      Events
+                      All Events
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/events/christmas-carol-service-2024" className="w-full">
+                      Christmas Carol Service
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -64,9 +69,29 @@ const Header = () => {
               <Link to="/calendar" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Calendar
               </Link>
-              <Link to="/blog" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Blog
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
+                  <span>Blog</span>
+                  <ChevronDown className="h-3 w-3" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to="/blog" className="w-full">
+                      All Articles
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/blog/finding-hope-in-difficult-times" className="w-full">
+                      Finding Hope in Difficult Times
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/blog/the-power-of-community-service" className="w-full">
+                      Community Service
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             
             <div className="flex items-center space-x-6 border-r border-border pr-6">
@@ -180,7 +205,12 @@ const Header = () => {
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
                   <Link to="/events" className="w-full">
-                    Events
+                    All Events
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/events/christmas-carol-service-2024" className="w-full">
+                    Christmas Carol Service
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -198,9 +228,24 @@ const Header = () => {
             <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
               Calendar
             </Link>
-            <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
-              Blog
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
+                <span>Blog</span>
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <Link to="/blog" className="w-full">
+                    All Articles
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/blog/finding-hope-in-difficult-times" className="w-full">
+                    Finding Hope
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors">
               About
             </Link>

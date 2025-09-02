@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 const Footer = () => {
@@ -21,90 +21,82 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-gray-300">
               <li>
-                <button 
-                  onClick={() => navigate("/events")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/events"
+                  className="hover:text-primary transition-colors"
                 >
-                  Upcoming Events
-                </button>
+                  All Events
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => navigate("/blog")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/events/christmas-carol-service-2024"
+                  className="hover:text-primary transition-colors"
+                >
+                  Christmas Carol Service
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/events/new-year-prayer-meeting-2025"
+                  className="hover:text-primary transition-colors"
+                >
+                  New Year Prayer Meeting
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/blog"
+                  className="hover:text-primary transition-colors"
                 >
                   Church Blog
-                </button>
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => navigate("/event-guidelines")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/calendar"
+                  className="hover:text-primary transition-colors"
                 >
-                  Event Guidelines
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => navigate("/privacy-policy")}
-                  className="hover:text-primary transition-colors text-left"
-                >
-                  Privacy Policy
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => navigate("/terms-and-conditions")}
-                  className="hover:text-primary transition-colors text-left"
-                >
-                  Terms & Conditions
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => navigate("/sitemap")}
-                  className="hover:text-primary transition-colors text-left"
-                >
-                  Site Map
-                </button>
+                  Event Calendar
+                </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Categories</h4>
+            <h4 className="font-semibold mb-4">Blog Articles</h4>
             <ul className="space-y-2 text-gray-300">
               <li>
-                <button 
-                  onClick={() => navigate("/events")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/blog/finding-hope-in-difficult-times"
+                  className="hover:text-primary transition-colors"
                 >
-                  Worship Services
-                </button>
+                  Finding Hope in Difficult Times
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => navigate("/events")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/blog/the-power-of-community-service"
+                  className="hover:text-primary transition-colors"
                 >
-                  Fellowship
-                </button>
+                  The Power of Community Service
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => navigate("/events")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/blog/youth-ministry-nurturing-the-next-generation"
+                  className="hover:text-primary transition-colors"
                 >
-                  Community Events
-                </button>
+                  Youth Ministry
+                </Link>
               </li>
               <li>
-                <button 
-                  onClick={() => navigate("/events")}
-                  className="hover:text-primary transition-colors text-left"
+                <Link 
+                  to="/blog/building-strong-family-foundations"
+                  className="hover:text-primary transition-colors"
                 >
-                  Education
-                </button>
+                  Building Strong Family Foundations
+                </Link>
               </li>
             </ul>
           </div>
@@ -114,8 +106,27 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-          <p>&copy; 2025 MyEcclesia. All rights reserved.</p>
+        <div className="border-t border-gray-700 mt-8 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center text-gray-300">
+            <p>&copy; 2025 MyEcclesia. All rights reserved.</p>
+            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+              <Link to="/sitemap" className="hover:text-primary transition-colors text-sm">
+                Sitemap
+              </Link>
+              <span>|</span>
+              <a href="/robots.txt" className="hover:text-primary transition-colors text-sm">
+                Robots.txt
+              </a>
+              <span>|</span>
+              <Link to="/privacy-policy" className="hover:text-primary transition-colors text-sm">
+                Privacy
+              </Link>
+              <span>|</span>
+              <Link to="/terms-and-conditions" className="hover:text-primary transition-colors text-sm">
+                Terms
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

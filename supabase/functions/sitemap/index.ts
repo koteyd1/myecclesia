@@ -24,14 +24,14 @@ Deno.serve(async (req) => {
     // Fetch active events (date >= today)
     const { data: events, error: eventsError } = await supabase
       .from('events')
-      .select('id, title, date, updated_at')
+      .select('slug, title, date, updated_at')
       .gte('date', today)
       .order('date', { ascending: true })
 
     // Fetch published blog posts
     const { data: blogPosts, error: blogError } = await supabase
       .from('blog_posts')
-      .select('id, title, updated_at')
+      .select('slug, title, updated_at')
       .eq('published', true)
       .order('updated_at', { ascending: false })
 
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       for (const event of events) {
         const lastmod = event.updated_at ? new Date(event.updated_at).toISOString() : currentDate
         sitemap += `  <url>
-    <loc>${baseUrl}/events/${event.id}</loc>
+    <loc>${baseUrl}/events/${event.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       for (const post of blogPosts) {
         const lastmod = post.updated_at ? new Date(post.updated_at).toISOString() : currentDate
         sitemap += `  <url>
-    <loc>${baseUrl}/blog/${post.id}</loc>
+    <loc>${baseUrl}/blog/${post.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

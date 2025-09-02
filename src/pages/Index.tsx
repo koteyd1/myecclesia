@@ -3,8 +3,8 @@ import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Heart, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Calendar, Users, Heart, Star, ArrowRight, BookOpen } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
@@ -16,6 +16,35 @@ import { SEOHead } from "@/components/SEOHead";
 import { useCache } from "@/utils/cache";
 import { performanceUtils } from "@/utils/performance";
 import { useSiteTracking } from "@/hooks/useSiteTracking";
+
+// Blog Preview Card Component for better internal linking
+const BlogPreviewCard = ({ slug, title, excerpt, category, author, readTime }: {
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  author: string;
+  readTime: string;
+}) => (
+  <Link to={`/blog/${slug}`} className="group block">
+    <div className="bg-card border rounded-lg p-6 h-full hover:shadow-md transition-all duration-300 hover:border-primary/20">
+      <div className="flex items-center justify-between mb-3">
+        <Badge variant="secondary" className="text-xs">{category}</Badge>
+        <span className="text-xs text-muted-foreground">{readTime}</span>
+      </div>
+      <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+        {title}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+        {excerpt}
+      </p>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">By {author}</span>
+        <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+      </div>
+    </div>
+  </Link>
+);
 
 const Index = () => {
   const navigate = useNavigate();
@@ -176,6 +205,49 @@ const Index = () => {
                   </p>
                 </div>
               )}
+            </div>
+            
+            {/* Featured Blog Posts Section */}
+            <div className="mt-16 pt-16 border-t">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-semibold text-foreground mb-4">Latest from Our Blog</h2>
+                <p className="text-muted-foreground">Inspiring stories and insights from our community</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <BlogPreviewCard 
+                  slug="finding-hope-in-difficult-times"
+                  title="Finding Hope in Difficult Times"
+                  excerpt="Life can be challenging, and we all face moments when hope seems distant. Discover how faith can be an anchor during storms."
+                  category="Faith"
+                  author="Pastor John Smith"
+                  readTime="5 min read"
+                />
+                <BlogPreviewCard 
+                  slug="the-power-of-community-service"
+                  title="The Power of Community Service"
+                  excerpt="When we serve others, we become the hands and feet of Christ in our community. Learn about our outreach programs."
+                  category="Service"
+                  author="Sarah Johnson"
+                  readTime="7 min read"
+                />
+                <BlogPreviewCard 
+                  slug="youth-ministry-nurturing-the-next-generation"
+                  title="Youth Ministry: Nurturing the Next Generation"
+                  excerpt="Our youth are the future of our church and community. Learn about our youth programs and upcoming events."
+                  category="Youth"
+                  author="Emily Roberts"
+                  readTime="4 min read"
+                />
+              </div>
+              <div className="text-center">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => navigate("/blog")}
+                >
+                  Read More Articles
+                </Button>
+              </div>
             </div>
             
             <div className="text-center">
