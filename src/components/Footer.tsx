@@ -55,22 +55,6 @@ const Footer = () => {
               </li>
               <li>
                 <Link 
-                  to="/events/christmas-carol-service-2024"
-                  className="hover:text-primary transition-colors"
-                >
-                  Christmas Carol Service
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/events/new-year-prayer-meeting-2025"
-                  className="hover:text-primary transition-colors"
-                >
-                  New Year Prayer Meeting
-                </Link>
-              </li>
-              <li>
-                <Link 
                   to="/blog"
                   className="hover:text-primary transition-colors"
                 >
