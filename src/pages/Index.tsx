@@ -54,22 +54,11 @@ const FeaturedBlogSection = () => {
   useEffect(() => {
     const fetchFeaturedBlogs = async () => {
       try {
-        // First get admin user IDs
-        const { data: adminUsers, error: adminError } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-
-        if (adminError) throw adminError;
-
-        const adminUserIds = adminUsers?.map(user => user.user_id) || [];
-
-        // Then fetch the latest 3 published blog posts created by admins
+        // Fetch the latest 3 published blog posts (no admin restriction for homepage)
         const { data, error } = await supabase
           .from("blog_posts")
           .select("*")
           .eq("published", true)
-          .in("created_by", adminUserIds)
           .order("created_at", { ascending: false })
           .limit(3);
 

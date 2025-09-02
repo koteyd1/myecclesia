@@ -26,27 +26,16 @@ const Blog = () => {
 
   const fetchBlogPosts = async () => {
     try {
-      // First get admin user IDs
-      const { data: adminUsers, error: adminError } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-
-      if (adminError) throw adminError;
-
-      const adminUserIds = adminUsers?.map(user => user.user_id) || [];
-
-      // Then fetch blog posts created by admins only
+      // Fetch all published blog posts (no admin restriction for public blog page)
       const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
         .eq("published", true)
-        .in("created_by", adminUserIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       
-      // Only use database posts created by admins
+      // Show all published blog posts
       setBlogPosts(data || []);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
