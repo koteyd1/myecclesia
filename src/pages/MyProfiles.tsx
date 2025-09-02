@@ -17,7 +17,6 @@ import {
   Clock,
   Settings
 } from "lucide-react";
-import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 
 interface Profile {
@@ -384,7 +383,6 @@ export default function MyProfiles() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

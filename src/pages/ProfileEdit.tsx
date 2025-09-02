@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, User } from "lucide-react";
-import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 
 const profileSchema = z.object({
@@ -267,7 +266,6 @@ export default function ProfileEdit() {
         </Card>
       </main>
 
-      <Footer />
     </div>
   );
 }

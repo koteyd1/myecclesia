@@ -30,7 +30,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 
@@ -517,7 +516,6 @@ export default function Organizations() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

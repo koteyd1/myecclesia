@@ -14,7 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import Footer from '@/components/Footer';
 import { EventManagement } from '@/components/EventManagement';
 
 export default function OrganizationProfile() {
@@ -393,7 +392,6 @@ export default function OrganizationProfile() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

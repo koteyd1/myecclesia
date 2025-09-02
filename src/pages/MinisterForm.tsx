@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
-import Footer from "@/components/Footer";
 import { ImageUpload } from "@/components/ImageUpload";
 
 const ministerSchema = z.object({
@@ -439,8 +438,6 @@ export default function MinisterForm() {
           </CardContent>
         </Card>
       </div>
-
-      <Footer />
     </div>
   );
 }

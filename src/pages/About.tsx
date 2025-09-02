@@ -1,4 +1,3 @@
-import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, Globe, BookOpen } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
@@ -113,7 +112,6 @@ const About = () => {
           </p>
         </div>
       </main>
-      <Footer />
     </div>
     </>
   );

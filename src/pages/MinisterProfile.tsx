@@ -13,7 +13,6 @@ import EventCard from "@/components/EventCard";
 import { SocialShare } from "@/components/SocialShare";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
-import Footer from "@/components/Footer";
 import { EventManagement } from "@/components/EventManagement";
 
 interface Minister {
@@ -438,7 +437,6 @@ export default function MinisterProfile() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }
