@@ -1,5 +1,4 @@
 import Hero from "@/components/Hero";
-import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -318,8 +317,6 @@ const Index = () => {
             </div>
           </div>
         </section>
-        
-        <Footer />
       </div>
     </>
   );
