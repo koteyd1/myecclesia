@@ -45,6 +45,94 @@ const BlogPreviewCard = ({ slug, title, excerpt, category, author, readTime }: {
   </Link>
 );
 
+// Featured Blog Section Component that fetches admin-created blogs
+const FeaturedBlogSection = () => {
+  const navigate = useNavigate();
+  const [featuredBlogs, setFeaturedBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedBlogs = async () => {
+      try {
+        // First get admin user IDs
+        const { data: adminUsers, error: adminError } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+
+        if (adminError) throw adminError;
+
+        const adminUserIds = adminUsers?.map(user => user.user_id) || [];
+
+        // Then fetch the latest 3 published blog posts created by admins
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("published", true)
+          .in("created_by", adminUserIds)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (error) throw error;
+        setFeaturedBlogs(data || []);
+      } catch (error) {
+        console.error("Error fetching featured blogs:", error);
+        setFeaturedBlogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedBlogs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="mt-16 pt-16 border-t">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-semibold text-foreground mb-4">Latest from Our Blog</h2>
+          <p className="text-muted-foreground">Loading latest articles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (featuredBlogs.length === 0) {
+    return null; // Don't show the section if no admin blogs exist
+  }
+
+  return (
+    <div className="mt-16 pt-16 border-t">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-semibold text-foreground mb-4">Latest from Our Blog</h2>
+        <p className="text-muted-foreground">Inspiring stories and insights from our community</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {featuredBlogs.map((post) => (
+          <BlogPreviewCard 
+            key={post.id}
+            slug={post.slug}
+            title={post.title}
+            excerpt={post.excerpt || post.content?.substring(0, 160) || ""}
+            category={post.category || "Blog"}
+            author={post.author}
+            readTime={`${Math.ceil((post.content?.length || 0) / 200)} min read`}
+          />
+        ))}
+      </div>
+      <div className="text-center">
+        <Button 
+          variant="outline" 
+          size="lg"
+          onClick={() => navigate("/blog")}
+        >
+          Read More Articles
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const Index = () => {
   const navigate = useNavigate();
   useSiteTracking("Home - myEcclesia");
@@ -207,47 +295,7 @@ const Index = () => {
             </div>
             
             {/* Featured Blog Posts Section */}
-            <div className="mt-16 pt-16 border-t">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-semibold text-foreground mb-4">Latest from Our Blog</h2>
-                <p className="text-muted-foreground">Inspiring stories and insights from our community</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <BlogPreviewCard 
-                  slug="finding-hope-in-difficult-times"
-                  title="Finding Hope in Difficult Times"
-                  excerpt="Life can be challenging, and we all face moments when hope seems distant. Discover how faith can be an anchor during storms."
-                  category="Faith"
-                  author="Pastor John Smith"
-                  readTime="5 min read"
-                />
-                <BlogPreviewCard 
-                  slug="the-power-of-community-service"
-                  title="The Power of Community Service"
-                  excerpt="When we serve others, we become the hands and feet of Christ in our community. Learn about our outreach programs."
-                  category="Service"
-                  author="Sarah Johnson"
-                  readTime="7 min read"
-                />
-                <BlogPreviewCard 
-                  slug="youth-ministry-nurturing-the-next-generation"
-                  title="Youth Ministry: Nurturing the Next Generation"
-                  excerpt="Our youth are the future of our church and community. Learn about our youth programs and upcoming events."
-                  category="Youth"
-                  author="Emily Roberts"
-                  readTime="4 min read"
-                />
-              </div>
-              <div className="text-center">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={() => navigate("/blog")}
-                >
-                  Read More Articles
-                </Button>
-              </div>
-            </div>
+            <FeaturedBlogSection />
             
             <div className="text-center">
               <Button 
