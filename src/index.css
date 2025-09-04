@@ -141,6 +141,11 @@ All colors MUST be HSL for proper theming.
 
   body {
     @apply bg-background text-foreground;
+    /* Improve text rendering on mobile devices */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
   }
 }
 
@@ -170,5 +175,42 @@ img[class*="transition"] {
   img {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: optimize-contrast;
+  }
+}
+
+/* Mobile-specific optimizations */
+@layer utilities {
+  /* Improve button touch targets on mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on inputs on iOS */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+  
+  /* Better scrolling on mobile */
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Hide scrollbars on mobile but keep functionality */
+  @media (max-width: 768px) {
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
   }
 }

@@ -89,9 +89,9 @@ const EventCard = ({
         <img
           src={image}
           alt={`${title} event image`}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1">
           {category && (
             <Badge variant="secondary" className="bg-white/90 text-foreground">
               {category}
@@ -104,13 +104,13 @@ const EventCard = ({
           )}
         </div>
         {price === 0 ? (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
             <Badge className="bg-success text-success-foreground">
               Free
             </Badge>
           </div>
         ) : (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
             <Badge variant="outline" className="bg-white/90 text-foreground">
               £{price}
             </Badge>
@@ -118,10 +118,10 @@ const EventCard = ({
         )}
       </div>
       
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
               {title}
             </h3>
             <p className="text-muted-foreground text-sm line-clamp-2">
@@ -144,7 +144,7 @@ const EventCard = ({
             </div>
           </div>
           
-          <div className="pt-2 flex gap-2">
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
             {isSalesEnded() ? (
               <div className="flex-1">
                 <Badge variant="secondary" className="w-full justify-center py-2 bg-muted text-muted-foreground">

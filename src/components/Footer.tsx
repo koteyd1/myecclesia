@@ -32,7 +32,7 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-white py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <div className="mb-4">
               <span className="text-lg font-bold">MyEcclesia</span>
@@ -105,9 +105,9 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center text-gray-300">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-gray-300 gap-4 sm:gap-0">
             <p>&copy; 2025 MyEcclesia. All rights reserved.</p>
-            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            <div className="flex items-center space-x-4 mt-4 sm:mt-0">
               <Link to="/sitemap" className="hover:text-primary transition-colors text-sm">
                 Sitemap
               </Link>

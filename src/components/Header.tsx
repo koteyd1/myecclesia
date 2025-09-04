@@ -212,8 +212,8 @@ const Header = () => {
         </div>
         
         {/* Mobile Navigation */}
-        <div className="lg:hidden border-t border-border">
-          <div className="py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <div className="lg:hidden border-t border-border overflow-x-auto">
+          <div className="py-3 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm min-w-max">
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
                 <span>Browse</span>

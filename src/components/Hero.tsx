@@ -7,7 +7,7 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-[700px] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[600px] sm:min-h-[700px] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
@@ -19,35 +19,35 @@ const Hero = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-12 sm:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl md:text-6xl font-bold text-white leading-[1.5] overflow-visible">
-              <span className="block mb-6">Join the Worship</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] sm:leading-[1.5] overflow-visible">
+              <span className="block mb-4 sm:mb-6">Join the Worship</span>
               <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
                 Find Church Events Near You
               </span>
             </h1>
           </div>
           
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
             Discover and register for upcoming church events, fellowship gatherings, 
             and community celebrations. Join us as we grow in faith together.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center items-center px-4">
             <Button 
               size="lg" 
-              className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3"
+              className="bg-white text-primary hover:bg-white/90 text-base sm:text-lg px-6 sm:px-8 py-3 w-full sm:w-auto"
               onClick={() => navigate("/events")}
             >
               Browse Events
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <Button 
               variant="ghost" 
               size="lg"
-              className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white text-lg px-8 py-3 bg-transparent backdrop-blur-sm"
+              className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white text-base sm:text-lg px-6 sm:px-8 py-3 bg-transparent backdrop-blur-sm w-full sm:w-auto"
               onClick={() => navigate("/about")}
             >
               Learn More

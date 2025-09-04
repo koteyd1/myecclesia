@@ -391,14 +391,14 @@ const Events = () => {
           </div>
 
           {/* Basic Filter Controls */}
-          <div className="flex flex-wrap gap-4 justify-center items-center">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center items-center">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">Quick Filters:</span>
             </div>
             
             <Select value={selectedCategory} onValueChange={(value) => { setSelectedCategory(value); setTimeout(handleFilterChange, 0); }}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
@@ -411,7 +411,7 @@ const Events = () => {
             </Select>
 
             <Select value={priceFilter} onValueChange={(value) => { setPriceFilter(value); setTimeout(handleFilterChange, 0); }}>
-              <SelectTrigger className="w-36">
+              <SelectTrigger className="w-full sm:w-36">
                 <SelectValue placeholder="All Events" />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-lg z-50">
@@ -425,7 +425,7 @@ const Events = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => { clearFilters(); handleFilterChange(); }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <X className="h-4 w-4" />
                 Clear All Filters
@@ -437,14 +437,14 @@ const Events = () => {
           {/* Advanced Filters */}
           <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="mx-auto flex items-center gap-2">
+              <Button variant="outline" className="mx-auto flex items-center gap-2 w-full sm:w-auto">
                 <Filter className="h-4 w-4" />
                 Advanced Filters
                 <ChevronDown className={`h-4 w-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border border-border rounded-lg bg-muted/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border border-border rounded-lg bg-muted/20">
                 
                 {/* Date Range */}
                 <div className="space-y-2">
@@ -566,7 +566,7 @@ const Events = () => {
           {/* Events List */}
           <div className="space-y-4">
             {currentEvents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {currentEvents.map((event) => (
                   <div key={event.id} id={`event-${event.id}`}>
                      <EventCard 
@@ -596,19 +596,19 @@ const Events = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-4 mt-8">
+              <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-8">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                   disabled={currentPage === 1}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Button>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
                     if (totalPages <= 5) {
@@ -627,7 +627,7 @@ const Events = () => {
                         variant={currentPage === pageNum ? "default" : "outline"}
                         size="sm"
                         onClick={() => handlePageChange(pageNum)}
-                        className="w-10 h-10"
+                        className="w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm flex-shrink-0"
                       >
                         {pageNum}
                       </Button>
@@ -640,7 +640,7 @@ const Events = () => {
                   size="sm"
                   onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
