@@ -75,11 +75,6 @@ const Header = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/events/christmas-carol-service-2024" className="w-full">
-                      Christmas Carol Service
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
                     <Link to="/ministers" className="w-full">
                       Ministers
                     </Link>
@@ -228,11 +223,6 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/events" className="w-full">
                     All Events
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/events/christmas-carol-service-2024" className="w-full">
-                    Christmas Carol Service
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
