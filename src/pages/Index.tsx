@@ -130,7 +130,7 @@ const Index = () => {
 
   // Use cached events data
   const { data: events = [], loading, error } = useCache(
-    'homepage-events-v2', // Changed cache key to force refresh
+    'homepage-events-v3', // Force refresh after query fix
     async () => {
       console.log('Fetching events for homepage...');
       // Fetch events happening later today or on any future date
@@ -157,18 +157,9 @@ const Index = () => {
         return [];
       }
       
-      const upcomingEvents = data.filter(event => {
-        const eventDate = new Date(event.date);
-        const [hours, minutes] = event.time.split(':').map(Number);
-        eventDate.setHours(hours, minutes, 0, 0);
-        
-        // Show events that are happening today or in the future
-        const isUpcoming = eventDate >= now;
-        if (!isUpcoming) {
-          console.log('Filtering out past event:', event.title, eventDate.toISOString());
-        }
-        return isUpcoming;
-      });
+      // Use server-side filtered results directly
+      console.log('Using server-filtered upcoming events');
+      const upcomingEvents = data;
       
       console.log('Upcoming events after time filter:', upcomingEvents.length);
       
