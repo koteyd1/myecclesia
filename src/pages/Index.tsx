@@ -133,13 +133,16 @@ const Index = () => {
     'homepage-events-v2', // Changed cache key to force refresh
     async () => {
       console.log('Fetching events for homepage...');
+      // Fetch events happening later today or on any future date
+      const dateStr = new Date().toISOString().split('T')[0];
+      const timeStr = new Date().toTimeString().slice(0, 8); // HH:MM:SS
       const { data, error } = await supabase
         .from("events")
         .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
-        .gte("date", new Date().toISOString().split('T')[0])
+        .or(`date.gt.${dateStr},and(date.eq.${dateStr},time.gte.${timeStr})`)
         .order("date", { ascending: true })
         .order("time", { ascending: true })
-        .limit(20); // Increased limit to get more variety
+        .limit(60); // Fetch enough to have upcoming after client-side filtering
 
       if (error) throw error;
       
