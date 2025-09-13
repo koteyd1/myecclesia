@@ -154,8 +154,8 @@ const Index = () => {
         const [hours, minutes] = event.time.split(':').map(Number);
         eventDate.setHours(hours, minutes, 0, 0);
         
-        // Show events that are in the future
-        return eventDate > now;
+        // Show events that are happening today or in the future
+        return eventDate >= now;
       });
       
       // Enhanced deduplication: remove duplicates based on normalized title, date, time, and location
