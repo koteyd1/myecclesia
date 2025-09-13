@@ -130,8 +130,9 @@ const Index = () => {
 
   // Use cached events data
   const { data: events = [], loading, error } = useCache(
-    'homepage-events',
+    'homepage-events-v2', // Changed cache key to force refresh
     async () => {
+      console.log('Fetching events for homepage...');
       const { data, error } = await supabase
         .from("events")
         .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
@@ -142,10 +143,14 @@ const Index = () => {
 
       if (error) throw error;
       
+      console.log('Raw events fetched:', data?.length || 0);
+      
       // Filter out events that have already passed their start time
       const now = new Date();
+      console.log('Current time:', now.toISOString());
       
       if (!data || data.length === 0) {
+        console.log('No events data returned');
         return [];
       }
       
@@ -155,8 +160,14 @@ const Index = () => {
         eventDate.setHours(hours, minutes, 0, 0);
         
         // Show events that are happening today or in the future
-        return eventDate >= now;
+        const isUpcoming = eventDate >= now;
+        if (!isUpcoming) {
+          console.log('Filtering out past event:', event.title, eventDate.toISOString());
+        }
+        return isUpcoming;
       });
+      
+      console.log('Upcoming events after time filter:', upcomingEvents.length);
       
       // Enhanced deduplication: remove duplicates based on normalized title, date, time, and location
       const seenEvents = new Set();
@@ -171,12 +182,16 @@ const Index = () => {
         const eventKey = `${normalizedTitle}|${event.date}|${event.time}|${event.location}`;
         
         if (seenEvents.has(eventKey)) {
+          console.log('Filtering out duplicate event:', event.title);
           return false; // Skip duplicate
         }
         
         seenEvents.add(eventKey);
         return true;
       }).slice(0, 6); // Limit to 6 unique events
+      
+      console.log('Final unique events for homepage:', uniqueEvents.length);
+      console.log('Events:', uniqueEvents.map(e => ({ title: e.title, date: e.date, time: e.time })));
       
       return uniqueEvents;
     },
