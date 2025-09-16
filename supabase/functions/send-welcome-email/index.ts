@@ -5,7 +5,7 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { WelcomeEmail } from './_templates/welcome-email.tsx'
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
-const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string
+const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') // Optional webhook secret
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,8 +44,17 @@ Deno.serve(async (req) => {
     }
 
     const data = JSON.parse(payload)
+    console.log('Received webhook data:', JSON.stringify(data, null, 2))
     
     // Extract user and email data from Supabase auth webhook
+    if (!data.user || !data.email_data) {
+      console.error('Missing required webhook data:', data)
+      return new Response('Invalid webhook payload', { 
+        status: 400,
+        headers: corsHeaders 
+      })
+    }
+
     const { 
       user,
       email_data: { 
@@ -76,6 +85,18 @@ Deno.serve(async (req) => {
         confirmationUrl,
       })
     )
+
+    // Check if RESEND_API_KEY is configured
+    if (!Deno.env.get('RESEND_API_KEY')) {
+      console.log('RESEND_API_KEY not configured, skipping email send')
+      return new Response(JSON.stringify({ success: true, message: 'Email sending disabled' }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      })
+    }
 
     // Send email using Resend
     const { data: emailData, error } = await resend.emails.send({
