@@ -108,7 +108,14 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('Error sending email:', error)
-      throw error
+      // Do NOT fail signups due to email issues; acknowledge with 200
+      return new Response(JSON.stringify({ success: false, message: 'Email send failed, but signup proceeds' }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      })
     }
 
     console.log('Welcome email sent successfully:', emailData)
