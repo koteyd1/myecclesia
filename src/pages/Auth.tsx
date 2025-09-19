@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { validateEmail, validatePassword, validateName, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
 import { performSecureSignIn, cleanupAuthState } from "@/utils/authCleanup";
+import myecclesiaLogo from "@/assets/myecclesia-logo.png";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -299,8 +300,12 @@ const Auth = () => {
             Back to Home
           </Button>
           <div className="flex items-center space-x-2">
-            <Calendar className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">ChurchEvents</span>
+            <img 
+              src={myecclesiaLogo} 
+              alt="MyEcclesia" 
+              className="h-8 w-8 rounded-full"
+            />
+            <span className="text-2xl font-bold text-foreground">MyEcclesia</span>
           </div>
         </div>
 
