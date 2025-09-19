@@ -11,7 +11,6 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { validateEmail, validatePassword, validateName, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
 import { performSecureSignIn, cleanupAuthState } from "@/utils/authCleanup";
-import myecclesiaLogo from "@/assets/myecclesia-logo.png";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -301,9 +300,9 @@ const Auth = () => {
           </Button>
           <div className="flex items-center space-x-2">
             <img 
-              src={myecclesiaLogo} 
-              alt="MyEcclesia" 
-              className="h-8 w-8 rounded-full"
+              src="/lovable-uploads/0d3d2918-a9f2-480a-ab92-4a5c6554877d.png" 
+              alt="MyEcclesia Logo" 
+              className="h-10 w-10 object-contain"
             />
             <span className="text-2xl font-bold text-foreground">MyEcclesia</span>
           </div>
