@@ -16,8 +16,10 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -25,10 +27,18 @@ const Auth = () => {
   const authRateLimit = useRateLimit({ maxAttempts: 5, windowMs: 15 * 60 * 1000 }); // 5 attempts per 15 minutes
 
   useEffect(() => {
+    // Check URL parameters for password reset
+    const urlParams = new URLSearchParams(window.location.search);
+    const isReset = urlParams.get('reset') === 'true';
+    
+    if (isReset) {
+      setIsPasswordReset(true);
+    }
+
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (session && !isReset) {
         navigate("/");
       }
     };
@@ -219,6 +229,63 @@ const Auth = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate passwords
+    const sanitizedPassword = sanitizeInput(password, INPUT_LIMITS.PASSWORD_MAX);
+    const sanitizedConfirmPassword = sanitizeInput(confirmPassword, INPUT_LIMITS.PASSWORD_MAX);
+    
+    if (sanitizedPassword !== sanitizedConfirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical.",
+      });
+      return;
+    }
+    
+    const passwordValidation = validatePassword(sanitizedPassword);
+    if (!passwordValidation.isValid) {
+      toast({
+        variant: "destructive",
+        title: "Invalid password",
+        description: passwordValidation.errors[0],
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: sanitizedPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password updated successfully",
+        description: "You can now sign in with your new password.",
+      });
+      
+      // Clear form and redirect to sign in
+      setPassword("");
+      setConfirmPassword("");
+      setIsPasswordReset(false);
+      navigate("/auth");
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error updating password",
+        description: error.message || "Failed to update password. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -238,130 +305,174 @@ const Auth = () => {
         </div>
 
         <Card>
-          <CardHeader className="text-center">
-            <CardTitle>Welcome</CardTitle>
-            <CardDescription>
-              Sign in to your account or create a new one
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                <TabsTrigger value="forgot">Reset</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+          {isPasswordReset ? (
+            <>
+              <CardHeader className="text-center">
+                <CardTitle>Reset Your Password</CardTitle>
+                <CardDescription>
+                  Enter your new password below
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="new-password">New Password</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      maxLength={INPUT_LIMITS.EMAIL_MAX}
+                      id="new-password"
+                      type="password"
+                      placeholder="Enter your new password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      maxLength={INPUT_LIMITS.PASSWORD_MAX}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
                     <Input
-                      id="password"
+                      id="confirm-password"
                       type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Confirm your new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       maxLength={INPUT_LIMITS.PASSWORD_MAX}
                       required
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? "Updating password..." : "Update Password"}
                   </Button>
                 </form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      maxLength={INPUT_LIMITS.NAME_MAX}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      maxLength={INPUT_LIMITS.EMAIL_MAX}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      maxLength={INPUT_LIMITS.PASSWORD_MAX}
-                      required
-                    />
-                    {validationErrors.length > 0 && (
-                      <div className="text-sm text-destructive space-y-1">
-                        {validationErrors.map((error, index) => (
-                          <div key={index} className="flex items-center gap-1">
-                            <Shield className="h-3 w-3" />
-                            {error}
-                          </div>
-                        ))}
+              </CardContent>
+            </>
+          ) : (
+            <>
+              <CardHeader className="text-center">
+                <CardTitle>Welcome</CardTitle>
+                <CardDescription>
+                  Sign in to your account or create a new one
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                    <TabsTrigger value="forgot">Reset</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="signin">
+                    <form onSubmit={handleSignIn} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          maxLength={INPUT_LIMITS.EMAIL_MAX}
+                          required
+                        />
                       </div>
-                    )}
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Sign Up"}
-                  </Button>
-                </form>
-              </TabsContent>
-              
-              <TabsContent value="forgot">
-                <form onSubmit={handleForgotPassword} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email">Email</Label>
-                    <Input
-                      id="reset-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      maxLength={INPUT_LIMITS.EMAIL_MAX}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Sending reset email..." : "Send Reset Email"}
-                  </Button>
-                  <p className="text-sm text-muted-foreground text-center">
-                    We'll send you a link to reset your password
-                  </p>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          maxLength={INPUT_LIMITS.PASSWORD_MAX}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Signing in..." : "Sign In"}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="signup">
+                    <form onSubmit={handleSignUp} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          maxLength={INPUT_LIMITS.NAME_MAX}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          maxLength={INPUT_LIMITS.EMAIL_MAX}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="Create a password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          maxLength={INPUT_LIMITS.PASSWORD_MAX}
+                          required
+                        />
+                        {validationErrors.length > 0 && (
+                          <div className="text-sm text-destructive space-y-1">
+                            {validationErrors.map((error, index) => (
+                              <div key={index} className="flex items-center gap-1">
+                                <Shield className="h-3 w-3" />
+                                {error}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Creating account..." : "Sign Up"}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="forgot">
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="reset-email">Email</Label>
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          maxLength={INPUT_LIMITS.EMAIL_MAX}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? "Sending reset email..." : "Send Reset Email"}
+                      </Button>
+                      <p className="text-sm text-muted-foreground text-center">
+                        We'll send you a link to reset your password
+                      </p>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </>
+          )}
         </Card>
       </div>
     </div>
