@@ -26,15 +26,7 @@ export const WelcomeEmail = ({
     <Preview>Welcome to MyEcclesia - Please confirm your email</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={logoSection}>
-          <Img
-            src="https://imwastdmyeaaslurcovw.supabase.co/storage/v1/object/public/uploads/myecclesia-logo.png"
-            width="60"
-            height="60"
-            alt="MyEcclesia"
-            style={logo}
-          />
-        </Section>
+        {/* Logo removed to prevent broken image in email clients */}
         
         <Heading style={h1}>Welcome to MyEcclesia!</Heading>
         
