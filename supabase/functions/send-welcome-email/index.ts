@@ -98,27 +98,44 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Send email using Resend
-    const { data: emailData, error } = await resend.emails.send({
+    // Send email using Resend with domain sender; fallback to Resend default if domain not verified
+    let emailData: any | null = null
+
+    const primarySend = await resend.emails.send({
       from: 'MyEcclesia <welcome@myecclesia.com>',
       to: [user.email],
       subject: 'Welcome to MyEcclesia - Please confirm your email',
       html,
     })
 
-    if (error) {
-      console.error('Error sending email:', error)
-      // Do NOT fail signups due to email issues; acknowledge with 200
-      return new Response(JSON.stringify({ success: false, message: 'Email send failed, but signup proceeds' }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
+    if (primarySend.error) {
+      console.error('Primary email send failed (likely domain not verified):', primarySend.error)
+      // Fallback to Resend's verified sender to ensure delivery
+      const fallbackSend = await resend.emails.send({
+        from: 'MyEcclesia via Resend <onboarding@resend.dev>',
+        to: [user.email],
+        subject: 'Welcome to MyEcclesia - Please confirm your email',
+        html,
       })
-    }
 
-    console.log('Welcome email sent successfully:', emailData)
+      if (fallbackSend.error) {
+        console.error('Fallback email send failed:', fallbackSend.error)
+        // Do NOT fail signups due to email issues; acknowledge with 200
+        return new Response(JSON.stringify({ success: false, message: 'Email send failed, but signup proceeds' }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        })
+      }
+
+      emailData = fallbackSend.data
+      console.log('Welcome email sent successfully via fallback sender:', emailData)
+    } else {
+      emailData = primarySend.data
+      console.log('Welcome email sent successfully:', emailData)
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
