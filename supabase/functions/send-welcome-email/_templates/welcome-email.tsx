@@ -28,7 +28,7 @@ export const WelcomeEmail = ({
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://e5e870cb-02f1-40d4-b547-a78e6e011e75.lovableproject.com/src/assets/myecclesia-logo.png"
+            src="https://imwastdmyeaaslurcovw.supabase.co/storage/v1/object/public/uploads/myecclesia-logo.png"
             width="60"
             height="60"
             alt="MyEcclesia"
