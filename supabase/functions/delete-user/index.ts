@@ -74,6 +74,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('User ID is required');
     }
 
+    // Prevent admins from deleting themselves
+    if (user.id === userId) {
+      throw new Error('Admins cannot delete themselves');
+    }
+
+    // Check if target user is an admin
+    const { data: targetUserRole, error: targetRoleError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+
+    if (targetRoleError && targetRoleError.code !== 'PGRST116') {
+      throw new Error('Error checking target user role');
+    }
+
+    // Prevent deletion if target user is an admin (additional safety)
+    if (targetUserRole?.role === 'admin') {
+      throw new Error('Cannot delete admin users');
+    }
+
     console.log(`Admin ${user.id} attempting to delete user ${userId}`);
 
     // Delete the user using admin client
