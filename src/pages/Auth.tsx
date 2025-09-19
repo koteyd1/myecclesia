@@ -174,17 +174,32 @@ const Auth = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email
+    const sanitizedEmail = sanitizeInput(email, INPUT_LIMITS.EMAIL_MAX);
+    
+    if (!validateEmail(sanitizedEmail)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
-      // Clean up auth state before password reset
-      cleanupAuthState();
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+      // Use our custom password reset edge function
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email: sanitizedEmail },
       });
 
       if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to send password reset email');
+      }
 
       toast({
         title: "Password reset email sent",
@@ -193,10 +208,11 @@ const Auth = () => {
       
       setEmail("");
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         variant: "destructive",
         title: "Error sending reset email",
-        description: error.message,
+        description: error.message || "Failed to send password reset email. Please try again.",
       });
     } finally {
       setIsLoading(false);
