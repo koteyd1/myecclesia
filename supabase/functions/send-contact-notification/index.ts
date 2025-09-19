@@ -172,7 +172,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const confirmationResponse = await resend.emails.send({
-      from: "MyEcclesia <hello@myecclesia.co.uk>",
+      from: "MyEcclesia <welcome@myecclesia.co.uk>",
       to: [email],
       subject: confirmationSubject,
       html: confirmationHtml,
