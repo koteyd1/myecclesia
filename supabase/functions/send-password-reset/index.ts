@@ -48,15 +48,18 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Check if user exists
-    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
-    
-    if (userError) {
-      console.error('Error checking user:', userError);
-      // Don't reveal if user exists or not for security
-    }
+    // Generate password reset link using Supabase
+    // We don't need to check if user exists - Supabase handles this securely
+    const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: email,
+      options: {
+        redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/auth?reset=true`
+      }
+    });
 
-    if (!user?.user) {
+    if (resetError) {
+      console.error('Error generating reset link:', resetError);
       // Return success even if user doesn't exist (security best practice)
       return new Response(
         JSON.stringify({ success: true, message: 'Password reset email sent if account exists' }),
@@ -68,20 +71,6 @@ const handler = async (req: Request): Promise<Response> => {
           },
         }
       );
-    }
-
-    // Generate password reset link using Supabase
-    const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'supabase.co')}/auth/v1/verify?redirect_to=${encodeURIComponent(`${req.headers.get('origin') || 'http://localhost:3000'}/auth?reset=true`)}`
-      }
-    });
-
-    if (resetError) {
-      console.error('Error generating reset link:', resetError);
-      throw new Error('Failed to generate reset link');
     }
 
     if (!resetData?.properties?.action_link) {
