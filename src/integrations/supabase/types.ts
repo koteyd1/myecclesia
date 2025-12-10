@@ -515,6 +515,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          categories: string[] | null
+          created_at: string
+          email: string
+          enabled: boolean | null
+          id: string
+          locations: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: string[] | null
+          created_at?: string
+          email: string
+          enabled?: boolean | null
+          id?: string
+          locations?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: string[] | null
+          created_at?: string
+          email?: string
+          enabled?: boolean | null
+          id?: string
+          locations?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_followers: {
         Row: {
           created_at: string

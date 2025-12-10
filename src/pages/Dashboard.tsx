@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventAnalytics } from "@/components/EventAnalytics";
 import SavedEvents from "@/components/SavedEvents";
 import { EventRecommendations } from "@/components/EventRecommendations";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 
 interface EventRegistration {
   id: string;
@@ -195,13 +196,17 @@ const Dashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="events">My Events</TabsTrigger>
             <TabsTrigger value="saved" className="flex items-center gap-1">
               <Heart className="h-3 w-3" />
               Saved
             </TabsTrigger>
             <TabsTrigger value="for-you">For You</TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-1">
+              <Bell className="h-3 w-3" />
+              Alerts
+            </TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -334,6 +339,10 @@ const Dashboard = () => {
 
           <TabsContent value="for-you">
             <EventRecommendations />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationPreferences />
           </TabsContent>
 
           <TabsContent value="analytics">
