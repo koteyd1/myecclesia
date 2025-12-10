@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Star } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { SearchBar } from "@/components/SearchBar";
 
@@ -353,13 +354,23 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredEvents.map((event) => (
-          <Card key={event.id}>
+          <Card key={event.id} className={event.is_featured ? "ring-2 ring-primary" : ""}>
             <CardHeader>
-              <CardTitle className="text-lg">{event.title}</CardTitle>
-              <CardDescription>{event.organizer}</CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg">{event.title}</CardTitle>
+                  <CardDescription>{event.organizer}</CardDescription>
+                </div>
+                {event.is_featured && (
+                  <Badge className="bg-primary text-primary-foreground">
+                    <Star className="h-3 w-3 mr-1 fill-current" />
+                    Featured
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Badge>{event.category}</Badge>
                 <Badge variant="outline">{event.denominations}</Badge>
               </div>
@@ -372,6 +383,46 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
                 <p><strong>Location:</strong> {event.location}</p>
                 <p><strong>Price:</strong> £{event.price}</p>
               </div>
+              
+              {/* Featured Toggle */}
+              <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center gap-2">
+                  <Star className={`h-4 w-4 ${event.is_featured ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
+                  <Label htmlFor={`featured-${event.id}`} className="text-sm">
+                    Featured
+                  </Label>
+                </div>
+                <Switch
+                  id={`featured-${event.id}`}
+                  checked={event.is_featured || false}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      const { error } = await supabase
+                        .from("events")
+                        .update({ is_featured: checked })
+                        .eq("id", event.id);
+                      
+                      if (error) throw error;
+                      
+                      toast({
+                        title: checked ? "Event Featured!" : "Event Unfeatured",
+                        description: checked 
+                          ? "This event will now appear in the featured carousel."
+                          : "This event has been removed from the featured carousel.",
+                      });
+                      fetchEvents();
+                    } catch (error) {
+                      console.error("Error updating featured status:", error);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Failed to update featured status.",
+                      });
+                    }
+                  }}
+                />
+              </div>
+              
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => handleEdit(event)}>
                   <Edit className="h-4 w-4" />

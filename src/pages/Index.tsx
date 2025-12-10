@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import FeaturedEventsCarousel from "@/components/FeaturedEventsCarousel";
 import EventCard from "@/components/EventCard";
 import CategoryBrowser from "@/components/CategoryBrowser";
 import PopularNearYou from "@/components/PopularNearYou";
@@ -198,6 +199,9 @@ const Index = () => {
         <SEOOptimizations />
         <StructuredData data={createOrganizationSchema()} />
         <Hero />
+        
+        {/* Featured Events Carousel */}
+        <FeaturedEventsCarousel />
         
         {/* Browse by Category */}
         <CategoryBrowser eventCounts={categoryEventCounts} />
