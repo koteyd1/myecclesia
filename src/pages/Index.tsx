@@ -1,8 +1,9 @@
 import Hero from "@/components/Hero";
 import EventCard from "@/components/EventCard";
+import CategoryBrowser from "@/components/CategoryBrowser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Heart, Star, ArrowRight, BookOpen } from "lucide-react";
+import { Calendar, Users, Heart, Star, ArrowRight, BookOpen, TrendingUp } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
@@ -54,7 +55,6 @@ const FeaturedBlogSection = () => {
   useEffect(() => {
     const fetchFeaturedBlogs = async () => {
       try {
-        // Fetch the latest 3 published blog posts (no admin restriction for homepage)
         const { data, error } = await supabase
           .from("blog_posts")
           .select("*")
@@ -75,19 +75,8 @@ const FeaturedBlogSection = () => {
     fetchFeaturedBlogs();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="mt-16 pt-16 border-t">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-semibold text-foreground mb-4">Latest from Our Blog</h2>
-          <p className="text-muted-foreground">Loading latest articles...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (featuredBlogs.length === 0) {
-    return null; // Don't show the section if no admin blogs exist
+  if (loading || featuredBlogs.length === 0) {
+    return null;
   }
 
   return (
@@ -126,76 +115,54 @@ const Index = () => {
   const navigate = useNavigate();
   useSiteTracking("Home - myEcclesia");
   const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = useState("All Events");
 
   // Use cached events data
   const { data: events = [], loading, error } = useCache(
-    'homepage-events-v3', // Force refresh after query fix
+    'homepage-events-v4',
     async () => {
-      console.log('Fetching events for homepage...');
-      // Fetch events happening later today or on any future date
       const dateStr = new Date().toISOString().split('T')[0];
-      const timeStr = new Date().toTimeString().slice(0, 8); // HH:MM:SS
+      const timeStr = new Date().toTimeString().slice(0, 8);
       const { data, error } = await supabase
         .from("events")
         .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
         .or(`date.gt.${dateStr},and(date.eq.${dateStr},time.gte.${timeStr})`)
         .order("date", { ascending: true })
         .order("time", { ascending: true })
-        .limit(60); // Fetch enough to have upcoming after client-side filtering
+        .limit(60);
 
       if (error) throw error;
       
-      console.log('Raw events fetched:', data?.length || 0);
-      
-      // Filter out events that have already passed their start time
-      const now = new Date();
-      console.log('Current time:', now.toISOString());
-      
       if (!data || data.length === 0) {
-        console.log('No events data returned');
         return [];
       }
       
-      // Use server-side filtered results directly
-      console.log('Using server-filtered upcoming events');
-      const upcomingEvents = data;
-      
-      console.log('Upcoming events after time filter:', upcomingEvents.length);
-      
-      // Enhanced deduplication: remove duplicates based on normalized title, date, time, and location
+      // Enhanced deduplication
       const seenEvents = new Set();
-      const uniqueEvents = upcomingEvents.filter((event) => {
-        // Create a unique key based on normalized title, date, time, and location
+      const uniqueEvents = data.filter((event) => {
         const normalizedTitle = event.title
           .toLowerCase()
-          .replace(/\s*-\s*\d+$/, '') // Remove trailing " - 1", " - 2", etc.
+          .replace(/\s*-\s*\d+$/, '')
           .replace(/\s+/g, ' ')
           .trim();
         
         const eventKey = `${normalizedTitle}|${event.date}|${event.time}|${event.location}`;
         
         if (seenEvents.has(eventKey)) {
-          console.log('Filtering out duplicate event:', event.title);
-          return false; // Skip duplicate
+          return false;
         }
         
         seenEvents.add(eventKey);
         return true;
-      }).slice(0, 6); // Limit to 6 unique events
-      
-      console.log('Final unique events for homepage:', uniqueEvents.length);
-      console.log('Events:', uniqueEvents.map(e => ({ title: e.title, date: e.date, time: e.time })));
+      }).slice(0, 8);
       
       return uniqueEvents;
     },
     {
-      ttl: 2 * 60 * 1000, // Cache for 2 minutes
+      ttl: 2 * 60 * 1000,
       enabled: true
     }
   );
 
-  // Handle errors
   useEffect(() => {
     if (error) {
       console.error("Error fetching events:", error);
@@ -207,26 +174,16 @@ const Index = () => {
     }
   }, [error, toast]);
 
-  // Memoize expensive calculations
-  const categories = useMemo(() => 
-    ["All Events", ...new Set((events || []).map(event => event.category).filter(Boolean))],
-    [events]
-  );
-
-  const filteredEvents = useMemo(() => 
-    selectedCategory === "All Events" 
-      ? (events || [])
-      : (events || []).filter(event => event.category === selectedCategory),
-    [events, selectedCategory]
-  );
-
-  // Debounced category selection to prevent excessive re-renders
-  const debouncedCategorySelect = useMemo(
-    () => performanceUtils.debounce((category: string) => {
-      setSelectedCategory(category);
-    }, 150),
-    []
-  );
+  // Calculate category counts for CategoryBrowser
+  const categoryEventCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    (events || []).forEach(event => {
+      if (event.category) {
+        counts[event.category] = (counts[event.category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [events]);
 
   return (
     <>
@@ -241,40 +198,40 @@ const Index = () => {
         <StructuredData data={createOrganizationSchema()} />
         <Hero />
         
-        {/* Events Section */}
-        <section id="events" className="py-16 px-4 sm:px-6 lg:px-8">
+        {/* Browse by Category */}
+        <CategoryBrowser eventCounts={categoryEventCounts} />
+        
+        {/* Trending/Upcoming Events Section */}
+        <section id="events" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Upcoming Events
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join us for these upcoming events and be part of our growing community of faith.
-              </p>
-            </div>
-            
-            {/* Event Categories Filter */}
-            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8 px-4">
-              {categories.map((category) => (
-                <Badge 
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"} 
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => debouncedCategorySelect(category)}
-                >
-                  {category}
-                </Badge>
-              ))}
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium text-primary uppercase tracking-wide">Happening Soon</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                  Upcoming Events
+                </h2>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/events")}
+                className="hidden sm:flex"
+              >
+                See all events
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
             
             {/* Events Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
               {loading ? (
-                Array.from({ length: 6 }).map((_, index) => (
+                Array.from({ length: 8 }).map((_, index) => (
                   <LoadingEventCard key={index} />
                 ))
-              ) : filteredEvents.length > 0 ? (
-                filteredEvents.map((event) => (
+              ) : events && events.length > 0 ? (
+                events.map((event) => (
                   <EventCard 
                     key={event.id} 
                     {...event} 
@@ -282,74 +239,82 @@ const Index = () => {
                   />
                 ))
               ) : (
-                <div className="col-span-full text-center py-8">
+                <div className="col-span-full text-center py-12">
                   <p className="text-muted-foreground text-lg">
-                    {selectedCategory === "All Events" 
-                      ? "No upcoming events found." 
-                      : `No upcoming events found in ${selectedCategory}.`}
+                    No upcoming events found.
                   </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate("/events")}
+                  >
+                    Browse All Events
+                  </Button>
                 </div>
               )}
             </div>
             
-            {/* Featured Blog Posts Section */}
-            <FeaturedBlogSection />
-            
-            <div className="text-center">
+            {/* Mobile View All Button */}
+            <div className="text-center sm:hidden">
               <Button 
                 variant="outline" 
                 size="lg"
                 onClick={() => navigate("/events")}
+                className="w-full"
               >
-                View All Events
+                See all events
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Featured Blog Posts Section */}
+            <FeaturedBlogSection />
           </div>
         </section>
         
         {/* Features Section */}
-        <section className="py-16 bg-muted">
+        <section className="py-16 bg-muted/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
                 Why Join Our Events?
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-muted-foreground max-w-2xl mx-auto">
                 Experience the warmth of our community and grow in your faith journey.
               </p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               <div className="text-center group">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Calendar className="h-8 w-8 text-primary" />
+                <div className="bg-primary/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Calendar className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">Easy Registration</h3>
-                <p className="text-muted-foreground">Simple, secure registration process for all events</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Easy Registration</h3>
+                <p className="text-sm text-muted-foreground">Simple, secure registration process for all events</p>
               </div>
               
               <div className="text-center group">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Users className="h-8 w-8 text-primary" />
+                <div className="bg-primary/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">Community</h3>
-                <p className="text-muted-foreground">Connect with fellow believers and build lasting friendships</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Community</h3>
+                <p className="text-sm text-muted-foreground">Connect with fellow believers and build lasting friendships</p>
               </div>
               
               <div className="text-center group">
-                <div className="bg-success/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-success/20 transition-colors">
-                  <Heart className="h-8 w-8 text-success" />
+                <div className="bg-primary/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Heart className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">Spiritual Growth</h3>
-                <p className="text-muted-foreground">Deepen your faith through meaningful experiences</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Spiritual Growth</h3>
+                <p className="text-sm text-muted-foreground">Deepen your faith through meaningful experiences</p>
               </div>
               
               <div className="text-center group">
-                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Star className="h-8 w-8 text-primary" />
+                <div className="bg-primary/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Star className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">Quality Events</h3>
-                <p className="text-muted-foreground">Thoughtfully planned events for all ages and interests</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Quality Events</h3>
+                <p className="text-sm text-muted-foreground">Thoughtfully planned events for all ages and interests</p>
               </div>
             </div>
           </div>

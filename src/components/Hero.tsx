@@ -1,13 +1,25 @@
-import { Calendar, ArrowRight } from "lucide-react";
+import { Search, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import heroImage from "@/assets/hero-diverse-congregation.jpg";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("search", searchTerm);
+    if (location) params.set("location", location);
+    navigate(`/events${params.toString() ? `?${params.toString()}` : ""}`);
+  };
 
   return (
-    <section className="relative min-h-[600px] sm:min-h-[700px] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[500px] sm:min-h-[550px] flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
@@ -15,49 +27,72 @@ const Hero = () => {
           alt="Church community gathering"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-hero"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
       </div>
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-12 sm:py-16">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-10 sm:py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] sm:leading-[1.5] overflow-visible">
-              <span className="block mb-4 sm:mb-6">Join the Worship</span>
-              <span className="block bg-gradient-to-r from-white to-primary-light bg-clip-text text-transparent">
-                Find Church Events Near You
-              </span>
-            </h1>
-          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
+            Discover Christian Events
+          </h1>
           
-          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-4">
-            Discover and register for upcoming church events, fellowship gatherings, 
-            and community celebrations. Join us as we grow in faith together.
+          <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Find conferences, worship nights, and community gatherings near you
           </p>
           
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center items-center px-4">
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 text-base sm:text-lg px-6 sm:px-8 py-3 w-full sm:w-auto"
-              onClick={() => navigate("/events")}
-            >
-              Browse Events
-              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="lg"
-              className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white text-base sm:text-lg px-6 sm:px-8 py-3 bg-transparent backdrop-blur-sm w-full sm:w-auto"
-              onClick={() => navigate("/about")}
-            >
-              Learn More
-            </Button>
+          {/* Eventbrite-style Search Bar */}
+          <form onSubmit={handleSearch} className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-lg p-2 shadow-2xl flex flex-col sm:flex-row gap-2">
+              <div className="flex-1 flex items-center gap-2 px-3 py-2 border-b sm:border-b-0 sm:border-r border-border">
+                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+                <Input 
+                  type="text"
+                  placeholder="Search events, keywords..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <div className="flex-1 flex items-center gap-2 px-3 py-2">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                <Input 
+                  type="text"
+                  placeholder="City or location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <Button 
+                type="submit"
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 whitespace-nowrap"
+              >
+                <Search className="h-4 w-4 mr-2 sm:hidden" />
+                <span className="hidden sm:inline">Find Events</span>
+                <span className="sm:hidden">Search</span>
+              </Button>
+            </div>
+          </form>
+
+          {/* Quick Category Links */}
+          <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
+            {["Conference", "Worship and Music", "Youth Events", "Bible Study", "Community Outreach"].map((category) => (
+              <button
+                key={category}
+                onClick={() => navigate(`/events?category=${encodeURIComponent(category)}`)}
+                className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white text-sm rounded-full hover:bg-white/20 transition-colors border border-white/20"
+              >
+                {category}
+              </button>
+            ))}
           </div>
         </div>
       </div>
       
-      {/* Decorative Elements */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent"></div>
+      {/* Bottom Gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent"></div>
     </section>
   );
 };
