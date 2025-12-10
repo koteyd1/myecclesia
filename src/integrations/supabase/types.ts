@@ -608,7 +608,7 @@ export type Database = {
           country_code: string | null
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           page_path: string
           page_title: string | null
           referrer: string | null
@@ -625,7 +625,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_path: string
           page_title?: string | null
           referrer?: string | null
@@ -642,7 +642,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_path?: string
           page_title?: string | null
           referrer?: string | null
@@ -809,18 +809,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_admin_analytics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_admin_analytics: { Args: never; Returns: undefined }
       ensure_unique_slug: {
         Args: { base_slug: string; record_id?: string; table_name: string }
         Returns: string
       }
-      generate_slug: {
-        Args: { input_text: string }
-        Returns: string
-      }
+      generate_slug: { Args: { input_text: string }; Returns: string }
       get_daily_analytics_chart: {
         Args: { days_back?: number }
         Returns: {
@@ -833,7 +827,7 @@ export type Database = {
         }[]
       }
       get_donation_admin_view: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           amount: number
           created_at: string
@@ -890,7 +884,7 @@ export type Database = {
         }[]
       }
       get_user_donations: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           amount: number
           created_at: string
@@ -932,9 +926,21 @@ export type Database = {
         Args: { event_id_param: string }
         Returns: undefined
       }
-      increment_page_view: {
-        Args:
-          | {
+      increment_page_view:
+        | {
+            Args: {
+              ip_address_param?: unknown
+              page_path_param: string
+              page_title_param?: string
+              referrer_param?: string
+              session_id_param?: string
+              user_agent_param?: string
+              user_id_param?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
               city_param?: string
               country_code_param?: string
               country_param?: string
@@ -946,29 +952,11 @@ export type Database = {
               user_agent_param?: string
               user_id_param?: string
             }
-          | {
-              ip_address_param?: unknown
-              page_path_param: string
-              page_title_param?: string
-              referrer_param?: string
-              session_id_param?: string
-              user_agent_param?: string
-              user_id_param?: string
-            }
-        Returns: undefined
-      }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_authenticated_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      mask_stripe_data: {
-        Args: { stripe_id: string }
-        Returns: string
-      }
+            Returns: undefined
+          }
+      is_admin_user: { Args: never; Returns: boolean }
+      is_authenticated_user: { Args: never; Returns: boolean }
+      mask_stripe_data: { Args: { stripe_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
