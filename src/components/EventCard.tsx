@@ -1,9 +1,7 @@
-import { Calendar, MapPin, Users, Clock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { MapPin, Heart, Bookmark } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { SocialShare } from "@/components/SocialShare";
 
 interface EventCardProps {
   id: string;
@@ -12,12 +10,13 @@ interface EventCardProps {
   date: string;
   time: string;
   location: string;
-  description: string;
+  description?: string;
   image: string;
   price: number;
-  availableTickets: number;
-  category: string;
-  denominations: string;
+  availableTickets?: number;
+  category?: string;
+  denominations?: string;
+  organizer?: string;
 }
 
 const EventCard = ({ 
@@ -27,18 +26,15 @@ const EventCard = ({
   date, 
   time, 
   location, 
-  description, 
   image, 
   price, 
-  availableTickets, 
   category,
-  denominations 
+  organizer 
 }: EventCardProps) => {
   const navigate = useNavigate();
 
   const handleViewEvent = () => {
     if (typeof window !== 'undefined') {
-      // Save current scroll position and page before navigating
       sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
       const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
       sessionStorage.setItem('eventsCurrentPage', currentPage);
@@ -46,26 +42,16 @@ const EventCard = ({
     navigate(`/events/${slug || id}`);
   };
 
-  const handleRegisterNow = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (typeof window !== 'undefined') {
-      // Save current scroll position and page before navigating
-      sessionStorage.setItem('eventsScrollPosition', window.scrollY.toString());
-      const currentPage = sessionStorage.getItem('eventsCurrentPage') || '1';
-      sessionStorage.setItem('eventsCurrentPage', currentPage);
-    }
-    navigate(`/events/${slug || id}#register`);
+  // Format date like "SAT, DEC 14"
+  const formatDateEventbrite = (dateStr: string) => {
+    const dateObj = new Date(dateStr);
+    const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const month = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    const dayNum = dateObj.getDate();
+    return { day, month, dayNum };
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
+  // Format time like "5:00 PM"
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':');
     const hour = parseInt(hours);
@@ -80,96 +66,96 @@ const EventCard = ({
     return eventDateTime <= now;
   };
 
+  const { day, month, dayNum } = formatDateEventbrite(date);
+
   return (
     <Card 
-      className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 bg-card cursor-pointer" 
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border border-border/50 bg-card cursor-pointer rounded-xl" 
       onClick={handleViewEvent}
     >
-      <div className="relative overflow-hidden">
+      {/* Image Container */}
+      <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={image}
-          alt={`${title} event image`}
-          className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          alt={title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1">
-          {category && (
-            <Badge variant="secondary" className="bg-white/90 text-foreground">
-              {category}
+        
+        {/* Price Badge */}
+        <div className="absolute bottom-3 left-3">
+          {price === 0 ? (
+            <Badge className="bg-emerald-500 text-white font-semibold px-3 py-1 shadow-lg">
+              Free
             </Badge>
-          )}
-          {denominations && (
-            <Badge variant="outline" className="bg-white/90 text-foreground border-primary">
-              {denominations}
+          ) : (
+            <Badge className="bg-white text-foreground font-semibold px-3 py-1 shadow-lg">
+              From £{price}
             </Badge>
           )}
         </div>
-        {price === 0 ? (
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-            <Badge className="bg-success text-success-foreground">
-              Free
+
+        {/* Save Button */}
+        <button 
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            // TODO: Save functionality
+          }}
+        >
+          <Heart className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
+        </button>
+
+        {/* Category Badge */}
+        {category && (
+          <div className="absolute top-3 left-3">
+            <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-foreground text-xs font-medium">
+              {category}
             </Badge>
           </div>
-        ) : (
-          <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-            <Badge variant="outline" className="bg-white/90 text-foreground">
-              £{price}
+        )}
+
+        {/* Sold Out Overlay */}
+        {isSalesEnded() && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Badge className="bg-muted text-muted-foreground text-sm font-semibold px-4 py-2">
+              Sales Ended
             </Badge>
           </div>
         )}
       </div>
       
-      <CardContent className="p-4 sm:p-6">
-        <div className="space-y-3 sm:space-y-4">
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-              {title}
-            </h3>
-            <p className="text-muted-foreground text-sm line-clamp-2">
-              {description}
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-2 text-primary" />
-              {formatDate(date)}
-            </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 mr-2 text-primary" />
-              {formatTime(time)}
-            </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 mr-2 text-primary" />
-              {location}
-            </div>
-          </div>
-          
-          <div className="pt-2 flex flex-col sm:flex-row gap-2">
-            {isSalesEnded() ? (
-              <div className="flex-1">
-                <Badge variant="secondary" className="w-full justify-center py-2 bg-muted text-muted-foreground">
-                  Sales Ended
-                </Badge>
-              </div>
-            ) : (
-              <Button 
-                className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
-                onClick={handleRegisterNow}
-              >
-                Register Now
-              </Button>
-            )}
-            <div onClick={(e) => e.stopPropagation()}>
-              <SocialShare
-                url={`/events/${slug || id}`}
-                title={title}
-                description={description}
-                className="h-10"
-              />
-            </div>
-          </div>
+      {/* Content */}
+      <div className="p-4">
+        {/* Date & Time - Eventbrite Style */}
+        <div className="text-primary font-semibold text-sm mb-2">
+          {day}, {month} {dayNum} · {formatTime(time)}
         </div>
-      </CardContent>
+
+        {/* Title */}
+        <h3 className="font-semibold text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+          {title}
+        </h3>
+        
+        {/* Location */}
+        <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-3">
+          <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+          <span className="line-clamp-1">{location}</span>
+        </div>
+
+        {/* Organizer */}
+        {organizer && (
+          <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-xs font-semibold text-primary">
+                {organizer.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground line-clamp-1">
+              {organizer}
+            </span>
+          </div>
+        )}
+      </div>
     </Card>
   );
 };
