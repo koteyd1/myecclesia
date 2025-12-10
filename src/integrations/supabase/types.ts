@@ -310,6 +310,7 @@ export type Database = {
           external_url: string | null
           id: string
           image: string | null
+          is_featured: boolean | null
           location: string
           minister_id: string | null
           organization_id: string | null
@@ -334,6 +335,7 @@ export type Database = {
           external_url?: string | null
           id?: string
           image?: string | null
+          is_featured?: boolean | null
           location: string
           minister_id?: string | null
           organization_id?: string | null
@@ -358,6 +360,7 @@ export type Database = {
           external_url?: string | null
           id?: string
           image?: string | null
+          is_featured?: boolean | null
           location?: string
           minister_id?: string | null
           organization_id?: string | null
