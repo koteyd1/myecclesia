@@ -1,7 +1,11 @@
-import { MapPin, Heart, Bookmark } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface EventCardProps {
   id: string;
@@ -32,6 +36,31 @@ const EventCard = ({
   organizer 
 }: EventCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingState, setSavingState] = useState(false);
+
+  // Check if event is saved
+  useEffect(() => {
+    if (!user) {
+      setIsSaved(false);
+      return;
+    }
+
+    const checkSavedStatus = async () => {
+      const { data } = await supabase
+        .from("saved_events")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("event_id", id)
+        .maybeSingle();
+      
+      setIsSaved(!!data);
+    };
+
+    checkSavedStatus();
+  }, [user, id]);
 
   const handleViewEvent = () => {
     if (typeof window !== 'undefined') {
@@ -40,6 +69,63 @@ const EventCard = ({
       sessionStorage.setItem('eventsCurrentPage', currentPage);
     }
     navigate(`/events/${slug || id}`);
+  };
+
+  const handleSaveToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save events.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    setSavingState(true);
+    
+    try {
+      if (isSaved) {
+        // Remove from saved
+        const { error } = await supabase
+          .from("saved_events")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("event_id", id);
+        
+        if (error) throw error;
+        
+        setIsSaved(false);
+        toast({
+          title: "Event removed",
+          description: "Event removed from your saved list.",
+        });
+      } else {
+        // Add to saved
+        const { error } = await supabase
+          .from("saved_events")
+          .insert({ user_id: user.id, event_id: id });
+        
+        if (error) throw error;
+        
+        setIsSaved(true);
+        toast({
+          title: "Event saved!",
+          description: "You can view your saved events in your dashboard.",
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling save:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingState(false);
+    }
   };
 
   // Format date like "SAT, DEC 14"
@@ -96,13 +182,22 @@ const EventCard = ({
 
         {/* Save Button */}
         <button 
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Save functionality
-          }}
+          className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all ${
+            isSaved 
+              ? 'bg-red-500 hover:bg-red-600' 
+              : 'bg-white/90 backdrop-blur-sm hover:bg-white'
+          } ${savingState ? 'opacity-50' : ''}`}
+          onClick={handleSaveToggle}
+          disabled={savingState}
+          aria-label={isSaved ? "Remove from saved" : "Save event"}
         >
-          <Heart className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
+          <Heart 
+            className={`h-4 w-4 transition-colors ${
+              isSaved 
+                ? 'text-white fill-white' 
+                : 'text-muted-foreground hover:text-red-500'
+            }`} 
+          />
         </button>
 
         {/* Category Badge */}
