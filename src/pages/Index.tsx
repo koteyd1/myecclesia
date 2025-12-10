@@ -3,6 +3,7 @@ import FeaturedEventsCarousel from "@/components/FeaturedEventsCarousel";
 import EventCard from "@/components/EventCard";
 import CategoryBrowser from "@/components/CategoryBrowser";
 import PopularNearYou from "@/components/PopularNearYou";
+import { EventRecommendations } from "@/components/EventRecommendations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star, ArrowRight, BookOpen, TrendingUp } from "lucide-react";
@@ -18,6 +19,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { useCache } from "@/utils/cache";
 import { performanceUtils } from "@/utils/performance";
 import { useSiteTracking } from "@/hooks/useSiteTracking";
+import { useAuth } from "@/hooks/useAuth";
 
 // Blog Preview Card Component for better internal linking
 const BlogPreviewCard = ({ slug, title, excerpt, category, author, readTime }: {
@@ -115,6 +117,7 @@ const FeaturedBlogSection = () => {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   useSiteTracking("Home - myEcclesia");
   const { toast } = useToast();
 
@@ -209,6 +212,8 @@ const Index = () => {
         {/* Popular in Your Area */}
         <PopularNearYou />
         
+        {/* Personalized Recommendations - Only show for logged-in users */}
+        {user && <EventRecommendations />}
         {/* Trending/Upcoming Events Section */}
         <section id="events" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">

@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventAnalytics } from "@/components/EventAnalytics";
 import SavedEvents from "@/components/SavedEvents";
+import { EventRecommendations } from "@/components/EventRecommendations";
 
 interface EventRegistration {
   id: string;
@@ -200,6 +201,7 @@ const Dashboard = () => {
               <Heart className="h-3 w-3" />
               Saved
             </TabsTrigger>
+            <TabsTrigger value="for-you">For You</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -328,6 +330,10 @@ const Dashboard = () => {
 
           <TabsContent value="saved">
             <SavedEvents />
+          </TabsContent>
+
+          <TabsContent value="for-you">
+            <EventRecommendations />
           </TabsContent>
 
           <TabsContent value="analytics">
