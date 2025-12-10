@@ -52,3 +52,6 @@ verify_jwt = false
 
 [functions.get-visitor-location]
 verify_jwt = false
+
+[functions.send-event-notification]
+verify_jwt = true
