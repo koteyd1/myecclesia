@@ -3,14 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Clock, Shield } from "lucide-react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizeInput, validateEmail, validateName, validatePhone, validateMessage, INPUT_LIMITS } from "@/utils/validation";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
+import { useRateLimit } from "@/hooks/useRateLimit";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -20,13 +22,54 @@ const Contact = () => {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState(""); // Honeypot field for bot detection
+  const formStartTime = useRef(Date.now()); // Track form fill time
   const { toast } = useToast();
+  
+  // Rate limiting: 3 submissions per 5 minutes
+  const { isBlocked, checkRateLimit, recordAttempt, getRemainingTime, attemptsRemaining } = useRateLimit({
+    maxAttempts: 3,
+    windowMs: 5 * 60 * 1000 // 5 minutes
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isSubmitting) return;
+    
+    // Check honeypot - if filled, it's likely a bot
+    if (honeypot) {
+      console.log('Bot detected via honeypot');
+      toast({
+        title: "Message sent!",
+        description: "Thank you for your message. We'll get back to you soon.",
+      });
+      return; // Silently fail for bots
+    }
+    
+    // Check if form was filled too quickly (less than 3 seconds = likely bot)
+    const fillTime = Date.now() - formStartTime.current;
+    if (fillTime < 3000) {
+      console.log('Bot detected via timing');
+      toast({
+        title: "Message sent!",
+        description: "Thank you for your message. We'll get back to you soon.",
+      });
+      return; // Silently fail for bots
+    }
+    
+    // Check rate limit
+    if (!checkRateLimit()) {
+      toast({
+        variant: "destructive",
+        title: "Rate Limit Exceeded",
+        description: `Too many submissions. Please wait ${getRemainingTime()} seconds before trying again.`,
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
+    recordAttempt();
     
     try {
       // Comprehensive validation using utility functions
@@ -118,11 +161,9 @@ const Contact = () => {
 
         if (emailError) {
           console.error('Email notification error:', emailError);
-          // Don't fail the form submission if email fails, just log it
         }
       } catch (emailError) {
         console.error('Email notification failed:', emailError);
-        // Don't fail the form submission if email fails
       }
 
       toast({
@@ -130,6 +171,7 @@ const Contact = () => {
         description: "Thank you for your message. We'll get back to you soon.",
       });
       setFormData({ name: "", email: "", phone: "", message: "" });
+      formStartTime.current = Date.now(); // Reset timer
     } catch (error) {
       console.error('Unexpected error:', error);
       toast({
@@ -197,7 +239,30 @@ const Contact = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {isBlocked && (
+                  <Alert variant="destructive" className="mb-4">
+                    <Clock className="h-4 w-4" />
+                    <AlertDescription>
+                      Rate limit exceeded. Please wait {getRemainingTime()} seconds before submitting again.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Honeypot field - hidden from users, visible to bots */}
+                  <div className="absolute -left-[9999px]" aria-hidden="true">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                    />
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>
                     <Input
@@ -209,6 +274,7 @@ const Contact = () => {
                       onChange={handleChange}
                       maxLength={INPUT_LIMITS.NAME_MAX}
                       required
+                      disabled={isBlocked}
                     />
                   </div>
                   
@@ -223,6 +289,7 @@ const Contact = () => {
                       onChange={handleChange}
                       maxLength={INPUT_LIMITS.EMAIL_MAX}
                       required
+                      disabled={isBlocked}
                     />
                   </div>
                   
@@ -236,6 +303,7 @@ const Contact = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       maxLength={INPUT_LIMITS.PHONE_MAX}
+                      disabled={isBlocked}
                     />
                   </div>
                   
@@ -250,36 +318,39 @@ const Contact = () => {
                       maxLength={INPUT_LIMITS.MESSAGE_MAX}
                       rows={5}
                       required
+                      disabled={isBlocked}
                     />
                     <div className="text-sm text-muted-foreground text-right">
                       {formData.message.length}/{INPUT_LIMITS.MESSAGE_MAX}
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Sending..." : "Send Message"}
+                  <Button type="submit" className="w-full" disabled={isSubmitting || isBlocked}>
+                    {isSubmitting ? "Sending..." : isBlocked ? `Wait ${getRemainingTime()}s` : "Send Message"}
                   </Button>
+                  
+                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Shield className="h-3 w-3" />
+                    <span>{attemptsRemaining} submissions remaining</span>
+                  </div>
                 </form>
               </CardContent>
             </Card>
           </div>
         </div>
         
-        {/* Partnership CTA */}
+        {/* Help Centre CTA */}
         <section className="mt-12">
           <Card className="max-w-2xl mx-auto bg-primary/5 border-primary/20">
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Interested in Partnership?</CardTitle>
+              <CardTitle className="text-xl">Need Quick Answers?</CardTitle>
               <CardDescription>
-                Are you a church or ministry looking to partner with MyEcclesia? We'd love to work together to grow the Christian community.
+                Check out our Help Centre for frequently asked questions and guides on using MyEcclesia.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Button asChild>
-                <a href="/partnership" className="inline-flex items-center gap-2">
-                  Explore Partnership Opportunities
-                  <ChevronRight className="h-4 w-4" />
-                </a>
+              <Button asChild variant="outline">
+                <a href="/help-centre">Visit Help Centre</a>
               </Button>
             </CardContent>
           </Card>
