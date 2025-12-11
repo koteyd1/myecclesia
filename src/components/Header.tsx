@@ -130,11 +130,6 @@ const Header = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/partnership" className="w-full">
-                      Partner with Us
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
                     <Link to="/help-centre" className="w-full">
                       Help Centre
                     </Link>
@@ -215,77 +210,59 @@ const Header = () => {
         </div>
         
         {/* Mobile Navigation */}
-        <div className="lg:hidden border-t border-border overflow-x-auto">
-          <div className="py-3 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm min-w-max">
+        <div className="lg:hidden border-t border-border">
+          <div className="py-3 flex items-center gap-3 text-sm overflow-x-auto scrollbar-hide px-1">
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors whitespace-nowrap">
                 <span>Browse</span>
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
-                  <Link to="/events" className="w-full">
-                    All Events
-                  </Link>
+                  <Link to="/events" className="w-full">All Events</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/ministers" className="w-full">
-                    Ministers
-                  </Link>
+                  <Link to="/ministers" className="w-full">Ministers</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/organizations" className="w-full">
-                    Organizations
-                  </Link>
+                  <Link to="/organizations" className="w-full">Organizations</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/calendar" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/calendar" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
               Calendar
             </Link>
-            <Link to="/community" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/community" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
               Community
             </Link>
+            <Link to="/blog" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
+              Blog
+            </Link>
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
-                <span>Blog</span>
+              <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                <span>More</span>
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
-                  <Link to="/blog" className="w-full">
-                    All Articles
-                  </Link>
+                  <Link to="/about" className="w-full">About</Link>
                 </DropdownMenuItem>
-                {featuredBlogs.map((blog) => (
-                  <DropdownMenuItem key={blog.id} asChild>
-                    <Link to={`/blog/${blog.slug}`} className="w-full">
-                      {blog.title.length > 20 ? `${blog.title.substring(0, 20)}...` : blog.title}
-                    </Link>
+                <DropdownMenuItem asChild>
+                  <Link to="/contact" className="w-full">Contact</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/help-centre" className="w-full">Help Centre</Link>
+                </DropdownMenuItem>
+                {user && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="w-full">Dashboard</Link>
                   </DropdownMenuItem>
-                ))}
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/about" className="text-foreground hover:text-primary transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
-              Contact
-            </Link>
-            <Link to="/partnership" className="text-foreground hover:text-primary transition-colors">
-              Partner with Us
-            </Link>
-            <Link to="/help-centre" className="text-foreground hover:text-primary transition-colors">
-              Help Centre
-            </Link>
-            <Link to="/donate" className="bg-primary text-primary-foreground px-3 py-1 rounded text-sm font-medium">
+            <Link to="/donate" className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap ml-auto">
               Donate
             </Link>
-            {user && (
-              <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors">
-                Dashboard
-              </Link>
-            )}
           </div>
         </div>
       </div>

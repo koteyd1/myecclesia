@@ -23,7 +23,7 @@ import EventGuidelines from "./pages/EventGuidelines";
 import HelpCentre from "./pages/HelpCentre";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
-import Partnership from "./pages/Partnership";
+
 import Sitemap from "./pages/Sitemap";
 import OrganizationProfile from "./pages/OrganizationProfile";
 import OrganizationForm from "./pages/OrganizationForm";
@@ -69,7 +69,7 @@ const App = () => (
               <Route path="/help-centre" element={<HelpCentre />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-              <Route path="/partnership" element={<Partnership />} />
+              
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="/organization/:slug" element={<OrganizationProfile />} />
               <Route path="/organization/new" element={<OrganizationForm />} />
