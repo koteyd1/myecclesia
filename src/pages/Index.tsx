@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star, ArrowRight, BookOpen, TrendingUp } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
 import { SEOOptimizations } from "@/components/SEOOptimizations";
@@ -179,16 +179,29 @@ const Index = () => {
     }
   }, [error, toast]);
 
-  // Calculate category counts for CategoryBrowser
-  const categoryEventCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    (events || []).forEach(event => {
-      if (event.category) {
-        counts[event.category] = (counts[event.category] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [events]);
+  // Fetch category counts from all upcoming events
+  const { data: categoryEventCounts = {} } = useCache(
+    'category-event-counts-v1',
+    async () => {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from("events")
+        .select("category")
+        .gte("date", dateStr)
+        .not("category", "is", null);
+
+      if (error) throw error;
+      
+      const counts: Record<string, number> = {};
+      (data || []).forEach(event => {
+        if (event.category) {
+          counts[event.category] = (counts[event.category] || 0) + 1;
+        }
+      });
+      return counts;
+    },
+    { ttl: 5 * 60 * 1000, enabled: true }
+  );
 
   return (
     <>
