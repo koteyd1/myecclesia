@@ -33,9 +33,9 @@ const CategoryCard = ({ name, icon, color, count }: CategoryCardProps) => {
       <span className="text-sm sm:text-base font-medium text-foreground text-center">
         {name}
       </span>
-      {count !== undefined && (
-        <span className="text-xs text-muted-foreground mt-1">
-          {count} events
+      {count !== undefined && count > 0 && (
+        <span className="text-xs sm:text-sm font-medium text-primary mt-1">
+          {count} {count === 1 ? 'event' : 'events'}
         </span>
       )}
     </button>
