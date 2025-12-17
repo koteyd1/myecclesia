@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Heart } from "lucide-react";
+import { MapPin, Heart, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +40,7 @@ const EventCard = ({
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
   const [savingState, setSavingState] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Check if event is saved
   useEffect(() => {
@@ -160,12 +161,22 @@ const EventCard = ({
       onClick={handleViewEvent}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        {image && !imageError ? (
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+            <div className="text-center text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <span className="text-xs">No image</span>
+            </div>
+          </div>
+        )}
         
         {/* Price Badge */}
         <div className="absolute bottom-3 left-3">
