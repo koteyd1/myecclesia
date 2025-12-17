@@ -91,6 +91,12 @@ export const useEventRecommendations = (
 
       // If not enough recommendations and no specific filters, supplement with other events
       if (filteredEvents.length < limit && !filters?.categories?.length && !filters?.location) {
+        // Collect all IDs to exclude (interacted + already recommended)
+        const excludeIds = new Set([
+          ...Array.from(interactedEventIds),
+          ...filteredEvents.map((e) => e.id)
+        ]);
+
         let supplementQuery = supabase
           .from("events")
           .select("*")
@@ -102,8 +108,8 @@ export const useEventRecommendations = (
           supplementQuery = supplementQuery.lte("date", filters.dateTo.toISOString().split("T")[0]);
         }
 
-        if (interactedEventIds.size > 0) {
-          supplementQuery = supplementQuery.not("id", "in", `(${Array.from(interactedEventIds).join(",")})`);
+        if (excludeIds.size > 0) {
+          supplementQuery = supplementQuery.not("id", "in", `(${Array.from(excludeIds).join(",")})`);
         }
 
         supplementQuery = supplementQuery
