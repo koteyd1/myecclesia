@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { MapPin, Mail, Phone, Globe, Calendar, Users, Heart, Shield } from 'lucide-react';
+import { MapPin, Globe, Calendar, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SEOHead } from '@/components/SEOHead';
 import { useCanonical } from '@/hooks/useCanonical';
@@ -12,15 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { EventManagement } from '@/components/EventManagement';
 
 export default function OrganizationProfile() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [isFollowing, setIsFollowing] = useState(false);
   const [showEventManagement, setShowEventManagement] = useState(false);
   
   useCanonical({ customUrl: `/organization/${slug}` });
@@ -57,87 +54,6 @@ export default function OrganizationProfile() {
     },
     enabled: !!organization?.id,
   });
-
-  const { data: followerCount } = useQuery({
-    queryKey: ['organization-followers', organization?.id],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('organization_followers')
-        .select('*', { count: 'exact', head: true })
-        .eq('organization_id', organization.id);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!organization?.id,
-  });
-
-  const { data: userFollowing } = useQuery({
-    queryKey: ['user-following', organization?.id, user?.id],
-    queryFn: async () => {
-      if (!user || !organization) return false;
-      
-      const { data, error } = await supabase
-        .from('organization_followers')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('organization_id', organization.id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      return !!data;
-    },
-    enabled: !!user && !!organization?.id,
-  });
-
-  const handleFollow = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to follow organizations",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!organization) return;
-
-    try {
-      if (userFollowing) {
-        await supabase
-          .from('organization_followers')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('organization_id', organization.id);
-        
-        setIsFollowing(false);
-        toast({
-          title: "Unfollowed",
-          description: `You are no longer following ${organization.name}`,
-        });
-      } else {
-        await supabase
-          .from('organization_followers')
-          .insert({
-            user_id: user.id,
-            organization_id: organization.id,
-          });
-        
-        setIsFollowing(true);
-        toast({
-          title: "Following",
-          description: `You are now following ${organization.name}`,
-        });
-      }
-    } catch (error) {
-      console.error('Error following/unfollowing:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update follow status",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (isLoading) {
     return (
@@ -217,14 +133,9 @@ export default function OrganizationProfile() {
                     </Badge>
                   )}
 
-                  <div className="flex items-center text-muted-foreground mb-2">
+                  <div className="flex items-center text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-2" />
                     <span>{organization.address}, {organization.postcode}, {organization.country}</span>
-                  </div>
-
-                  <div className="flex items-center text-muted-foreground">
-                    <Users className="h-4 w-4 mr-2" />
-                    <span>{followerCount} followers</span>
                   </div>
                 </div>
 
@@ -238,15 +149,6 @@ export default function OrganizationProfile() {
                       {showEventManagement ? 'Hide' : 'Manage Events'}
                     </Button>
                   )}
-                  
-                  <Button
-                    onClick={handleFollow}
-                    variant={userFollowing ? "outline" : "default"}
-                    className="min-w-[120px]"
-                  >
-                    <Heart className={`h-4 w-4 mr-2 ${userFollowing ? 'fill-current' : ''}`} />
-                    {userFollowing ? 'Following' : 'Follow'}
-                  </Button>
                   
                   <SocialShare
                     url={currentUrl}
@@ -275,10 +177,7 @@ export default function OrganizationProfile() {
               {organization.mission_statement && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Heart className="h-5 w-5 mr-2 text-primary" />
-                      Our Mission
-                    </CardTitle>
+                    <CardTitle>Our Mission</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground leading-relaxed">

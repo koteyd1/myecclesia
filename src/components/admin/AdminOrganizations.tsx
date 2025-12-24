@@ -22,10 +22,7 @@ export default function AdminOrganizations() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('organizations')
-        .select(`
-          *,
-          organization_followers(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -193,16 +190,12 @@ export default function AdminOrganizations() {
                     <TableHead>Denomination</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Followers</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {organizations?.map((org) => {
-                    const followerCount = Array.isArray(org.organization_followers) ? org.organization_followers.length : 0;
-                    
-                    return (
+                  {organizations?.map((org) => (
                       <TableRow key={org.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
@@ -238,12 +231,6 @@ export default function AdminOrganizations() {
                           <Badge variant={org.is_verified ? "default" : "secondary"}>
                             {org.is_verified ? "Verified" : "Pending"}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center text-sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            {followerCount}
-                          </div>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(org.created_at), 'MMM d, yyyy')}
@@ -324,9 +311,6 @@ export default function AdminOrganizations() {
                                           </div>
                                           <div>
                                             <strong>Created:</strong> {format(new Date(selectedOrg.created_at), 'PPP')}
-                                          </div>
-                                          <div>
-                                            <strong>Followers:</strong> {followerCount}
                                           </div>
                                         </div>
                                       </div>
@@ -412,8 +396,7 @@ export default function AdminOrganizations() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </div>
