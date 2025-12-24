@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,6 @@ import {
   MapPin, 
   Search, 
   Filter, 
-  Heart, 
-  Users,
   ChevronDown,
   Building
 } from "lucide-react";
@@ -43,16 +41,12 @@ interface Organization {
   logo_url: string | null;
   slug: string;
   created_at: string;
-  _count?: {
-    organization_followers: number;
-  };
 }
 
-type SortOption = "newest" | "oldest" | "name" | "followers";
+type SortOption = "newest" | "oldest" | "name";
 type ViewMode = "grid" | "list";
 
 export default function Organizations() {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [filteredOrganizations, setFilteredOrganizations] = useState<Organization[]>([]);
@@ -62,7 +56,6 @@ export default function Organizations() {
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [followedOrganizations, setFollowedOrganizations] = useState<Set<string>>(new Set());
 
   // Get unique values for filters
   const denominations = [...new Set(organizations.map(o => o.denomination).filter(Boolean))];
@@ -70,10 +63,7 @@ export default function Organizations() {
 
   useEffect(() => {
     fetchOrganizations();
-    if (user) {
-      fetchFollowedOrganizations();
-    }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     filterAndSortOrganizations();
@@ -83,23 +73,13 @@ export default function Organizations() {
     try {
       const { data, error } = await supabase
         .from("organizations")
-        .select(`
-          *,
-          organization_followers(count)
-        `)
+        .select("*")
         .eq("is_verified", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       
-      const organizationsWithCounts = data.map(org => ({
-        ...org,
-        _count: {
-          organization_followers: org.organization_followers?.length || 0
-        }
-      }));
-
-      setOrganizations(organizationsWithCounts);
+      setOrganizations(data || []);
     } catch (error) {
       console.error("Error fetching organizations:", error);
       toast({
@@ -109,78 +89,6 @@ export default function Organizations() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchFollowedOrganizations = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("organization_followers")
-        .select("organization_id")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      
-      const followedIds = new Set(data.map(f => f.organization_id));
-      setFollowedOrganizations(followedIds);
-    } catch (error) {
-      console.error("Error fetching followed organizations:", error);
-    }
-  };
-
-  const handleFollow = async (organizationId: string) => {
-    if (!user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to follow organizations",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const isFollowing = followedOrganizations.has(organizationId);
-      
-      if (isFollowing) {
-        await supabase
-          .from("organization_followers")
-          .delete()
-          .eq("organization_id", organizationId)
-          .eq("user_id", user.id);
-        
-        setFollowedOrganizations(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(organizationId);
-          return newSet;
-        });
-        
-        toast({
-          title: "Unfollowed",
-          description: "You unfollowed this organization",
-        });
-      } else {
-        await supabase
-          .from("organization_followers")
-          .insert({
-            organization_id: organizationId,
-            user_id: user.id,
-          });
-        
-        setFollowedOrganizations(prev => new Set([...prev, organizationId]));
-        
-        toast({
-          title: "Following",
-          description: "You are now following this organization",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update follow status",
-        variant: "destructive",
-      });
     }
   };
 
@@ -215,8 +123,6 @@ export default function Organizations() {
           return a.name.localeCompare(b.name);
         case "oldest":
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case "followers":
-          return (b._count?.organization_followers || 0) - (a._count?.organization_followers || 0);
         case "newest":
         default:
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -227,8 +133,6 @@ export default function Organizations() {
   };
 
   const OrganizationCard = ({ organization }: { organization: Organization }) => {
-    const isFollowing = followedOrganizations.has(organization.id);
-    
     if (viewMode === "list") {
       return (
         <Card className="hover:shadow-md transition-shadow">
@@ -242,43 +146,24 @@ export default function Organizations() {
               </Avatar>
               
               <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <Link to={`/organization/${organization.slug}`}>
-                      <h3 className="font-semibold text-lg hover:text-primary">
-                        {organization.name}
-                      </h3>
-                    </Link>
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {organization.address}, {organization.country}
-                      </span>
-                      {organization.denomination && (
-                        <>
-                          <span className="text-muted-foreground">•</span>
-                          <Badge variant="outline" className="text-xs">
-                            {organization.denomination}
-                          </Badge>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{organization._count?.organization_followers || 0}</div>
-                      <div className="text-xs text-muted-foreground">followers</div>
-                    </div>
-                    <Button
-                      variant={isFollowing ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => handleFollow(organization.id)}
-                    >
-                      <Heart className={`w-4 h-4 mr-1 ${isFollowing ? "fill-current" : ""}`} />
-                      {isFollowing ? "Following" : "Follow"}
-                    </Button>
-                  </div>
+                <Link to={`/organization/${organization.slug}`}>
+                  <h3 className="font-semibold text-lg hover:text-primary">
+                    {organization.name}
+                  </h3>
+                </Link>
+                <div className="flex items-center gap-2 mt-1">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {organization.address}, {organization.country}
+                  </span>
+                  {organization.denomination && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <Badge variant="outline" className="text-xs">
+                        {organization.denomination}
+                      </Badge>
+                    </>
+                  )}
                 </div>
                 
                 {organization.mission_statement && (
@@ -296,18 +181,12 @@ export default function Organizations() {
     return (
       <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={organization.logo_url || undefined} />
-              <AvatarFallback>
-                {organization.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <div className="text-sm font-medium">{organization._count?.organization_followers || 0}</div>
-              <div className="text-xs text-muted-foreground">followers</div>
-            </div>
-          </div>
+          <Avatar className="w-16 h-16">
+            <AvatarImage src={organization.logo_url || undefined} />
+            <AvatarFallback>
+              {organization.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
         </CardHeader>
         <CardContent className="pt-0">
           <Link to={`/organization/${organization.slug}`}>
@@ -330,20 +209,10 @@ export default function Organizations() {
           )}
           
           {organization.mission_statement && (
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+            <p className="text-sm text-muted-foreground line-clamp-3">
               {organization.mission_statement}
             </p>
           )}
-          
-          <Button
-            variant={isFollowing ? "outline" : "default"}
-            size="sm"
-            className="w-full"
-            onClick={() => handleFollow(organization.id)}
-          >
-            <Heart className={`w-4 h-4 mr-2 ${isFollowing ? "fill-current" : ""}`} />
-            {isFollowing ? "Following" : "Follow"}
-          </Button>
         </CardContent>
       </Card>
     );
@@ -456,9 +325,6 @@ export default function Organizations() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setSortBy("name")}>
                     Name (A-Z)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy("followers")}>
-                    Most Followers
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
