@@ -5,9 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Heart, Calendar, ExternalLink, Share2 } from "lucide-react";
+import { MapPin, Calendar, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import EventCard from "@/components/EventCard";
 import { SocialShare } from "@/components/SocialShare";
@@ -51,20 +50,12 @@ export default function MinisterProfile() {
   const { toast } = useToast();
   const [minister, setMinister] = useState<Minister | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [followersCount, setFollowersCount] = useState(0);
   const [showEventManagement, setShowEventManagement] = useState(false);
 
   useEffect(() => {
     fetchMinisterData();
   }, [slug]);
-
-  useEffect(() => {
-    if (minister && user) {
-      checkFollowStatus();
-    }
-  }, [minister, user]);
 
   const fetchMinisterData = async () => {
     if (!slug) return;
@@ -98,14 +89,6 @@ export default function MinisterProfile() {
       if (eventsError) throw eventsError;
       setEvents(eventsData || []);
 
-      // Fetch followers count
-      const { count } = await supabase
-        .from("minister_followers")
-        .select("*", { count: "exact", head: true })
-        .eq("minister_id", ministerData.id);
-
-      setFollowersCount(count || 0);
-
     } catch (error) {
       console.error("Error fetching minister data:", error);
       toast({
@@ -115,67 +98,6 @@ export default function MinisterProfile() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const checkFollowStatus = async () => {
-    if (!minister || !user) return;
-
-    const { data } = await supabase
-      .from("minister_followers")
-      .select("id")
-      .eq("minister_id", minister.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    setIsFollowing(!!data);
-  };
-
-  const handleFollow = async () => {
-    if (!minister || !user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to follow ministers",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (isFollowing) {
-        await supabase
-          .from("minister_followers")
-          .delete()
-          .eq("minister_id", minister.id)
-          .eq("user_id", user.id);
-        
-        setIsFollowing(false);
-        setFollowersCount(prev => Math.max(0, prev - 1));
-        toast({
-          title: "Unfollowed",
-          description: `You unfollowed ${minister.full_name}`,
-        });
-      } else {
-        await supabase
-          .from("minister_followers")
-          .insert({
-            minister_id: minister.id,
-            user_id: user.id,
-          });
-        
-        setIsFollowing(true);
-        setFollowersCount(prev => prev + 1);
-        toast({
-          title: "Following",
-          description: `You are now following ${minister.full_name}`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update follow status",
-        variant: "destructive",
-      });
     }
   };
 
@@ -295,11 +217,6 @@ export default function MinisterProfile() {
                       </Button>
                     )}
                     
-                    <Button onClick={handleFollow} variant={isFollowing ? "outline" : "default"}>
-                      <Heart className={`w-4 h-4 mr-2 ${isFollowing ? "fill-current" : ""}`} />
-                      {isFollowing ? "Following" : "Follow"}
-                    </Button>
-                    
                     <SocialShare
                       url={shareUrl}
                       title={shareTitle}
@@ -316,10 +233,6 @@ export default function MinisterProfile() {
                       </Button>
                     ))}
                   </div>
-
-                  <p className="text-sm text-muted-foreground">
-                    {followersCount} followers
-                  </p>
                 </div>
               </div>
             </CardContent>

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Check, X, MapPin, Users, Globe, User } from 'lucide-react';
+import { Eye, Check, X, MapPin, Globe, User } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function AdminOrganizations() {
@@ -35,10 +35,7 @@ export default function AdminOrganizations() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ministers')
-        .select(`
-          *,
-          minister_followers(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -412,16 +409,12 @@ export default function AdminOrganizations() {
                     <TableHead>Location</TableHead>
                     <TableHead>Ministry Focus</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Followers</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ministers?.map((minister) => {
-                    const followerCount = Array.isArray(minister.minister_followers) ? minister.minister_followers.length : 0;
-                    
-                    return (
+                  {ministers?.map((minister) => (
                       <TableRow key={minister.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
@@ -462,12 +455,6 @@ export default function AdminOrganizations() {
                           <Badge variant={minister.is_verified ? "default" : "secondary"}>
                             {minister.is_verified ? "Verified" : "Pending"}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center text-sm">
-                            <Users className="h-4 w-4 mr-1" />
-                            {followerCount}
-                          </div>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(minister.created_at), 'MMM d, yyyy')}
@@ -542,9 +529,6 @@ export default function AdminOrganizations() {
                                         <div className="space-y-2 text-sm">
                                           <div>
                                             <strong>Created:</strong> {format(new Date(selectedMinister.created_at), 'PPP')}
-                                          </div>
-                                          <div>
-                                            <strong>Followers:</strong> {followerCount}
                                           </div>
                                         </div>
                                       </div>
@@ -630,8 +614,7 @@ export default function AdminOrganizations() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </div>
