@@ -36,6 +36,9 @@ import Organizations from "./pages/Organizations";
 import SiteAnalytics from "./pages/SiteAnalytics";
 import Community from "./pages/Community";
 import GroupDetail from "./pages/GroupDetail";
+import Opportunities from "./pages/Opportunities";
+import OpportunityDetail from "./pages/OpportunityDetail";
+import OpportunityForm from "./pages/OpportunityForm";
 
 import NotFound from "./pages/NotFound";
 
@@ -84,6 +87,10 @@ const App = () => (
               <Route path="/site-analytics" element={<SiteAnalytics />} />
               <Route path="/community" element={<Community />} />
               <Route path="/community/:id" element={<GroupDetail />} />
+              <Route path="/opportunities" element={<Opportunities />} />
+              <Route path="/opportunities/new" element={<OpportunityForm />} />
+              <Route path="/opportunities/edit/:id" element={<OpportunityForm />} />
+              <Route path="/opportunities/:id" element={<OpportunityDetail />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
