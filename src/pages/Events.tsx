@@ -359,7 +359,7 @@ const Events = () => {
         title="Christian Events UK – Book Tickets | MyEcclesia"
         description="Browse and book tickets for Christian events across the UK. Find conferences, worship nights, retreats, and church gatherings in your area."
         keywords="Christian events UK, church events, conference tickets, worship nights, Christian conferences, faith events"
-        canonicalUrl="https://myecclesia.com/events"
+        canonicalUrl="https://myecclesiahub.com/events"
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={eventsSchema} />

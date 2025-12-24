@@ -7,7 +7,7 @@
 
 [[redirects]]
   from = "/sitemap.xml"
-  to = "https://api.myecclesia.co.uk/functions/v1/sitemap"
+  to = "https://api.myecclesiahub.com/functions/v1/sitemap"
   status = 200
 
 [[redirects]]

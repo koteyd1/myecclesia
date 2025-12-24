@@ -1,7 +1,7 @@
 {
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/sitemap.xml", "dest": "https://api.myecclesia.co.uk/functions/v1/sitemap" },
+    { "src": "/sitemap.xml", "dest": "https://api.myecclesiahub.com/functions/v1/sitemap" },
     { "src": "/robots.txt", "dest": "/robots.txt" },
     { "src": "/.*", "dest": "/index.html" }
   ]

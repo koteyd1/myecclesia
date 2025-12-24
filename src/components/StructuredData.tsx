@@ -25,10 +25,10 @@ export const createOrganizationSchema = () => ({
   "@type": "Organization",
   "name": "MyEcclesia",
   "alternateName": "MyEcclesia Christian Events Platform",
-  "url": "https://myecclesia.com",
+  "url": "https://myecclesiahub.com",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://myecclesia.com/myecclesia-logo.png",
+    "url": "https://myecclesiahub.com/myecclesia-logo.png",
     "width": "200",
     "height": "200"
   },
@@ -42,7 +42,7 @@ export const createOrganizationSchema = () => ({
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "customer service",
-    "url": "https://myecclesia.com/contact",
+    "url": "https://myecclesiahub.com/contact",
     "availableLanguage": "English"
   },
   "offers": {
@@ -52,7 +52,7 @@ export const createOrganizationSchema = () => ({
   },
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://myecclesia.com/events?search={search_term_string}",
+    "target": "https://myecclesiahub.com/events?search={search_term_string}",
     "query-input": "required name=search_term_string"
   },
   "sameAs": []
@@ -75,7 +75,7 @@ export const createEventSchema = (event: any) => ({
   "organizer": {
     "@type": "Organization",
     "name": "MyEcclesia",
-    "url": "https://myecclesia.com"
+    "url": "https://myecclesiahub.com"
   },
   "offers": {
     "@type": "Offer",
@@ -102,11 +102,11 @@ export const createBlogPostSchema = (post: any) => ({
     "name": "MyEcclesia",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://myecclesia.com/logo.png"
+      "url": "https://myecclesiahub.com/logo.png"
     }
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": `https://myecclesia.com/blog/${post.id}`
+    "@id": `https://myecclesiahub.com/blog/${post.id}`
   }
 });

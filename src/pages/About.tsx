@@ -11,7 +11,7 @@ const About = () => {
         title="About MyEcclesia – UK's Premier Christian Events Platform"
         description="Learn about MyEcclesia's mission to unite the UK Christian community through our dedicated events platform. Connecting believers across denominations since 2024."
         keywords="About MyEcclesia, Christian community UK, church events platform, Christian fellowship, faith-based events"
-        canonicalUrl="https://myecclesia.com/about"
+        canonicalUrl="https://myecclesiahub.com/about"
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={createOrganizationSchema()} />

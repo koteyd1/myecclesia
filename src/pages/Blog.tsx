@@ -64,7 +64,7 @@ const Blog = () => {
     "@type": "Blog",
     "name": "MyEcclesia Christian Blog",
     "description": "Inspiring Christian stories, faith reflections, and church community updates from MyEcclesia",
-    "url": "https://myecclesia.com/blog",
+    "url": "https://myecclesiahub.com/blog",
     "author": {
       "@type": "Organization",
       "name": "MyEcclesia"
@@ -74,7 +74,7 @@ const Blog = () => {
       "name": "MyEcclesia",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://myecclesia.com/myecclesia-logo.png"
+        "url": "https://myecclesiahub.com/myecclesia-logo.png"
       }
     },
     "blogPost": filteredPosts.slice(0, 5).map(post => ({
@@ -86,7 +86,7 @@ const Blog = () => {
         "name": post.author
       },
       "datePublished": post.created_at,
-      "url": `https://myecclesia.com/blog/${post.id}`,
+      "url": `https://myecclesiahub.com/blog/${post.id}`,
       "articleSection": post.category
     }))
   };
@@ -97,7 +97,7 @@ const Blog = () => {
         title="Christian Blog – Faith Stories & Community Updates | MyEcclesia"
         description="Read inspiring Christian stories, faith reflections, and church community updates. Stay connected with the UK Christian community through our blog."
         keywords="Christian blog, faith stories, church community, Christian testimony, spiritual growth, UK Christianity"
-        canonicalUrl="https://myecclesia.com/blog"
+        canonicalUrl="https://myecclesiahub.com/blog"
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={blogSchema} />
