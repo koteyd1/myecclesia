@@ -41,7 +41,7 @@ Disallow: /*.json$
 Disallow: /*?*
 
 # SEO optimizations
-Sitemap: https://myecclesia.com/sitemap.xml
+Sitemap: https://myecclesiahub.com/sitemap.xml
 
 # Additional crawl directives
 User-agent: GPTBot

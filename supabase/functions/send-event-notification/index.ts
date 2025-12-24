@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
               
               ${event.description ? `<p style="color: #6b7280;">${event.description.substring(0, 200)}${event.description.length > 200 ? '...' : ''}</p>` : ''}
               
-              <a href="https://myecclesia.com/events/${event.slug || event.id}" 
+              <a href="https://myecclesiahub.com/events/${event.slug || event.id}" 
                  style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 15px;">
                 View Event Details →
               </a>
@@ -129,7 +129,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px;">
               You received this because you enabled event notifications on myEcclesia.<br>
-              <a href="https://myecclesia.com/dashboard" style="color: #6366f1;">Manage your notification preferences</a>
+              <a href="https://myecclesiahub.com/dashboard" style="color: #6366f1;">Manage your notification preferences</a>
             </p>
           </body>
           </html>

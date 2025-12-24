@@ -8,7 +8,7 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const toAbsolute = (p) => path.resolve(__dirname, p)
 
 // Initialize Supabase client for fetching dynamic content
-const supabaseUrl = 'https://api.myecclesia.co.uk'
+const supabaseUrl = 'https://api.myecclesiahub.com'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFra2VlYnVheHJjYXlid2V6anZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNzAyNzQsImV4cCI6MjA0OTg0NjI3NH0.9OJCLlDxbFxrVzg1zPy9Z0hGR0sBP7FoWXnKz7Y5nII'
 const supabase = createClient(supabaseUrl, supabaseKey)
 

@@ -13,8 +13,8 @@ export const useCanonical = (options: CanonicalOptions = {}) => {
     const { customUrl, forceTrailingSlash = false } = options;
     
     // Base URL for your domain
-    const baseUrl = 'https://myecclesia.com';
-    
+    const baseUrl = 'https://myecclesiahub.com';
+
     // Get current path and clean it
     let canonicalPath = location.pathname;
     
@@ -64,7 +64,7 @@ export const useCanonical = (options: CanonicalOptions = {}) => {
 
 // Utility function to get canonical URL for a given path
 export const getCanonicalUrl = (path: string, forceTrailingSlash = false): string => {
-  const baseUrl = 'https://myecclesia.com';
+  const baseUrl = 'https://myecclesiahub.com';
   
   // Clean the path
   let cleanPath = path;
