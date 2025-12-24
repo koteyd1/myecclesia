@@ -1,4 +1,4 @@
-import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +72,11 @@ const Header = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/events" className="w-full">
                       All Events
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/opportunities" className="w-full">
+                      Jobs & Volunteering
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -220,6 +225,9 @@ const Header = () => {
               <DropdownMenuContent>
                 <DropdownMenuItem asChild>
                   <Link to="/events" className="w-full">All Events</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/opportunities" className="w-full">Jobs & Volunteering</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/ministers" className="w-full">Ministers</Link>

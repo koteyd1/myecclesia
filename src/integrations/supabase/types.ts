@@ -728,6 +728,128 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          application_method: Database["public"]["Enums"]["application_method"]
+          created_at: string
+          created_by: string
+          deadline: string | null
+          description: string
+          external_url: string | null
+          hours_per_week: string | null
+          id: string
+          is_active: boolean | null
+          is_remote: boolean | null
+          location: string
+          minister_id: string | null
+          opportunity_type: Database["public"]["Enums"]["opportunity_type"]
+          organization_id: string | null
+          requirements: string | null
+          responsibilities: string | null
+          salary_range: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_method?: Database["public"]["Enums"]["application_method"]
+          created_at?: string
+          created_by: string
+          deadline?: string | null
+          description: string
+          external_url?: string | null
+          hours_per_week?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_remote?: boolean | null
+          location: string
+          minister_id?: string | null
+          opportunity_type: Database["public"]["Enums"]["opportunity_type"]
+          organization_id?: string | null
+          requirements?: string | null
+          responsibilities?: string | null
+          salary_range?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_method?: Database["public"]["Enums"]["application_method"]
+          created_at?: string
+          created_by?: string
+          deadline?: string | null
+          description?: string
+          external_url?: string | null
+          hours_per_week?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_remote?: boolean | null
+          location?: string
+          minister_id?: string | null
+          opportunity_type?: Database["public"]["Enums"]["opportunity_type"]
+          organization_id?: string | null
+          requirements?: string | null
+          responsibilities?: string | null
+          salary_range?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_minister_id_fkey"
+            columns: ["minister_id"]
+            isOneToOne: false
+            referencedRelation: "ministers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_applications: {
+        Row: {
+          cover_letter: string | null
+          created_at: string
+          id: string
+          opportunity_id: string
+          resume_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          opportunity_id: string
+          resume_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          opportunity_id?: string
+          resume_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_followers: {
         Row: {
           created_at: string
@@ -1205,6 +1327,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      application_method: "external" | "in_app" | "both"
+      opportunity_type: "job" | "volunteer" | "internship"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1333,6 +1457,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      application_method: ["external", "in_app", "both"],
+      opportunity_type: ["job", "volunteer", "internship"],
     },
   },
 } as const
