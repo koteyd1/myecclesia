@@ -6,11 +6,6 @@
   NODE_VERSION = "18"
 
 [[redirects]]
-  from = "/sitemap.xml"
-  to = "https://api.myecclesiahub.com/functions/v1/sitemap"
-  status = 200
-
-[[redirects]]
   from = "/robots.txt" 
   to = "/robots.txt"
   status = 200
