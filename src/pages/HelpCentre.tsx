@@ -2,10 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, BookOpen, Heart, Mail, Gift, MapPin, Clock, Search } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 const HelpCentre = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Help Centre | MyEcclesia"
+        description="Get help using MyEcclesia. Learn how to find events, create profiles, register for church activities, and connect with the Christian community."
+        keywords="MyEcclesia help, church app support, how to use MyEcclesia, FAQ"
+      />
+      <div className="min-h-screen bg-background">
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
@@ -397,6 +404,7 @@ const HelpCentre = () => {
       </main>
       
     </div>
+    </>
   );
 };
 

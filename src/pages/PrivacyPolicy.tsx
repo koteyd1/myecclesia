@@ -1,9 +1,15 @@
-import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEOHead";
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Privacy Policy | MyEcclesia"
+        description="Learn how MyEcclesia protects your personal data. Read our privacy policy covering data collection, usage, security measures, and your rights."
+        keywords="privacy policy, data protection, GDPR, personal data, MyEcclesia privacy"
+      />
+      <div className="min-h-screen bg-background">
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto">
@@ -115,6 +121,7 @@ const PrivacyPolicy = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

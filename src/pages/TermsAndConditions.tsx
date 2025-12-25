@@ -1,9 +1,15 @@
-import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEOHead";
 
 const TermsAndConditions = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Terms and Conditions | MyEcclesia"
+        description="Read MyEcclesia's terms of service. Understand your rights and responsibilities when using our platform for church events and community connections."
+        keywords="terms of service, terms and conditions, user agreement, MyEcclesia terms"
+      />
+      <div className="min-h-screen bg-background">
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto">
@@ -153,6 +159,7 @@ const TermsAndConditions = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
