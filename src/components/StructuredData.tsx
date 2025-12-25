@@ -25,10 +25,10 @@ export const createOrganizationSchema = () => ({
   "@type": "Organization",
   "name": "MyEcclesia",
   "alternateName": "MyEcclesia Christian Events Platform",
-  "url": "https://myecclesia.uk",
+  "url": "https://myecclesia.org.uk",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://myecclesia.uk/myecclesia-logo.png",
+    "url": "https://myecclesia.org.uk/myecclesia-logo.png",
     "width": "200",
     "height": "200"
   },
@@ -42,7 +42,7 @@ export const createOrganizationSchema = () => ({
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "customer service",
-    "url": "https://myecclesia.uk/contact",
+    "url": "https://myecclesia.org.uk/contact",
     "availableLanguage": "English"
   },
   "offers": {
@@ -52,14 +52,14 @@ export const createOrganizationSchema = () => ({
   },
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://myecclesia.uk/events?search={search_term_string}",
+    "target": "https://myecclesia.org.uk/events?search={search_term_string}",
     "query-input": "required name=search_term_string"
   },
   "sameAs": []
 });
 
 export const createEventSchema = (event: any) => {
-  const eventUrl = `https://myecclesia.uk/events/${event.slug || event.id}`;
+  const eventUrl = `https://myecclesia.org.uk/events/${event.slug || event.id}`;
   const startDateTime = `${event.date}T${event.time || '00:00'}`;
   
   // Calculate end date (default to same day if no duration)
@@ -76,7 +76,7 @@ export const createEventSchema = (event: any) => {
     "endDate": endDateTime,
     "eventStatus": "https://schema.org/EventScheduled",
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-    "image": event.image || "https://myecclesia.uk/og-image.png",
+    "image": event.image || "https://myecclesia.org.uk/og-image.png",
     "location": {
       "@type": "Place",
       "name": event.location,
@@ -89,7 +89,7 @@ export const createEventSchema = (event: any) => {
     "organizer": {
       "@type": "Organization",
       "name": event.organizer || "MyEcclesia",
-      "url": "https://myecclesia.uk"
+      "url": "https://myecclesia.org.uk"
     },
     "performer": {
       "@type": "PerformingGroup",
@@ -122,11 +122,11 @@ export const createBlogPostSchema = (post: any) => ({
     "name": "MyEcclesia",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://myecclesia.uk/logo.png"
+      "url": "https://myecclesia.org.uk/logo.png"
     }
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": `https://myecclesia.uk/blog/${post.id}`
+    "@id": `https://myecclesia.org.uk/blog/${post.id}`
   }
 });

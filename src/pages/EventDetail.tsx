@@ -338,7 +338,7 @@ const EventDetail = () => {
         <SEOHead 
           title="Loading Event... | MyEcclesia"
           description="Loading event details..."
-          canonicalUrl={`https://myecclesia.uk/events/${slug}`}
+          canonicalUrl={`https://myecclesia.org.uk/events/${slug}`}
         />
         <div className="min-h-screen bg-background">
           <div className="container mx-auto px-4 py-8 text-center">
@@ -355,7 +355,7 @@ const EventDetail = () => {
         <SEOHead 
           title="Event Not Found | MyEcclesia"
           description="The event you're looking for doesn't exist."
-          canonicalUrl={`https://myecclesia.uk/events/${slug}`}
+          canonicalUrl={`https://myecclesia.org.uk/events/${slug}`}
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
@@ -374,7 +374,7 @@ const EventDetail = () => {
         title={`${event.title} | MyEcclesia Events`}
         description={event?.description?.slice(0, 160) || "Join this Christian event with MyEcclesia. Book your tickets now!"}
         keywords={`${event?.category || 'Christian event'}, ${event?.denominations || 'church'}, UK events, ${event?.location || 'community'}`}
-        canonicalUrl={`https://myecclesia.uk/events/${slug}`}
+        canonicalUrl={`https://myecclesia.org.uk/events/${slug}`}
         ogImage={event?.image}
       />
       <StructuredData data={createEventSchema(event)} />

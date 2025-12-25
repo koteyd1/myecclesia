@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     let emailData: any | null = null
 
     const primarySend = await resend.emails.send({
-      from: 'MyEcclesia <welcome@myecclesia.uk>',
+      from: 'MyEcclesia <welcome@myecclesia.org.uk>',
       to: [user.email],
       subject: 'Welcome to MyEcclesia - Please confirm your email',
       html,

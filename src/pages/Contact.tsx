@@ -197,7 +197,7 @@ const Contact = () => {
     "@type": "ContactPage",
     "name": "Contact MyEcclesia",
     "description": "Get in touch with MyEcclesia for questions, support, or partnership opportunities",
-    "url": "https://myecclesia.uk/contact",
+    "url": "https://myecclesia.org.uk/contact",
     "mainEntity": {
       "@type": "Organization",
       "name": "MyEcclesia",
@@ -215,7 +215,7 @@ const Contact = () => {
         title="Contact MyEcclesia – Get in Touch | Christian Events Platform"
         description="Contact MyEcclesia for questions about Christian events, partnership opportunities, or support. We're here to help connect the UK Christian community."
         keywords="contact MyEcclesia, Christian events support, partnership opportunities, church event platform contact"
-        canonicalUrl="https://myecclesia.uk/contact"
+        canonicalUrl="https://myecclesia.org.uk/contact"
       />
       <div className="min-h-screen bg-background">
         <StructuredData data={contactSchema} />

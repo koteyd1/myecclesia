@@ -105,8 +105,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "MyEcclesia Notifications <notifications@myecclesia.uk>",
-      to: ["david@myecclesia.uk"],
+      from: "MyEcclesia Notifications <notifications@myecclesia.org.uk>",
+      to: ["david@myecclesia.org.uk"],
       subject: subject,
       html: htmlContent,
       replyTo: email, // This allows easy reply to the submitter
@@ -143,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
       <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
         <p style="color: #6c757d; font-size: 14px;">
           MyEcclesia - Connecting the UK Christian Community<br>
-          <a href="https://myecclesia.uk">myecclesia.uk</a>
+          <a href="https://myecclesia.org.uk">myecclesia.org.uk</a>
         </p>
       </div>
     ` : `
@@ -166,13 +166,13 @@ const handler = async (req: Request): Promise<Response> => {
       <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
         <p style="color: #6c757d; font-size: 14px;">
           MyEcclesia - Connecting the UK Christian Community<br>
-          <a href="https://myecclesia.uk">myecclesia.uk</a>
+          <a href="https://myecclesia.org.uk">myecclesia.org.uk</a>
         </p>
       </div>
     `;
 
     const confirmationResponse = await resend.emails.send({
-      from: "MyEcclesia <welcome@myecclesia.uk>",
+      from: "MyEcclesia <welcome@myecclesia.org.uk>",
       to: [email],
       subject: confirmationSubject,
       html: confirmationHtml,

@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const INDEXNOW_KEY = "1a05fadd0adb40d282d1bf0be8ea606d";
-const HOST = "myecclesia.uk";
+const HOST = "myecclesia.org.uk";
 
 serve(async (req) => {
   // Handle CORS preflight requests
