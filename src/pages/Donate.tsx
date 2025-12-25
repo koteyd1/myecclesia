@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/hooks/useAuth";
 import { sanitizeInput, validateEmail, validateName, validatePhone, INPUT_LIMITS } from "@/utils/validation";
 
@@ -165,6 +165,11 @@ const Donate = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Donate | Support MyEcclesia"
+        description="Support MyEcclesia's mission to connect Christians across the UK. Your donation helps fund community events, youth programs, and platform maintenance."
+        keywords="donate to church, Christian charity, support ministry, church giving UK"
+      />
       
       {/* Hero Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary/10 to-secondary/10">

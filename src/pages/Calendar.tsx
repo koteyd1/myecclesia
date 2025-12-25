@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { SEOHead } from "@/components/SEOHead";
 
 interface Event {
   id: string;
@@ -200,6 +201,11 @@ const Calendar = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Event Calendar | MyEcclesia"
+        description="View all upcoming Christian events in calendar format. Plan your month with church services, conferences, worship nights, and community gatherings across the UK."
+        keywords="church calendar, Christian events calendar, UK church events, faith events schedule"
+      />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
