@@ -11,6 +11,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { validateEmail, validatePassword, validateName, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
 import { performSecureSignIn, cleanupAuthState } from "@/utils/authCleanup";
+import { SEOHead } from "@/components/SEOHead";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -287,7 +288,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <>
+      <SEOHead
+        title="Sign In or Create Account | MyEcclesia"
+        description="Sign in to your MyEcclesia account or create a new one. Join the UK's Christian events community and start discovering faith-based events."
+        noIndex={true}
+      />
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <Button 
@@ -480,6 +487,7 @@ const Auth = () => {
         </Card>
       </div>
     </div>
+    </>
   );
 };
 

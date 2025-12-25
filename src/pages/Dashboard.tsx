@@ -15,6 +15,7 @@ import { EventAnalytics } from "@/components/EventAnalytics";
 import SavedEvents from "@/components/SavedEvents";
 import { EventRecommendations } from "@/components/EventRecommendations";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { SEOHead } from "@/components/SEOHead";
 
 interface EventRegistration {
   id: string;
@@ -138,6 +139,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="My Dashboard | MyEcclesia"
+        description="Manage your event registrations, saved events, and notification preferences. Access your personalized MyEcclesia dashboard."
+        noIndex={true}
+      />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">My Dashboard</h1>
