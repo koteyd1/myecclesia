@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -435,7 +436,7 @@ const EventDetail = () => {
                   <h1 className="text-3xl font-bold text-foreground mb-4">{event.title}</h1>
                   <div 
                     className="text-muted-foreground text-lg leading-relaxed prose prose-lg max-w-none"
-                    dangerouslySetInnerHTML={{ __html: event.description }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.description || '') }}
                   />
                 </div>
 

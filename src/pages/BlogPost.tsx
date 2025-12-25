@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -268,7 +269,7 @@ const BlogPost = () => {
               
               <div 
                 className="space-y-6 text-foreground leading-relaxed prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: blogPost.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blogPost.content) }}
               />
             </div>
 
