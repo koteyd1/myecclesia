@@ -34,7 +34,7 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center py-10 sm:py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
-            Discover Churches, Charities and Christian Events
+            Discover Churches, Charities & Christian Events
           </h1>
           
           <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
