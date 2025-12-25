@@ -136,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const result = await resend.emails.send({
-          from: "myEcclesia <notifications@resend.dev>",
+          from: "MyEcclesia <notifications@myecclesia.uk>",
           to: [pref.email],
           subject: `New Event: ${event.title}`,
           html: emailHtml,
