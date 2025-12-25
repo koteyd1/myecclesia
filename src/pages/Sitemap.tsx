@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, FileText, Home, Info, Mail, Heart, HelpCircle, Shield, ScrollText, ExternalLink } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 const Sitemap = () => {
   const [events, setEvents] = useState<any[]>([]);
@@ -79,7 +80,13 @@ const Sitemap = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Site Map | MyEcclesia"
+        description="Navigate all pages on MyEcclesia. Find events, blog posts, ministers, organizations, and resources for the UK Christian community."
+        keywords="sitemap, MyEcclesia pages, site navigation, Christian events directory"
+      />
+      <div className="min-h-screen bg-background">
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -301,6 +308,7 @@ const Sitemap = () => {
       </main>
 
     </div>
+    </>
   );
 };
 
