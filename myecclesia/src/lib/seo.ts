@@ -1,4 +1,4 @@
-const defaultSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://myecclesiahub.com";
+const defaultSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://myecclesia.uk";
 
 export const siteMetadata = {
   name: "MyEcclesia",
@@ -211,7 +211,7 @@ export const organizationSchema = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer support",
-    email: "hello@myecclesiahub.com",
+    email: "hello@myecclesia.uk",
     url: `${siteMetadata.url}/contact`,
     availableLanguage: "en",
   },

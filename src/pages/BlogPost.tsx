@@ -154,7 +154,7 @@ const BlogPost = () => {
         <SEOHead 
           title="Loading... | MyEcclesia Blog"
           description="Loading blog post content..."
-          canonicalUrl={`https://myecclesiahub.com/blog/${slug}`}
+          canonicalUrl={`https://myecclesia.uk/blog/${slug}`}
         />
         <div className="min-h-screen bg-background">
           <div className="container mx-auto px-4 py-8 text-center">
@@ -171,7 +171,7 @@ const BlogPost = () => {
         <SEOHead 
           title="Blog Post Not Found | MyEcclesia"
           description="The blog post you're looking for doesn't exist."
-          canonicalUrl={`https://myecclesiahub.com/blog/${slug}`}
+          canonicalUrl={`https://myecclesia.uk/blog/${slug}`}
           noIndex={true}
         />
         <div className="min-h-screen bg-background">
@@ -194,7 +194,7 @@ const BlogPost = () => {
         title={`${blogPost.title} | MyEcclesia Blog`}
         description={blogPost?.excerpt || blogPost?.content?.slice(0, 160) || "Read inspiring Christian articles and faith stories on MyEcclesia blog."}
         keywords={`${blogPost?.category || 'Christian'}, faith, blog, ${blogPost?.author || 'MyEcclesia'}`}
-        canonicalUrl={`https://myecclesiahub.com/blog/${slug}`}
+        canonicalUrl={`https://myecclesia.uk/blog/${slug}`}
         type="article"
         publishedTime={blogPost?.created_at || blogPost?.date}
         author={blogPost?.author}

@@ -209,7 +209,7 @@ const Index = () => {
         title="MyEcclesia – Book Christian Events & Tickets"
         description="Discover, book, and attend top Christian events with MyEcclesia—your go-to platform for church gatherings, conferences, and community activities."
         keywords="MyEcclesia, Christian events, church tickets, event platform, UK Christian community"
-        canonicalUrl="https://myecclesiahub.com/"
+        canonicalUrl="https://myecclesia.uk/"
       />
       <div className="min-h-screen bg-background">
         <SEOOptimizations />
