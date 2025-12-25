@@ -58,33 +58,53 @@ export const createOrganizationSchema = () => ({
   "sameAs": []
 });
 
-export const createEventSchema = (event: any) => ({
-  "@context": "https://schema.org",
-  "@type": "Event",
-  "name": event.title,
-  "description": event.description,
-  "startDate": `${event.date}T${event.time}`,
-  "location": {
-    "@type": "Place",
-    "name": event.location,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": event.location
+export const createEventSchema = (event: any) => {
+  const eventUrl = `https://myecclesia.uk/events/${event.slug || event.id}`;
+  const startDateTime = `${event.date}T${event.time || '00:00'}`;
+  
+  // Calculate end date (default to same day if no duration)
+  const endDateTime = event.duration 
+    ? `${event.date}T${event.end_time || '23:59'}` 
+    : `${event.date}T23:59`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": event.title,
+    "description": event.description || `${event.title} - Christian event at ${event.location}`,
+    "startDate": startDateTime,
+    "endDate": endDateTime,
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "image": event.image || "https://myecclesia.uk/og-image.png",
+    "location": {
+      "@type": "Place",
+      "name": event.location,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": event.location,
+        "addressCountry": "GB"
+      }
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": event.organizer || "MyEcclesia",
+      "url": "https://myecclesia.uk"
+    },
+    "performer": {
+      "@type": "PerformingGroup",
+      "name": event.organizer || event.title
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": event.price || 0,
+      "priceCurrency": "GBP",
+      "availability": "https://schema.org/InStock",
+      "url": eventUrl,
+      "validFrom": event.created_at || new Date().toISOString()
     }
-  },
-  "organizer": {
-    "@type": "Organization",
-    "name": "MyEcclesia",
-    "url": "https://myecclesia.uk"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": event.price,
-    "priceCurrency": "GBP",
-    "availability": "https://schema.org/InStock",
-    "validFrom": new Date().toISOString()
-  }
-});
+  };
+};
 
 export const createBlogPostSchema = (post: any) => ({
   "@context": "https://schema.org",
