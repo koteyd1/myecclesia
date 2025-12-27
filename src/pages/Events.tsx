@@ -330,25 +330,32 @@ const Events = () => {
     "description": "Upcoming Christian events, conferences, and church gatherings across the United Kingdom",
     "numberOfItems": filteredEvents.length,
     "itemListElement": filteredEvents.slice(0, 10).map((event, index) => ({
-      "@type": "Event",
+      "@type": "ListItem",
       "position": index + 1,
-      "name": event.title,
-      "description": event.description,
-      "startDate": `${event.date}T${event.time}`,
-      "location": {
-        "@type": "Place",
-        "name": event.location,
-        "address": event.location
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": event.price || 0,
-        "priceCurrency": "GBP",
-        "availability": (event.available_tickets || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut"
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": event.organizer || "MyEcclesia"
+      "url": `https://myecclesia.org.uk/events/${event.slug}`,
+      "item": {
+        "@type": "Event",
+        "name": event.title,
+        "description": event.description,
+        "startDate": `${event.date}T${event.time}`,
+        "url": `https://myecclesia.org.uk/events/${event.slug}`,
+        "location": {
+          "@type": "Place",
+          "name": event.location,
+          "address": event.location
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": event.price || 0,
+          "priceCurrency": "GBP",
+          "availability": (event.available_tickets || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+          "url": `https://myecclesia.org.uk/events/${event.slug}`,
+          "validFrom": new Date().toISOString()
+        },
+        "organizer": {
+          "@type": "Organization",
+          "name": event.organizer || "MyEcclesia"
+        }
       }
     }))
   };
