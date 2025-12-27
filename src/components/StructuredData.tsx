@@ -48,7 +48,8 @@ export const createOrganizationSchema = () => ({
   "offers": {
     "@type": "Offer",
     "description": "Free and paid Christian event tickets",
-    "availability": "https://schema.org/InStock"
+    "availability": "https://schema.org/InStock",
+    "validFrom": "2024-01-01T00:00:00Z"
   },
   "potentialAction": {
     "@type": "SearchAction",
