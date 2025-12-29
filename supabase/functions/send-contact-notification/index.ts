@@ -106,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "MyEcclesia Notifications <notifications@myecclesia.org.uk>",
-      to: ["david@myecclesia.org.uk"],
+      to: ["david@myecclesia.uk"],
       subject: subject,
       html: htmlContent,
       replyTo: email, // This allows easy reply to the submitter
