@@ -340,6 +340,13 @@ export const AdminRegistrations = ({ user }: AdminRegistrationsProps) => {
               <div className="text-sm text-muted-foreground">
                 <p><strong>Registered:</strong> {new Date(registration.registered_at).toLocaleDateString()}</p>
               </div>
+              
+              {(registration.quantity || registration.payment_status) && (
+                <div className="text-sm text-muted-foreground">
+                  {registration.quantity && <p><strong>Tickets:</strong> {registration.quantity}</p>}
+                  {registration.payment_status && <p><strong>Payment:</strong> {registration.payment_status}</p>}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Update Status:</label>

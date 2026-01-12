@@ -140,6 +140,7 @@ const GroupDetail = () => {
             .from("events")
             .select("id, title, date, location, slug")
             .eq("id", post.event_id)
+            .eq("approval_status", "approved")
             .single();
           event = eventData || undefined;
         }
@@ -159,6 +160,7 @@ const GroupDetail = () => {
       const { data } = await supabase
         .from("events")
         .select("id, title, date")
+        .eq("approval_status", "approved")
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true })
         .limit(20);

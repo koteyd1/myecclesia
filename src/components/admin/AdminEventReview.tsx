@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, CheckCircle, Eye, Trash2, Filter, X } from "lucide-react";
+import { AlertTriangle, CheckCircle, Eye, Trash2, Filter, X, ThumbsDown, ThumbsUp } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -54,6 +54,8 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
 
       setEvents(eventsWithFlags);
       setFilteredEvents(eventsWithFlags);
+      // Re-apply current filters
+      setTimeout(() => applyFilters(searchQuery, reviewFilter, suspiciousFilter), 0);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
@@ -100,6 +102,11 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
       filtered = filtered.filter(event => !event.suspicious);
     }
 
+    // Approval status filter
+    if (review && review !== "all") {
+      filtered = filtered.filter((event) => event.approval_status === review);
+    }
+
     setFilteredEvents(filtered);
   };
 
@@ -118,6 +125,71 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
     setReviewFilter("all");
     setSuspiciousFilter("all");
     setFilteredEvents(events);
+  };
+
+  const handleApproveEvent = async (eventId: string, eventTitle: string) => {
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({
+          approval_status: "approved",
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id || null,
+          rejected_at: null,
+          rejected_by: null,
+          rejection_reason: null,
+        })
+        .eq("id", eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Approved",
+        description: `“${eventTitle}” is now live on the platform.`,
+      });
+
+      fetchAllEvents();
+    } catch (error) {
+      console.error("Error approving event:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to approve event.",
+      });
+    }
+  };
+
+  const handleRejectEvent = async (eventId: string, eventTitle: string) => {
+    const reason = prompt(`Reject “${eventTitle}”? Optionally add a reason for the organizer:`) || null;
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({
+          approval_status: "rejected",
+          rejected_at: new Date().toISOString(),
+          rejected_by: user?.id || null,
+          rejection_reason: reason,
+          approved_at: null,
+          approved_by: null,
+        })
+        .eq("id", eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Rejected",
+        description: `“${eventTitle}” has been rejected.`,
+      });
+
+      fetchAllEvents();
+    } catch (error) {
+      console.error("Error rejecting event:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to reject event.",
+      });
+    }
   };
 
   const handleDeleteEvent = async (eventId, eventTitle) => {
@@ -195,6 +267,18 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
             <span className="text-sm font-medium">Filters:</span>
           </div>
 
+          <Select value={reviewFilter} onValueChange={(value) => handleFilterChange("review", value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Approval Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Approval Statuses</SelectItem>
+              <SelectItem value="pending">Pending Approval</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={suspiciousFilter} onValueChange={(value) => handleFilterChange("suspicious", value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Content Filter" />
@@ -242,6 +326,18 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
                   <Badge variant={event.suspicious ? "destructive" : "secondary"}>
                     {event.suspicious ? "Flagged" : "Clean"}
                   </Badge>
+                  <Badge
+                    variant={
+                      event.approval_status === "approved"
+                        ? "secondary"
+                        : event.approval_status === "rejected"
+                          ? "destructive"
+                          : "outline"
+                    }
+                    className="text-xs"
+                  >
+                    {event.approval_status || "approved"}
+                  </Badge>
                   {event.category && (
                     <Badge variant="outline" className="text-xs">
                       {event.category}
@@ -279,11 +375,29 @@ export const AdminEventReview = ({ user }: AdminEventReviewProps) => {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => window.open(`/events/${event.id}`, '_blank')}
+                  onClick={() => window.open(`/events/${event.slug || event.id}`, '_blank')}
                   className="flex-1"
                 >
                   <Eye className="h-4 w-4 mr-1" />
                   View
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => handleApproveEvent(event.id, event.title)}
+                  disabled={event.approval_status === "approved"}
+                  title={event.approval_status === "approved" ? "Already approved" : "Approve event"}
+                >
+                  <ThumbsUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleRejectEvent(event.id, event.title)}
+                  disabled={event.approval_status === "rejected"}
+                  title={event.approval_status === "rejected" ? "Already rejected" : "Reject event"}
+                >
+                  <ThumbsDown className="h-4 w-4" />
                 </Button>
                 <Button 
                   size="sm" 

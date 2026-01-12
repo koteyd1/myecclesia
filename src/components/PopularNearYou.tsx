@@ -72,9 +72,10 @@ const PopularNearYou = () => {
         const dateStr = new Date().toISOString().split('T')[0];
         const timeStr = new Date().toTimeString().slice(0, 8);
         
-        let query = supabase
+        const query = supabase
           .from("events")
           .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
+          .eq("approval_status", "approved")
           .or(`date.gt.${dateStr},and(date.eq.${dateStr},time.gte.${timeStr})`)
           .order("date", { ascending: true })
           .limit(50);
@@ -91,7 +92,7 @@ const PopularNearYou = () => {
           const countryLower = location.country?.toLowerCase() || '';
           
           // First try to find events in the same city
-          let cityEvents = filteredEvents.filter(event => 
+          const cityEvents = filteredEvents.filter(event => 
             event.location.toLowerCase().includes(cityLower)
           );
           

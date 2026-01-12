@@ -41,13 +41,22 @@ export default function OrganizationProfile() {
   const { data: events } = useQuery({
     queryKey: ['organization-events', organization?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const isOwner = !!user && !!organization && user.id === organization.user_id;
+
+      let query = supabase
         .from('events')
         .select('*')
         .eq('organization_id', organization.id)
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date', { ascending: true })
         .limit(6);
+      
+      // Non-owners should only see approved events
+      if (!isOwner) {
+        query = query.eq('approval_status', 'approved');
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;

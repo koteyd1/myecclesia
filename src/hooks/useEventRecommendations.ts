@@ -61,6 +61,7 @@ export const useEventRecommendations = (
       let query = supabase
         .from("events")
         .select("*")
+        .eq("approval_status", "approved")
         .gte("date", filters?.dateFrom 
           ? filters.dateFrom.toISOString().split("T")[0] 
           : new Date().toISOString().split("T")[0]);
@@ -100,6 +101,7 @@ export const useEventRecommendations = (
         let supplementQuery = supabase
           .from("events")
           .select("*")
+          .eq("approval_status", "approved")
           .gte("date", filters?.dateFrom 
             ? filters.dateFrom.toISOString().split("T")[0] 
             : new Date().toISOString().split("T")[0]);
@@ -135,6 +137,7 @@ export const useEventCategories = () => {
       const { data } = await supabase
         .from("events")
         .select("category")
+        .eq("approval_status", "approved")
         .not("category", "is", null)
         .gte("date", new Date().toISOString().split("T")[0]);
 

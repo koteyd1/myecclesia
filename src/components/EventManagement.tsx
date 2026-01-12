@@ -46,7 +46,7 @@ const categories = [
 ];
 
 export function EventManagement({ organizationId, ministerId, onEventCreated }: EventManagementProps) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -113,7 +113,10 @@ export function EventManagement({ organizationId, ministerId, onEventCreated }: 
 
       toast({
         title: "Event created",
-        description: "Your event has been created successfully",
+        description:
+          (organizationId || ministerId) && !isAdmin
+            ? "Your event has been submitted and is pending admin approval before it appears publicly."
+            : "Your event has been created successfully.",
       });
 
       form.reset();

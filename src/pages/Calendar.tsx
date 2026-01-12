@@ -71,6 +71,7 @@ const Calendar = () => {
       const { data, error } = await supabase
         .from("events")
         .select("id, title, date, time, category, location")
+        .eq("approval_status", "approved")
         .order("date", { ascending: true });
 
       if (error) throw error;

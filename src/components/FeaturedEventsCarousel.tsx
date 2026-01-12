@@ -34,6 +34,7 @@ const FeaturedEventsCarousel = () => {
           .from("events")
           .select("id, slug, title, date, time, location, description, image, price, category, organizer")
           .eq("is_featured", true)
+          .eq("approval_status", "approved")
           .gte("date", dateStr)
           .order("date", { ascending: true })
           .limit(5);

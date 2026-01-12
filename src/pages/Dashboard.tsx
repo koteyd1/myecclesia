@@ -22,6 +22,8 @@ interface EventRegistration {
   event_id: string;
   registered_at: string;
   status: string;
+  quantity?: number;
+  payment_status?: string;
     events: {
       id: string;
       title: string;
@@ -58,6 +60,8 @@ const Dashboard = () => {
           event_id,
           registered_at,
           status,
+          quantity,
+          payment_status,
           events (
             id,
             title,

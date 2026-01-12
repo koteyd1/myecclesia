@@ -53,6 +53,7 @@ const Events = () => {
       const { data, error } = await supabase
         .from("events")
         .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets")
+        .eq("approval_status", "approved")
         .order("date", { ascending: true });
 
       if (error) throw error;

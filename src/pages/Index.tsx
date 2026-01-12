@@ -130,6 +130,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("events")
         .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer")
+        .eq("approval_status", "approved")
         .or(`date.gt.${dateStr},and(date.eq.${dateStr},time.gte.${timeStr})`)
         .order("date", { ascending: true })
         .order("time", { ascending: true })
@@ -187,6 +188,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from("events")
         .select("category")
+        .eq("approval_status", "approved")
         .gte("date", dateStr)
         .not("category", "is", null);
 

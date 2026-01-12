@@ -29,8 +29,8 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName } = await req.json();
-    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail });
+    const { eventId, eventSlug, eventTitle, price, quantity, buyerEmail, buyerName } = await req.json();
+    logStep("Request received", { eventId, eventSlug, eventTitle, price, quantity, buyerEmail });
 
     // Get user from auth header
     let user = null;
@@ -87,16 +87,35 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get("origin")}/events/${eventId}?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/events/${eventId}?payment=canceled`,
+      success_url: `${req.headers.get("origin")}/events/${eventSlug}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/events/${eventSlug}?payment=canceled`,
       metadata: {
         event_id: eventId,
+        event_slug: eventSlug,
         user_id: user.id,
         quantity: String(quantity || 1),
       },
     });
 
     logStep("Checkout session created", { sessionId: session.id });
+
+    // Create a pending ticket order (server-side record)
+    const orderAmountPence = Math.round((price || 0) * 100) * (quantity || 1);
+    const { error: orderError } = await supabaseService
+      .from("event_ticket_orders")
+      .insert({
+        event_id: eventId,
+        user_id: user.id,
+        quantity: quantity || 1,
+        amount_pence: orderAmountPence,
+        currency: "gbp",
+        stripe_session_id: session.id,
+        status: "pending",
+      });
+
+    if (orderError) {
+      logStep("WARNING: failed to create order record", { message: orderError.message });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -264,7 +264,10 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
+          payment_status: string
+          quantity: number
           registered_at: string
+          stripe_session_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -273,7 +276,10 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
+          payment_status?: string
+          quantity?: number
           registered_at?: string
+          stripe_session_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -282,7 +288,10 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
+          payment_status?: string
+          quantity?: number
           registered_at?: string
+          stripe_session_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -297,8 +306,58 @@ export type Database = {
           },
         ]
       }
+      event_ticket_orders: {
+        Row: {
+          amount_pence: number | null
+          created_at: string
+          currency: string
+          event_id: string
+          id: string
+          quantity: number
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_pence?: number | null
+          created_at?: string
+          currency?: string
+          event_id: string
+          id?: string
+          quantity?: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_pence?: number | null
+          created_at?: string
+          currency?: string
+          event_id?: string
+          id?: string
+          quantity?: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
+          approval_status: Database["public"]["Enums"]["event_approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           available_tickets: number | null
           category: string | null
           created_at: string
@@ -316,6 +375,9 @@ export type Database = {
           organization_id: string | null
           organizer: string | null
           price: number | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           requirements: string | null
           slug: string
           ticket_url: string | null
@@ -324,6 +386,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["event_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           available_tickets?: number | null
           category?: string | null
           created_at?: string
@@ -341,6 +406,9 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           requirements?: string | null
           slug: string
           ticket_url?: string | null
@@ -349,6 +417,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["event_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           available_tickets?: number | null
           category?: string | null
           created_at?: string
@@ -366,6 +437,9 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           requirements?: string | null
           slug?: string
           ticket_url?: string | null
@@ -1328,6 +1402,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       application_method: "external" | "in_app" | "both"
+      event_approval_status: "pending" | "approved" | "rejected"
       opportunity_type: "job" | "volunteer" | "internship"
     }
     CompositeTypes: {
@@ -1458,6 +1533,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       application_method: ["external", "in_app", "both"],
+      event_approval_status: ["pending", "approved", "rejected"],
       opportunity_type: ["job", "volunteer", "internship"],
     },
   },

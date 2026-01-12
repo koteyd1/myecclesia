@@ -78,13 +78,21 @@ export default function MinisterProfile() {
       setMinister(ministerData);
 
       // Fetch upcoming events
-      const { data: eventsData, error: eventsError } = await supabase
+      const isOwner = user && ministerData && user.id === ministerData.user_id;
+
+      let eventsQuery = supabase
         .from("events")
         .select("*")
         .eq("minister_id", ministerData.id)
         .gte("date", new Date().toISOString().split('T')[0])
         .order("date", { ascending: true })
         .limit(6);
+
+      if (!isOwner) {
+        eventsQuery = eventsQuery.eq("approval_status", "approved");
+      }
+
+      const { data: eventsData, error: eventsError } = await eventsQuery;
 
       if (eventsError) throw eventsError;
       setEvents(eventsData || []);

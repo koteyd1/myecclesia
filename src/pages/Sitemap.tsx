@@ -26,6 +26,7 @@ const Sitemap = () => {
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select('id, title, date')
+          .eq('approval_status', 'approved')
           .gte('date', today)
           .order('date', { ascending: true })
           .limit(10);

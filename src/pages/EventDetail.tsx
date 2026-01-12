@@ -12,12 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 import { StructuredData, createEventSchema } from "@/components/StructuredData";
 import { useEventTracking } from "@/hooks/useEventTracking";
+import { Input } from "@/components/ui/input";
 
 const EventDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -25,6 +26,7 @@ const EventDetail = () => {
   const [isInCalendar, setIsInCalendar] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [ticketQuantity, setTicketQuantity] = useState(1);
   
   // Track event views
   useEventTracking(event?.id);
@@ -33,7 +35,7 @@ const EventDetail = () => {
     if (slug) {
       fetchEvent();
     }
-  }, [slug]);
+  }, [slug, user?.id, isAdmin]);
 
   useEffect(() => {
     if (event && user) {
@@ -42,13 +44,63 @@ const EventDetail = () => {
     }
   }, [event, user]);
 
+  // If Stripe redirects back with a session_id, confirm and register the user.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    const sessionId = params.get("session_id");
+
+    if (!event?.id || !user?.id || payment !== "success" || !sessionId) return;
+
+    (async () => {
+      try {
+        const res = await supabase.functions.invoke("confirm-ticket-payment", {
+          body: { sessionId },
+        });
+
+        if (res.error) throw res.error;
+
+        if (res.data?.ok) {
+          toast({
+            title: "Payment confirmed",
+            description: "Your ticket purchase is confirmed and you are registered for this event.",
+          });
+          await checkRegistrationStatus();
+        } else {
+          toast({
+            title: "Payment pending",
+            description: "We’re still confirming your payment. Please refresh in a moment.",
+          });
+        }
+      } catch (err: any) {
+        console.error("Error confirming payment:", err);
+        toast({
+          variant: "destructive",
+          title: "Confirmation failed",
+          description: err.message || "Failed to confirm ticket payment.",
+        });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id, user?.id]);
+
   const fetchEvent = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("events")
         .select("*")
-        .eq("slug", slug)
-        .single();
+        .eq("slug", slug);
+
+      // Only approved events are public; admins and creators can view their own drafts
+      if (!isAdmin) {
+        if (user?.id) {
+          query = query.or(`approval_status.eq.approved,created_by.eq.${user.id}`);
+        } else {
+          query = query.eq("approval_status", "approved");
+        }
+      }
+
+      const { data, error } = await query.single();
 
       if (error) throw error;
       setEvent(data);
@@ -176,10 +228,11 @@ const EventDetail = () => {
 
       const response = await supabase.functions.invoke("create-ticket-payment", {
         body: {
-          eventId: event.slug,
+          eventId: event.id,
+          eventSlug: event.slug,
           eventTitle: event.title,
           price: event.price,
-          quantity: 1,
+          quantity: ticketQuantity,
           buyerEmail: profile?.email || user.email,
           buyerName: profile?.full_name || "Guest",
         },
@@ -584,13 +637,25 @@ const EventDetail = () => {
                               <p className="text-sm text-muted-foreground mb-4">
                                 Secure payment via Stripe.
                               </p>
+                              <div className="mb-3">
+                                <label className="text-sm font-medium text-muted-foreground">Quantity</label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={ticketQuantity}
+                                  onChange={(e) =>
+                                    setTicketQuantity(Math.max(1, parseInt(e.target.value || "1", 10) || 1))
+                                  }
+                                  className="mt-1"
+                                />
+                              </div>
                               <Button 
                                 className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
                                 onClick={handlePurchaseTicket}
                                 disabled={paymentLoading}
                               >
                                 <CreditCard className="h-4 w-4 mr-2" />
-                                {paymentLoading ? "Processing..." : `Buy Ticket - £${event.price}`}
+                                {paymentLoading ? "Processing..." : `Buy Ticket - £${(event.price * ticketQuantity).toFixed(2)}`}
                               </Button>
                             </div>
                           ) : (
