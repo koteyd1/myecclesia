@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +11,6 @@ import {
   MapPin, 
   Search, 
   Filter, 
-  Heart, 
-  Users,
   ChevronDown,
   User
 } from "lucide-react";
@@ -43,16 +40,12 @@ interface Minister {
   profile_image_url: string | null;
   slug: string;
   created_at: string;
-  _count?: {
-    minister_followers: number;
-  };
 }
 
-type SortOption = "newest" | "oldest" | "name" | "followers";
+type SortOption = "newest" | "oldest" | "name";
 type ViewMode = "grid" | "list";
 
 export default function Ministers() {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [ministers, setMinisters] = useState<Minister[]>([]);
   const [filteredMinisters, setFilteredMinisters] = useState<Minister[]>([]);
@@ -62,7 +55,6 @@ export default function Ministers() {
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [followedMinisters, setFollowedMinisters] = useState<Set<string>>(new Set());
 
   // Get unique values for filters
   const denominations = [...new Set(ministers.map(m => m.denomination).filter(Boolean))];
@@ -70,10 +62,7 @@ export default function Ministers() {
 
   useEffect(() => {
     fetchMinisters();
-    if (user) {
-      fetchFollowedMinisters();
-    }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     filterAndSortMinisters();
@@ -83,23 +72,13 @@ export default function Ministers() {
     try {
       const { data, error } = await supabase
         .from("ministers")
-        .select(`
-          *,
-          minister_followers(count)
-        `)
+        .select("*")
         .eq("is_verified", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       
-      const ministersWithCounts = data.map(minister => ({
-        ...minister,
-        _count: {
-          minister_followers: minister.minister_followers?.length || 0
-        }
-      }));
-
-      setMinisters(ministersWithCounts);
+      setMinisters(data || []);
     } catch (error) {
       console.error("Error fetching ministers:", error);
       toast({
@@ -109,78 +88,6 @@ export default function Ministers() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchFollowedMinisters = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("minister_followers")
-        .select("minister_id")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      
-      const followedIds = new Set(data.map(f => f.minister_id));
-      setFollowedMinisters(followedIds);
-    } catch (error) {
-      console.error("Error fetching followed ministers:", error);
-    }
-  };
-
-  const handleFollow = async (ministerId: string) => {
-    if (!user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to follow ministers",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const isFollowing = followedMinisters.has(ministerId);
-      
-      if (isFollowing) {
-        await supabase
-          .from("minister_followers")
-          .delete()
-          .eq("minister_id", ministerId)
-          .eq("user_id", user.id);
-        
-        setFollowedMinisters(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(ministerId);
-          return newSet;
-        });
-        
-        toast({
-          title: "Unfollowed",
-          description: "You unfollowed this minister",
-        });
-      } else {
-        await supabase
-          .from("minister_followers")
-          .insert({
-            minister_id: ministerId,
-            user_id: user.id,
-          });
-        
-        setFollowedMinisters(prev => new Set([...prev, ministerId]));
-        
-        toast({
-          title: "Following",
-          description: "You are now following this minister",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update follow status",
-        variant: "destructive",
-      });
     }
   };
 
@@ -215,8 +122,6 @@ export default function Ministers() {
           return a.full_name.localeCompare(b.full_name);
         case "oldest":
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case "followers":
-          return (b._count?.minister_followers || 0) - (a._count?.minister_followers || 0);
         case "newest":
         default:
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -227,8 +132,6 @@ export default function Ministers() {
   };
 
   const MinisterCard = ({ minister }: { minister: Minister }) => {
-    const isFollowing = followedMinisters.has(minister.id);
-    
     if (viewMode === "list") {
       return (
         <Card className="hover:shadow-md transition-shadow">
@@ -263,21 +166,6 @@ export default function Ministers() {
                       )}
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{minister._count?.minister_followers || 0}</div>
-                      <div className="text-xs text-muted-foreground">followers</div>
-                    </div>
-                    <Button
-                      variant={isFollowing ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => handleFollow(minister.id)}
-                    >
-                      <Heart className={`w-4 h-4 mr-1 ${isFollowing ? "fill-current" : ""}`} />
-                      {isFollowing ? "Following" : "Follow"}
-                    </Button>
-                  </div>
                 </div>
                 
                 {minister.mission_statement && (
@@ -295,18 +183,12 @@ export default function Ministers() {
     return (
       <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={minister.profile_image_url || undefined} />
-              <AvatarFallback>
-                {minister.full_name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <div className="text-sm font-medium">{minister._count?.minister_followers || 0}</div>
-              <div className="text-xs text-muted-foreground">followers</div>
-            </div>
-          </div>
+          <Avatar className="w-16 h-16">
+            <AvatarImage src={minister.profile_image_url || undefined} />
+            <AvatarFallback>
+              {minister.full_name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
         </CardHeader>
         <CardContent className="pt-0">
           <Link to={`/minister/${minister.slug}`}>
@@ -334,15 +216,11 @@ export default function Ministers() {
             </p>
           )}
           
-          <Button
-            variant={isFollowing ? "outline" : "default"}
-            size="sm"
-            className="w-full"
-            onClick={() => handleFollow(minister.id)}
-          >
-            <Heart className={`w-4 h-4 mr-2 ${isFollowing ? "fill-current" : ""}`} />
-            {isFollowing ? "Following" : "Follow"}
-          </Button>
+          <Link to={`/minister/${minister.slug}`}>
+            <Button variant="outline" size="sm" className="w-full">
+              View Profile
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     );
@@ -413,7 +291,7 @@ export default function Ministers() {
                 <SelectContent>
                   <SelectItem value="all">All Denominations</SelectItem>
                   {denominations.map(denomination => (
-                    <SelectItem key={denomination} value={denomination}>
+                    <SelectItem key={denomination} value={denomination!}>
                       {denomination}
                     </SelectItem>
                   ))}
@@ -455,9 +333,6 @@ export default function Ministers() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setSortBy("name")}>
                     Name (A-Z)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy("followers")}>
-                    Most Followers
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -514,7 +389,6 @@ export default function Ministers() {
           </div>
         )}
       </main>
-
     </div>
   );
 }
