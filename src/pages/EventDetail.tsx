@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ const EventDetail = () => {
   const [registering, setRegistering] = useState(false);
   const [isInCalendar, setIsInCalendar] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   
   // Track event views
   useEventTracking(event?.id);
@@ -155,6 +156,49 @@ const EventDetail = () => {
     } catch (error) {
       // Not in calendar, which is fine
       setIsInCalendar(false);
+    }
+  };
+
+  const handlePurchaseTicket = async () => {
+    if (!user || !event) {
+      navigate("/auth");
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      // Get user profile for email/name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("user_id", user.id)
+        .single();
+
+      const response = await supabase.functions.invoke("create-ticket-payment", {
+        body: {
+          eventId: event.slug,
+          eventTitle: event.title,
+          price: event.price,
+          quantity: 1,
+          buyerEmail: profile?.email || user.email,
+          buyerName: profile?.full_name || "Guest",
+        },
+      });
+
+      if (response.error) throw response.error;
+      
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error: any) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -531,22 +575,45 @@ const EventDetail = () => {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                            <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Click below to register for this event.
-                            </p>
-                            <Button 
-                              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                              onClick={handleRegister}
-                              disabled={registering}
-                            >
-                              {registering ? "Registering..." : "Register Now"}
-                            </Button>
-                          </div>
+                          {event.price > 0 ? (
+                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                              <h4 className="font-semibold text-primary mb-2">Purchase Ticket</h4>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                Ticket price: <span className="font-semibold">£{event.price}</span>
+                              </p>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                Secure payment via Stripe.
+                              </p>
+                              <Button 
+                                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                                onClick={handlePurchaseTicket}
+                                disabled={paymentLoading}
+                              >
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                {paymentLoading ? "Processing..." : `Buy Ticket - £${event.price}`}
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                              <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                This is a free event. Click below to register.
+                              </p>
+                              <Button 
+                                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                                onClick={handleRegister}
+                                disabled={registering}
+                              >
+                                {registering ? "Registering..." : "Register Now - Free"}
+                              </Button>
+                            </div>
+                          )}
                           <div className="text-xs text-muted-foreground">
                             <p>
-                              Registration is instant and you can manage your registrations from your dashboard.
+                              {event.price > 0 
+                                ? "After payment, you'll receive a confirmation email with your ticket details."
+                                : "Registration is instant and you can manage your registrations from your dashboard."
+                              }
                             </p>
                           </div>
                         </div>
