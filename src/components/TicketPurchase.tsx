@@ -95,6 +95,47 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     return Object.values(selectedTickets).reduce((sum, qty) => sum + qty, 0);
   };
 
+  // Handle free ticket for events without ticket types
+  const handleFreeTicket = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const response = await supabase.functions.invoke("create-free-ticket", {
+        body: {
+          eventId: event.id,
+          eventSlug: event.slug,
+          eventTitle: event.title,
+          quantity: 1,
+          eventDate: event.date,
+          eventTime: event.time,
+          eventLocation: event.location,
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      toast({
+        title: "Ticket Confirmed! 🎉",
+        description: "Your free ticket has been reserved. Check My Tickets to view it.",
+      });
+      
+      navigate("/my-tickets");
+    } catch (error: any) {
+      console.error("Error creating free ticket:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to get ticket. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const handlePurchase = async () => {
     if (!user) {
       navigate("/auth");
@@ -197,7 +238,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     }
   };
 
-  // If no ticket types, show legacy single price purchase
+  // If no ticket types and paid event, show legacy single price purchase
   if (!loading && ticketTypes.length === 0 && event.price > 0) {
     return (
       <Card className="border-primary/20">
@@ -232,6 +273,36 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
       <Card className="border-primary/20">
         <CardContent className="py-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If no ticket types and FREE event, show free ticket button
+  if (ticketTypes.length === 0 && event.price === 0) {
+    return (
+      <Card className="border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-primary" />
+            Get Your Free Ticket
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <div className="text-3xl font-bold text-emerald-600 mb-2">
+              Free
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">This event is free to attend</p>
+            <Button
+              className="w-full bg-gradient-primary hover:opacity-90"
+              onClick={handleFreeTicket}
+              disabled={paymentLoading}
+            >
+              <Ticket className="h-4 w-4 mr-2" />
+              {paymentLoading ? "Processing..." : "Get Free Ticket"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
