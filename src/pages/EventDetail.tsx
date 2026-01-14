@@ -71,10 +71,15 @@ const EventDetail = () => {
         .from("events")
         .select("*")
         .eq("slug", slug)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setEvent(data);
+      
+      if (data) {
+        setEvent(data);
+      } else {
+        console.log("No event found for slug:", slug);
+      }
     } catch (error) {
       console.error("Error fetching event:", error);
       
