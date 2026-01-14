@@ -12,6 +12,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-TICKET-PAYMENT] ${step}${detailsStr}`);
 };
 
+// Platform fee percentage (0% for first 6 months, then configurable)
+const PLATFORM_FEE_PERCENT = 0;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,8 +37,8 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation } = await req.json();
-    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail });
+    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation, ticketTypeId, ticketTypeName } = await req.json();
+    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail, ticketTypeId });
 
     // Get user from auth header
     let user = null;
@@ -51,6 +54,46 @@ serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+    // Get event details from database including stripe_account_id
+    const { data: eventData } = await supabaseService
+      .from("events")
+      .select("id, title, date, time, location, stripe_account_id, created_by")
+      .eq("slug", eventId)
+      .single();
+
+    logStep("Event data retrieved", { eventData });
+
+    // Get the connected account for the event organizer
+    let connectedAccountId = eventData?.stripe_account_id;
+    
+    // If no stripe_account_id on event, try to get from organizer's account
+    if (!connectedAccountId && eventData?.created_by) {
+      const { data: organizerAccount } = await supabaseService
+        .from("stripe_connected_accounts")
+        .select("stripe_account_id, charges_enabled, first_event_date")
+        .eq("user_id", eventData.created_by)
+        .single();
+
+      if (organizerAccount?.charges_enabled) {
+        connectedAccountId = organizerAccount.stripe_account_id;
+        logStep("Using organizer's connected account", { connectedAccountId });
+
+        // Update event with stripe_account_id for future use
+        await supabaseService
+          .from("events")
+          .update({ stripe_account_id: connectedAccountId })
+          .eq("id", eventData.id);
+
+        // Track first event date if not set
+        if (!organizerAccount.first_event_date) {
+          await supabaseService
+            .from("stripe_connected_accounts")
+            .update({ first_event_date: new Date().toISOString() })
+            .eq("user_id", eventData.created_by);
+        }
+      }
+    }
 
     // Check if customer exists
     const customers = await stripe.customers.list({ 
@@ -75,17 +118,10 @@ serve(async (req) => {
 
     logStep("Customer handled", { customerId });
 
-    // Get event details from database for accurate info
-    const { data: eventData } = await supabaseService
-      .from("events")
-      .select("id, title, date, time, location")
-      .eq("slug", eventId)
-      .single();
-
-    const { ticketTypeId, ticketTypeName } = await req.json().catch(() => ({}));
-
-    // Create checkout session for ticket purchase
-    const session = await stripe.checkout.sessions.create({
+    const totalAmount = Math.round(price * 100) * (quantity || 1); // Convert to pence
+    
+    // Build checkout session options
+    const sessionOptions: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       line_items: [
         {
@@ -95,7 +131,7 @@ serve(async (req) => {
               name: `Ticket: ${eventTitle}`,
               description: ticketTypeName ? `${ticketTypeName} - ${eventTitle}` : `Event ticket for ${eventTitle}`,
             },
-            unit_amount: Math.round(price * 100), // Convert to pence
+            unit_amount: Math.round(price * 100),
           },
           quantity: quantity || 1,
         },
@@ -117,9 +153,34 @@ serve(async (req) => {
         ticket_type_id: ticketTypeId || '',
         ticket_type_name: ticketTypeName || '',
       },
-    });
+    };
 
-    logStep("Checkout session created", { sessionId: session.id });
+    // If there's a connected account, route payment to them
+    if (connectedAccountId) {
+      logStep("Using Stripe Connect for payment", { connectedAccountId });
+      
+      // Calculate application fee (0% during free period)
+      const applicationFee = Math.round(totalAmount * (PLATFORM_FEE_PERCENT / 100));
+      
+      sessionOptions.payment_intent_data = {
+        application_fee_amount: applicationFee,
+        transfer_data: {
+          destination: connectedAccountId,
+        },
+      };
+      
+      logStep("Payment routing configured", { 
+        totalAmount, 
+        applicationFee, 
+        destinationAccount: connectedAccountId 
+      });
+    } else {
+      logStep("No connected account - payment goes to platform");
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
+
+    logStep("Checkout session created", { sessionId: session.id, connectedAccountId });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

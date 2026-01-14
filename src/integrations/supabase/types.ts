@@ -318,6 +318,7 @@ export type Database = {
           price: number | null
           requirements: string | null
           slug: string
+          stripe_account_id: string | null
           ticket_url: string | null
           time: string
           title: string
@@ -343,6 +344,7 @@ export type Database = {
           price?: number | null
           requirements?: string | null
           slug: string
+          stripe_account_id?: string | null
           ticket_url?: string | null
           time: string
           title: string
@@ -368,6 +370,7 @@ export type Database = {
           price?: number | null
           requirements?: string | null
           slug?: string
+          stripe_account_id?: string | null
           ticket_url?: string | null
           time?: string
           title?: string
@@ -1140,6 +1143,45 @@ export type Database = {
           created_at?: string | null
           id?: never
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stripe_connected_accounts: {
+        Row: {
+          account_status: string
+          charges_enabled: boolean | null
+          created_at: string
+          details_submitted: boolean | null
+          first_event_date: string | null
+          id: string
+          payouts_enabled: boolean | null
+          stripe_account_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_status?: string
+          charges_enabled?: boolean | null
+          created_at?: string
+          details_submitted?: boolean | null
+          first_event_date?: string | null
+          id?: string
+          payouts_enabled?: boolean | null
+          stripe_account_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_status?: string
+          charges_enabled?: boolean | null
+          created_at?: string
+          details_submitted?: boolean | null
+          first_event_date?: string | null
+          id?: string
+          payouts_enabled?: boolean | null
+          stripe_account_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
