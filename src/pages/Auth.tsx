@@ -32,18 +32,45 @@ const Auth = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const isReset = urlParams.get('reset') === 'true';
     
-    if (isReset) {
+    // Also check for recovery token in URL hash (Supabase puts tokens there)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const tokenType = hashParams.get('type');
+    
+    if (isReset || tokenType === 'recovery') {
       setIsPasswordReset(true);
     }
 
-    // Check if user is already logged in
+    // Listen for auth state changes - especially PASSWORD_RECOVERY event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        // User clicked the password reset link and has a valid recovery session
+        setIsPasswordReset(true);
+      } else if (event === 'SIGNED_IN' && !isPasswordReset) {
+        // Normal sign in - redirect to home
+        navigate("/");
+      }
+    });
+
+    // Check if user is already logged in (but not in password reset flow)
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session && !isReset) {
+      
+      // If there's a recovery token, we're in password reset mode
+      if (accessToken && tokenType === 'recovery') {
+        setIsPasswordReset(true);
+        return;
+      }
+      
+      if (session && !isReset && tokenType !== 'recovery') {
         navigate("/");
       }
     };
     checkUser();
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
