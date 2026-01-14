@@ -49,12 +49,12 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Generate password reset link using Supabase
-    // We don't need to check if user exists - Supabase handles this securely
+    // Always redirect to the production site
     const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
-        redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/auth?reset=true`
+        redirectTo: 'https://myecclesia.org.uk/auth?reset=true'
       }
     });
 
