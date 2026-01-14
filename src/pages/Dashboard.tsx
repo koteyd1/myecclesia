@@ -163,6 +163,12 @@ const Dashboard = () => {
                   My Profiles
                 </Button>
               </Link>
+              <Link to="/my-profiles">
+                <Button size="sm">
+                  <CalendarIcon className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+              </Link>
               <Link to="/profile/edit">
                 <Button variant="outline" size="sm">
                   <Settings className="h-4 w-4 mr-2" />
