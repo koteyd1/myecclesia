@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -163,6 +163,18 @@ const Dashboard = () => {
                   My Profiles
                 </Button>
               </Link>
+              <Link to="/my-tickets">
+                <Button variant="outline" size="sm">
+                  <QrCode className="h-4 w-4 mr-2" />
+                  My Tickets
+                </Button>
+              </Link>
+              <Link to="/scan-tickets">
+                <Button variant="outline" size="sm">
+                  <ScanLine className="h-4 w-4 mr-2" />
+                  Scan Tickets
+                </Button>
+              </Link>
               <Link to="/my-profiles">
                 <Button size="sm">
                   <CalendarIcon className="h-4 w-4 mr-2" />
@@ -210,6 +222,10 @@ const Dashboard = () => {
         <Tabs defaultValue="events" className="space-y-4">
           <TabsList className="flex-wrap">
             <TabsTrigger value="events">My Events</TabsTrigger>
+            <TabsTrigger value="tickets" className="flex items-center gap-1">
+              <Ticket className="h-3 w-3" />
+              Tickets
+            </TabsTrigger>
             <TabsTrigger value="saved" className="flex items-center gap-1">
               <Heart className="h-3 w-3" />
               Saved
@@ -343,6 +359,26 @@ const Dashboard = () => {
             ))}
           </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <Card>
+              <CardContent className="py-6">
+                <div className="text-center">
+                  <Ticket className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Your Tickets</h3>
+                  <p className="text-muted-foreground mb-4">
+                    View and manage all your purchased tickets
+                  </p>
+                  <Link to="/my-tickets">
+                    <Button>
+                      <QrCode className="h-4 w-4 mr-2" />
+                      View All Tickets
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="saved">

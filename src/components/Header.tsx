@@ -1,4 +1,4 @@
-import { User, Settings, LogOut, ChevronDown, Briefcase } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Briefcase, Ticket, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
@@ -173,6 +173,18 @@ const Header = () => {
                       <Link to="/my-profiles" className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         My Profiles
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-tickets" className="flex items-center gap-2">
+                        <Ticket className="h-4 w-4" />
+                        My Tickets
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/scan-tickets" className="flex items-center gap-2">
+                        <ScanLine className="h-4 w-4" />
+                        Scan Tickets
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

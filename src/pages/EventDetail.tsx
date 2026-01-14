@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket } from "lucide-react";
+import { TicketPurchase } from "@/components/TicketPurchase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -600,25 +601,19 @@ const EventDetail = () => {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          {event.price > 0 ? (
-                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                              <h4 className="font-semibold text-primary mb-2">Purchase Ticket</h4>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                Ticket price: <span className="font-semibold">£{event.price}</span>
-                              </p>
-                              <p className="text-sm text-muted-foreground mb-4">
-                                Secure payment via Stripe.
-                              </p>
-                              <Button 
-                                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                                onClick={handlePurchaseTicket}
-                                disabled={paymentLoading}
-                              >
-                                <CreditCard className="h-4 w-4 mr-2" />
-                                {paymentLoading ? "Processing..." : `Buy Ticket - £${event.price}`}
-                              </Button>
-                            </div>
-                          ) : (
+              {/* Use new TicketPurchase component for events with ticket types */}
+                          <TicketPurchase 
+                            event={{
+                              id: event.id,
+                              slug: event.slug,
+                              title: event.title,
+                              price: event.price || 0,
+                              date: event.date,
+                              time: event.time,
+                              location: event.location,
+                            }}
+                          />
+                          {event.price === 0 && (
                             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                               <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
                               <p className="text-sm text-muted-foreground mb-4">
