@@ -34,8 +34,6 @@ import ProfileEdit from "./pages/ProfileEdit";
 import Ministers from "./pages/Ministers";
 import Organizations from "./pages/Organizations";
 import SiteAnalytics from "./pages/SiteAnalytics";
-import Community from "./pages/Community";
-import GroupDetail from "./pages/GroupDetail";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import OpportunityForm from "./pages/OpportunityForm";
@@ -85,8 +83,6 @@ const App = () => (
               <Route path="/my-profiles" element={<MyProfiles />} />
               <Route path="/profile/edit" element={<ProfileEdit />} />
               <Route path="/site-analytics" element={<SiteAnalytics />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/community/:id" element={<GroupDetail />} />
               <Route path="/opportunities" element={<Opportunities />} />
               <Route path="/opportunities/new" element={<OpportunityForm />} />
               <Route path="/opportunities/edit/:id" element={<OpportunityForm />} />
