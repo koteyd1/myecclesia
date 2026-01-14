@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email using Resend
     const emailResponse = await resend.emails.send({
-      from: 'MyEcclesia <welcome@myecclesia.uk>',
+      from: 'MyEcclesia <welcome@myecclesia.org.uk>',
       to: [email],
       subject: 'Reset Your MyEcclesia Password',
       html: emailHtml,
