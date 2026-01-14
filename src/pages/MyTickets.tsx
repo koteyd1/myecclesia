@@ -5,7 +5,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Ticket, QrCode, Download } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Calendar, Clock, MapPin, Ticket, Download, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -22,6 +33,7 @@ interface UserTicket {
     amount_total?: number;
     currency?: string;
     quantity?: number;
+    type?: string;
   } | null;
   events: {
     id: string;
@@ -46,6 +58,7 @@ const MyTickets = () => {
   const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
+  const [cancellingTicketId, setCancellingTicketId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -142,6 +155,35 @@ const MyTickets = () => {
     link.click();
   };
 
+  const handleCancelTicket = async (ticketId: string) => {
+    setCancellingTicketId(ticketId);
+    try {
+      const response = await supabase.functions.invoke("cancel-ticket", {
+        body: { ticketId },
+      });
+
+      if (response.error) throw response.error;
+      if (response.data?.error) throw new Error(response.data.error);
+
+      toast({
+        title: "Ticket Cancelled",
+        description: "Your ticket has been successfully cancelled.",
+      });
+
+      // Remove the ticket from the list
+      setTickets(tickets.filter(t => t.id !== ticketId));
+    } catch (error: any) {
+      console.error("Error cancelling ticket:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel ticket. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingTicketId(null);
+    }
+  };
+
   const isUpcoming = (dateStr: string) => {
     const eventDate = new Date(dateStr);
     const today = new Date();
@@ -208,6 +250,8 @@ const MyTickets = () => {
                       qrCode={qrCodes[ticket.id]}
                       onDownload={downloadQRCode}
                       onViewEvent={() => navigate(`/events/${ticket.events?.slug}`)}
+                      onCancel={handleCancelTicket}
+                      isCancelling={cancellingTicketId === ticket.id}
                     />
                   ))}
                 </div>
@@ -228,6 +272,8 @@ const MyTickets = () => {
                       qrCode={qrCodes[ticket.id]}
                       onDownload={downloadQRCode}
                       onViewEvent={() => navigate(`/events/${ticket.events?.slug}`)}
+                      onCancel={handleCancelTicket}
+                      isCancelling={false}
                       isPast
                     />
                   ))}
@@ -246,12 +292,16 @@ interface TicketCardProps {
   qrCode?: string;
   onDownload: (ticketId: string, eventTitle: string) => void;
   onViewEvent: () => void;
+  onCancel: (ticketId: string) => void;
+  isCancelling: boolean;
   isPast?: boolean;
 }
 
-const TicketCard = ({ ticket, qrCode, onDownload, onViewEvent, isPast }: TicketCardProps) => {
+const TicketCard = ({ ticket, qrCode, onDownload, onViewEvent, onCancel, isCancelling, isPast }: TicketCardProps) => {
   const ticketQuantity = ticket.quantity || (ticket.payment_metadata?.quantity || 1);
   const ticketNumber = ticket.id.slice(0, 8).toUpperCase();
+  const isFreeTicket = ticket.payment_metadata?.type === "free" || (ticket.ticket_types?.price === 0);
+  const isCheckedIn = ticket.check_in_status === "checked_in";
 
   return (
     <Card className={`overflow-hidden ${isPast ? "opacity-75" : ""}`}>
@@ -267,12 +317,19 @@ const TicketCard = ({ ticket, qrCode, onDownload, onViewEvent, isPast }: TicketC
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start gap-2">
           <CardTitle className="text-lg line-clamp-2">{ticket.events?.title}</CardTitle>
-          <Badge 
-            variant={ticket.check_in_status === "checked_in" ? "default" : "secondary"}
-            className={ticket.check_in_status === "checked_in" ? "bg-green-600" : ""}
-          >
-            {ticket.check_in_status === "checked_in" ? "Checked In" : "Valid"}
-          </Badge>
+          <div className="flex flex-col gap-1 items-end">
+            <Badge 
+              variant={isCheckedIn ? "default" : "secondary"}
+              className={isCheckedIn ? "bg-green-600" : ""}
+            >
+              {isCheckedIn ? "Checked In" : "Valid"}
+            </Badge>
+            {isFreeTicket && (
+              <Badge variant="outline" className="text-emerald-600 border-emerald-600">
+                Free
+              </Badge>
+            )}
+          </div>
         </div>
         {ticket.ticket_types && (
           <Badge variant="outline" className="w-fit mt-1">
@@ -330,6 +387,46 @@ const TicketCard = ({ ticket, qrCode, onDownload, onViewEvent, isPast }: TicketC
             View Event
           </Button>
         </div>
+
+        {/* Cancel button for upcoming tickets that haven't been checked in */}
+        {!isPast && !isCheckedIn && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                disabled={isCancelling}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isCancelling ? "Cancelling..." : "Cancel Ticket"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancel Ticket?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to cancel your ticket for "{ticket.events?.title}"? 
+                  This action cannot be undone.
+                  {!isFreeTicket && (
+                    <span className="block mt-2 font-medium text-amber-600">
+                      Note: Refunds for paid tickets are subject to the event's refund policy.
+                    </span>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep Ticket</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onCancel(ticket.id)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, Cancel Ticket
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         <div className="text-xs text-muted-foreground text-center">
           Purchased {format(new Date(ticket.created_at), "MMM dd, yyyy")}

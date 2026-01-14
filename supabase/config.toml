@@ -76,3 +76,6 @@ verify_jwt = false
 
 [functions.create-free-ticket]
 verify_jwt = false
+
+[functions.cancel-ticket]
+verify_jwt = false
