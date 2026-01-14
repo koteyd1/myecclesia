@@ -66,19 +66,42 @@ const EventDetail = () => {
   }, [event, user]);
 
   const fetchEvent = async () => {
+    if (!slug) return;
+
+    const isUuid = (value: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
     try {
-      const { data, error } = await supabase
+      // Primary lookup: by slug
+      let { data, error } = await supabase
         .from("events")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
 
       if (error) throw error;
-      
+
+      // Fallback lookup: if someone navigated using the event UUID
+      if (!data && isUuid(slug)) {
+        const byId = await supabase
+          .from("events")
+          .select("*")
+          .eq("id", slug)
+          .maybeSingle();
+
+        if (byId.error) throw byId.error;
+        data = byId.data;
+      }
+
       if (data) {
         setEvent(data);
+
+        // Canonicalize the URL to the slug route (helps SEO + avoids "not found" when linked by id)
+        if (data.slug && data.slug !== slug) {
+          navigate(`/events/${data.slug}`, { replace: true });
+        }
       } else {
-        console.log("No event found for slug:", slug);
+        console.log("No event found for identifier:", slug);
       }
     } catch (error) {
       console.error("Error fetching event:", error);
@@ -449,7 +472,7 @@ const EventDetail = () => {
         title={`${event.title} | MyEcclesia Events`}
         description={event?.description?.slice(0, 160) || "Join this Christian event with MyEcclesia. Book your tickets now!"}
         keywords={`${event?.category || 'Christian event'}, ${event?.denominations || 'church'}, UK events, ${event?.location || 'community'}`}
-        canonicalUrl={`https://myecclesia.org.uk/events/${slug}`}
+        canonicalUrl={`https://myecclesia.org.uk/events/${event?.slug ?? slug}`}
         ogImage={event?.image}
       />
       <StructuredData data={createEventSchema(event)} />
