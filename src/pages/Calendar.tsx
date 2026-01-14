@@ -234,15 +234,16 @@ const Calendar = () => {
           </CardHeader>
           <CardContent>
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 mb-4">
+            <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="p-2 text-center font-semibold text-muted-foreground">
-                  {day}
+                <div key={day} className="p-2 text-center font-semibold text-muted-foreground text-sm md:text-base">
+                  <span className="hidden sm:inline">{day}</span>
+                  <span className="sm:hidden">{day.charAt(0)}</span>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-2">
               {calendarDays.map((day) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -251,32 +252,32 @@ const Calendar = () => {
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`min-h-24 p-2 border border-border ${
+                    className={`min-h-28 md:min-h-32 p-2 md:p-3 border border-border rounded-md ${
                       isCurrentMonth ? 'bg-card' : 'bg-muted/30'
                     } ${isSameDay(day, new Date()) ? 'ring-2 ring-primary' : ''} ${
                       hasHighlightedEvent ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20' : ''
                     }`}
                   >
-                    <div className={`text-sm mb-1 ${
+                    <div className={`text-sm md:text-base font-medium mb-2 ${
                       isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
                     }`}>
                       {format(day, 'd')}
                     </div>
-                    <div className="space-y-1">
-                      {dayEvents.slice(0, 2).map((event) => (
+                    <div className="space-y-1.5">
+                      {dayEvents.slice(0, 3).map((event) => (
                         <div
                           key={event.id}
                           className="cursor-pointer relative group"
                         >
                           <Badge 
                             variant="secondary" 
-                            className={`text-xs p-1 w-full text-center truncate ${getCategoryColor(event.category, event.isPersonal)} ${
+                            className={`text-xs p-1 md:p-1.5 w-full text-center truncate ${getCategoryColor(event.category, event.isPersonal)} ${
                               event.id === highlightedEventId ? 'ring-2 ring-green-500 animate-pulse' : ''
                             }`}
                             onClick={() => navigate(`/events/${event.id}`)}
                           >
                             {event.isPersonal && <span className="mr-1">📅</span>}
-                            {event.title}
+                            <span className="truncate">{event.title}</span>
                           </Badge>
                           {event.isPersonal && (
                             <button
@@ -291,9 +292,9 @@ const Calendar = () => {
                           )}
                         </div>
                       ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-xs text-muted-foreground text-center">
-                          +{dayEvents.length - 2} more
+                      {dayEvents.length > 3 && (
+                        <div className="text-xs text-muted-foreground text-center font-medium">
+                          +{dayEvents.length - 3} more
                         </div>
                       )}
                     </div>
