@@ -49,16 +49,16 @@ const handler = async (req: Request): Promise<Response> => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Validate the JWT token using getClaims
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    
-    if (claimsError || !claimsData?.claims) {
-      console.error('Token validation error:', claimsError);
+    // Validate the JWT token by explicitly passing it to Supabase Auth
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser(token);
+
+    if (userError || !requestingUser) {
+      console.error('Token validation error:', userError);
       throw new Error('Invalid or expired token');
     }
 
-    const requestingUserId = claimsData.claims.sub as string;
+    const requestingUserId = requestingUser.id;
     if (!requestingUserId) {
       throw new Error('Invalid token: missing user ID');
     }

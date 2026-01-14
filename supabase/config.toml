@@ -45,7 +45,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.delete-user]
-verify_jwt = true
+verify_jwt = false
 
 [functions.sitemap]
 verify_jwt = false
