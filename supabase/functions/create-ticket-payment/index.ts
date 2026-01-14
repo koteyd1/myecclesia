@@ -82,6 +82,8 @@ serve(async (req) => {
       .eq("slug", eventId)
       .single();
 
+    const { ticketTypeId, ticketTypeName } = await req.json().catch(() => ({}));
+
     // Create checkout session for ticket purchase
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -91,7 +93,7 @@ serve(async (req) => {
             currency: "gbp",
             product_data: { 
               name: `Ticket: ${eventTitle}`,
-              description: `Event ticket for ${eventTitle}`,
+              description: ticketTypeName ? `${ticketTypeName} - ${eventTitle}` : `Event ticket for ${eventTitle}`,
             },
             unit_amount: Math.round(price * 100), // Convert to pence
           },
@@ -99,7 +101,7 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get("origin")}/events/${eventId}?payment=success`,
+      success_url: `${req.headers.get("origin")}/events/${eventId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/events/${eventId}?payment=canceled`,
       metadata: {
         event_slug: eventId,
@@ -112,6 +114,8 @@ serve(async (req) => {
         user_email: buyerEmail,
         user_name: buyerName,
         quantity: String(quantity || 1),
+        ticket_type_id: ticketTypeId || '',
+        ticket_type_name: ticketTypeName || '',
       },
     });
 

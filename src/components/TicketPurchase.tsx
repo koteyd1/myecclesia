@@ -120,8 +120,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         .eq("user_id", user.id)
         .single();
 
-      // For now, we'll handle single ticket type purchase
-      // In the future, this can be extended to handle multiple ticket types
       const selectedEntries = Object.entries(selectedTickets).filter(([_, qty]) => qty > 0);
       
       if (selectedEntries.length === 1) {
@@ -130,6 +128,35 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         
         if (!ticketType) throw new Error("Ticket type not found");
 
+        // Handle FREE tickets
+        if (ticketType.price === 0) {
+          const response = await supabase.functions.invoke("create-free-ticket", {
+            body: {
+              eventId: event.id,
+              eventSlug: event.slug,
+              eventTitle: event.title,
+              quantity,
+              ticketTypeId,
+              ticketTypeName: ticketType.name,
+              eventDate: event.date,
+              eventTime: event.time,
+              eventLocation: event.location,
+            },
+          });
+
+          if (response.error) throw response.error;
+
+          toast({
+            title: "Ticket Confirmed! 🎉",
+            description: "Your free ticket has been reserved. Check My Tickets to view it.",
+          });
+          
+          // Navigate to tickets page
+          navigate("/my-tickets");
+          return;
+        }
+
+        // Handle PAID tickets
         const response = await supabase.functions.invoke("create-ticket-payment", {
           body: {
             eventId: event.slug,
@@ -152,8 +179,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           window.location.href = response.data.url;
         }
       } else {
-        // Multiple ticket types - handle as combined purchase
-        // For now, show error - can be extended later
         toast({
           title: "Multiple Ticket Types",
           description: "Please select tickets of one type at a time for now.",
@@ -163,8 +188,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     } catch (error: any) {
       console.error("Error creating payment:", error);
       toast({
-        title: "Payment Error",
-        description: error.message || "Failed to initiate payment. Please try again.",
+        title: "Error",
+        description: error.message || "Failed to process. Please try again.",
         variant: "destructive",
       });
     } finally {
