@@ -58,19 +58,16 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Invalid or expired token');
     }
 
-    const userId = claimsData.claims.sub as string;
-    if (!userId) {
+    const requestingUserId = claimsData.claims.sub as string;
+    if (!requestingUserId) {
       throw new Error('Invalid token: missing user ID');
     }
-
-    // Create a user object for compatibility with the rest of the code
-    const user = { id: userId };
 
     // Check if the requesting user is an admin
     const { data: userRole, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', requestingUserId)
       .single();
 
     if (roleError || userRole?.role !== 'admin') {
@@ -78,14 +75,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Parse request body
-    const { userId }: DeleteUserRequest = await req.json();
+    const { userId: targetUserId }: DeleteUserRequest = await req.json();
 
-    if (!userId) {
+    if (!targetUserId) {
       throw new Error('User ID is required');
     }
 
     // Prevent admins from deleting themselves
-    if (user.id === userId) {
+    if (requestingUserId === targetUserId) {
       throw new Error('Admins cannot delete themselves');
     }
 
@@ -93,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: targetUserRole, error: targetRoleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
+      .eq('user_id', targetUserId)
       .single();
 
     if (targetRoleError && targetRoleError.code !== 'PGRST116') {
@@ -105,17 +102,17 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Cannot delete admin users');
     }
 
-    console.log(`Admin ${user.id} attempting to delete user ${userId}`);
+    console.log(`Admin ${requestingUserId} attempting to delete user ${targetUserId}`);
 
     // Delete the user using admin client
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUserId);
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
       throw deleteError;
     }
 
-    console.log(`Successfully deleted user ${userId}`);
+    console.log(`Successfully deleted user ${targetUserId}`);
 
     return new Response(
       JSON.stringify({ success: true, message: 'User deleted successfully' }),
