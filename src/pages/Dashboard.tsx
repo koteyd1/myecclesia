@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import SavedEvents from "@/components/SavedEvents";
 import { EventRecommendations } from "@/components/EventRecommendations";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { SEOHead } from "@/components/SEOHead";
+import { StripeConnectSetup } from "@/components/StripeConnectSetup";
 
 interface EventRegistration {
   id: string;
@@ -38,10 +39,27 @@ interface EventRegistration {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Handle Stripe Connect return
+  useEffect(() => {
+    const stripeConnect = searchParams.get('stripe_connect');
+    if (stripeConnect === 'success') {
+      toast({
+        title: "Payment Setup Complete",
+        description: "Your payment account has been set up successfully!",
+      });
+    } else if (stripeConnect === 'refresh') {
+      toast({
+        title: "Continue Setup",
+        description: "Please complete your payment account setup.",
+      });
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     if (user) {
@@ -231,6 +249,10 @@ const Dashboard = () => {
               Saved
             </TabsTrigger>
             <TabsTrigger value="for-you">For You</TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-1">
+              <CreditCard className="h-3 w-3" />
+              Payments
+            </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1">
               <Bell className="h-3 w-3" />
               Alerts
@@ -387,6 +409,10 @@ const Dashboard = () => {
 
           <TabsContent value="for-you">
             <EventRecommendations />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <StripeConnectSetup />
           </TabsContent>
 
           <TabsContent value="notifications">
