@@ -42,19 +42,29 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Create client with anon key to verify the user making the request
+    // Create client with the user's auth header to verify the token
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Get the user from the JWT token
+    // Validate the JWT token using getClaims
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
     
-    if (userError || !user) {
+    if (claimsError || !claimsData?.claims) {
+      console.error('Token validation error:', claimsError);
       throw new Error('Invalid or expired token');
     }
+
+    const userId = claimsData.claims.sub as string;
+    if (!userId) {
+      throw new Error('Invalid token: missing user ID');
+    }
+
+    // Create a user object for compatibility with the rest of the code
+    const user = { id: userId };
 
     // Check if the requesting user is an admin
     const { data: userRole, error: roleError } = await supabaseAdmin
