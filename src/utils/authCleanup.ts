@@ -51,7 +51,7 @@ export const performSecureSignOut = async (supabase: any) => {
   }
 };
 
-export const performSecureSignIn = async (supabase: any, email: string, password: string) => {
+export const performSecureSignIn = async (supabase: any, email: string, password: string, redirectUrl: string = '/') => {
   if (typeof window === 'undefined') return { data: null, error: new Error('Server environment') };
   
   try {
@@ -74,8 +74,8 @@ export const performSecureSignIn = async (supabase: any, email: string, password
     if (error) throw error;
     
     if (data.user) {
-      // Force page reload to ensure clean state
-      window.location.href = '/';
+      // Force page reload to ensure clean state, redirect to intended destination
+      window.location.href = redirectUrl;
     }
     
     return { data, error: null };

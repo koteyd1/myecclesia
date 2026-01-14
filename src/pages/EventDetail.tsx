@@ -19,7 +19,7 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -28,10 +28,21 @@ const EventDetail = () => {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   
-  // Track event views
-  useEventTracking(event?.id);
+  // Track event views (only for authenticated users)
+  useEventTracking(user ? event?.id : null);
 
   const [verifyingPayment, setVerifyingPayment] = useState(false);
+
+  // Redirect to auth if not signed in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to view event details.",
+      });
+      navigate(`/auth?redirect=/events/${slug}`);
+    }
+  }, [authLoading, user, navigate, slug, toast]);
 
   // Handle payment success/cancel - verify payment and create ticket
   useEffect(() => {
@@ -75,10 +86,10 @@ const EventDetail = () => {
   }, [searchParams, user, slug]);
 
   useEffect(() => {
-    if (slug) {
+    if (slug && user) {
       fetchEvent();
     }
-  }, [slug]);
+  }, [slug, user]);
 
   useEffect(() => {
     if (event && user) {
@@ -477,6 +488,42 @@ const EventDetail = () => {
     const now = new Date();
     return eventDateTime <= now;
   };
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <>
+        <SEOHead 
+          title="Loading... | MyEcclesia"
+          description="Loading event details..."
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <div className="text-lg">Checking authentication...</div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Don't render content if not authenticated (redirect will happen via useEffect)
+  if (!user) {
+    return (
+      <>
+        <SEOHead 
+          title="Sign In Required | MyEcclesia"
+          description="Please sign in to view event details."
+          noIndex={true}
+        />
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <div className="text-lg">Redirecting to sign in...</div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (loading) {
     return (
