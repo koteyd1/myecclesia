@@ -70,3 +70,9 @@ verify_jwt = false
 
 [functions.send-password-reset]
 verify_jwt = false
+
+[functions.verify-ticket-payment]
+verify_jwt = false
+
+[functions.create-free-ticket]
+verify_jwt = false

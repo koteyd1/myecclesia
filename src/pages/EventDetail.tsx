@@ -31,26 +31,48 @@ const EventDetail = () => {
   // Track event views
   useEventTracking(event?.id);
 
-  // Handle payment success/cancel
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+
+  // Handle payment success/cancel - verify payment and create ticket
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
-    if (paymentStatus === 'success') {
-      toast({
-        title: "Payment Successful! 🎉",
-        description: "Your ticket has been confirmed. Check your email for confirmation details.",
+    const sessionId = searchParams.get('session_id');
+    
+    if (paymentStatus === 'success' && sessionId && user && !verifyingPayment) {
+      setVerifyingPayment(true);
+      
+      // Verify payment and create ticket
+      supabase.functions.invoke("verify-ticket-payment", {
+        body: { sessionId },
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error("Error verifying payment:", error);
+          toast({
+            title: "Payment Verification Issue",
+            description: "Your payment was successful but we couldn't verify it immediately. Please check My Tickets.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Ticket Confirmed! 🎉",
+            description: "Your ticket has been created. View it in My Tickets.",
+          });
+          checkRegistrationStatus();
+        }
+        // Clear URL params
+        navigate(`/events/${slug}`, { replace: true });
+      }).finally(() => {
+        setVerifyingPayment(false);
       });
-      // Refresh registration status
-      if (event && user) {
-        checkRegistrationStatus();
-      }
     } else if (paymentStatus === 'canceled') {
       toast({
         title: "Payment Cancelled",
         description: "Your payment was cancelled. You can try again when you're ready.",
         variant: "destructive",
       });
+      navigate(`/events/${slug}`, { replace: true });
     }
-  }, [searchParams, event, user]);
+  }, [searchParams, user, slug]);
 
   useEffect(() => {
     if (slug) {
@@ -225,6 +247,32 @@ const EventDetail = () => {
         .eq("user_id", user.id)
         .single();
 
+      // Handle FREE events (price = 0 or null)
+      if (!event.price || event.price === 0) {
+        const response = await supabase.functions.invoke("create-free-ticket", {
+          body: {
+            eventId: event.id,
+            eventSlug: event.slug,
+            eventTitle: event.title,
+            quantity: 1,
+            eventDate: event.date,
+            eventTime: event.time,
+            eventLocation: event.location,
+          },
+        });
+
+        if (response.error) throw response.error;
+
+        toast({
+          title: "Ticket Confirmed! 🎉",
+          description: "Your free ticket has been reserved. Check My Tickets to view it.",
+        });
+        
+        navigate("/my-tickets");
+        return;
+      }
+
+      // Handle PAID events
       const response = await supabase.functions.invoke("create-ticket-payment", {
         body: {
           eventId: event.slug,
@@ -245,10 +293,10 @@ const EventDetail = () => {
         window.location.href = response.data.url;
       }
     } catch (error: any) {
-      console.error("Error creating payment:", error);
+      console.error("Error processing ticket:", error);
       toast({
-        title: "Payment Error",
-        description: error.message || "Failed to initiate payment. Please try again.",
+        title: "Error",
+        description: error.message || "Failed to process. Please try again.",
         variant: "destructive",
       });
     } finally {
