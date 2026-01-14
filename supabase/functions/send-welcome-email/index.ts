@@ -74,9 +74,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Build confirmation URL
+    // Build confirmation URL - redirect to production site after email confirmation
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? site_url
-    const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`
+    const productionRedirect = 'https://myecclesia.org.uk/'
+    const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(productionRedirect)}`
 
     // Render the React email template
     const html = await renderAsync(
