@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Heart, Calendar } from "lucide-react";
+import { MapPin, Heart, Calendar, ExternalLink, Ticket } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,8 @@ interface EventCardProps {
   category?: string;
   denominations?: string;
   organizer?: string;
+  ticket_url?: string | null;
+  external_url?: string | null;
 }
 
 const EventCard = ({ 
@@ -33,7 +35,9 @@ const EventCard = ({
   image, 
   price, 
   category,
-  organizer 
+  organizer,
+  ticket_url,
+  external_url,
 }: EventCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -154,6 +158,7 @@ const EventCard = ({
   };
 
   const { day, month, dayNum } = formatDateEventbrite(date);
+  const isExternalEvent = !!(ticket_url || external_url);
 
   return (
     <Card 
@@ -213,12 +218,27 @@ const EventCard = ({
 
         {/* Category Badge */}
         {category && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 flex gap-1.5">
             <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-foreground text-xs font-medium">
               {category}
             </Badge>
           </div>
         )}
+
+        {/* Ticketing Type Indicator */}
+        <div className="absolute top-12 left-3">
+          {isExternalEvent ? (
+            <Badge className="bg-amber-500/90 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" />
+              External
+            </Badge>
+          ) : (
+            <Badge className="bg-emerald-600/90 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1">
+              <Ticket className="h-3 w-3" />
+              Book Here
+            </Badge>
+          )}
+        </div>
 
         {/* Sold Out Overlay */}
         {isSalesEnded() && (
