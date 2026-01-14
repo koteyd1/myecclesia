@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,11 @@ const Auth = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
+  // Get redirect URL from query params (for protected routes)
+  const redirectUrl = searchParams.get('redirect') || '/';
   
   // Rate limiting for authentication attempts
   const authRateLimit = useRateLimit({ maxAttempts: 5, windowMs: 15 * 60 * 1000 }); // 5 attempts per 15 minutes
@@ -49,8 +53,8 @@ const Auth = () => {
         // User clicked the password reset link and has a valid recovery session
         setIsPasswordReset(true);
       } else if (event === 'SIGNED_IN' && !isPasswordReset) {
-        // Normal sign in - redirect to home
-        navigate("/");
+        // Normal sign in - redirect to intended destination or home
+        navigate(redirectUrl);
       }
     });
 
@@ -65,7 +69,7 @@ const Auth = () => {
       }
       
       if (session && !isReset && tokenType !== 'recovery') {
-        navigate("/");
+        navigate(redirectUrl);
       }
     };
     checkUser();
@@ -104,7 +108,7 @@ const Auth = () => {
     authRateLimit.recordAttempt();
 
     try {
-      const { data, error } = await performSecureSignIn(supabase, sanitizedEmail, sanitizedPassword);
+      const { data, error } = await performSecureSignIn(supabase, sanitizedEmail, sanitizedPassword, redirectUrl);
 
       if (error) throw error;
 
