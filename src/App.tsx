@@ -27,6 +27,7 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import Sitemap from "./pages/Sitemap";
 import OrganizationProfile from "./pages/OrganizationProfile";
 import OrganizationForm from "./pages/OrganizationForm";
+import OrganizationEdit from "./pages/OrganizationEdit";
 import MinisterProfile from "./pages/MinisterProfile";
 import MinisterForm from "./pages/MinisterForm";
 import MyProfiles from "./pages/MyProfiles";
@@ -77,7 +78,7 @@ const App = () => (
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="/organization/:slug" element={<OrganizationProfile />} />
               <Route path="/organization/new" element={<OrganizationForm />} />
-              <Route path="/organization/edit/:id" element={<OrganizationForm />} />
+              <Route path="/organization/edit/:id" element={<OrganizationEdit />} />
               <Route path="/ministers" element={<Ministers />} />
               <Route path="/organizations" element={<Organizations />} />
               <Route path="/minister/:slug" element={<MinisterProfile />} />
