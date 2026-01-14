@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +17,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+  );
+
   const supabaseService = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -29,7 +34,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName } = await req.json();
+    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation } = await req.json();
     logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail });
 
     // Get user from auth header
@@ -37,7 +42,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
-      const { data: userData } = await supabaseService.auth.getUser(token);
+      const { data: userData } = await supabaseClient.auth.getUser(token);
       user = userData.user;
     }
 
@@ -45,7 +50,7 @@ serve(async (req) => {
       throw new Error("Authentication required to purchase tickets");
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Check if customer exists
     const customers = await stripe.customers.list({ 
@@ -70,6 +75,13 @@ serve(async (req) => {
 
     logStep("Customer handled", { customerId });
 
+    // Get event details from database for accurate info
+    const { data: eventData } = await supabaseService
+      .from("events")
+      .select("id, title, date, time, location")
+      .eq("slug", eventId)
+      .single();
+
     // Create checkout session for ticket purchase
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -79,7 +91,7 @@ serve(async (req) => {
             currency: "gbp",
             product_data: { 
               name: `Ticket: ${eventTitle}`,
-              description: `Event ticket purchase`,
+              description: `Event ticket for ${eventTitle}`,
             },
             unit_amount: Math.round(price * 100), // Convert to pence
           },
@@ -90,8 +102,15 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/events/${eventId}?payment=success`,
       cancel_url: `${req.headers.get("origin")}/events/${eventId}?payment=canceled`,
       metadata: {
-        event_id: eventId,
+        event_slug: eventId,
+        event_id: eventData?.id || eventId,
+        event_title: eventTitle,
+        event_date: eventData?.date || eventDate || '',
+        event_time: eventData?.time || eventTime || '',
+        event_location: eventData?.location || eventLocation || '',
         user_id: user.id,
+        user_email: buyerEmail,
+        user_name: buyerName,
         quantity: String(quantity || 1),
       },
     });

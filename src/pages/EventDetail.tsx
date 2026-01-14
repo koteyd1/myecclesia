@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
 import Header from "@/components/Header";
@@ -16,6 +16,7 @@ import { useEventTracking } from "@/hooks/useEventTracking";
 const EventDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const [event, setEvent] = useState<any>(null);
@@ -28,6 +29,27 @@ const EventDetail = () => {
   
   // Track event views
   useEventTracking(event?.id);
+
+  // Handle payment success/cancel
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus === 'success') {
+      toast({
+        title: "Payment Successful! 🎉",
+        description: "Your ticket has been confirmed. Check your email for confirmation details.",
+      });
+      // Refresh registration status
+      if (event && user) {
+        checkRegistrationStatus();
+      }
+    } else if (paymentStatus === 'canceled') {
+      toast({
+        title: "Payment Cancelled",
+        description: "Your payment was cancelled. You can try again when you're ready.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, event, user]);
 
   useEffect(() => {
     if (slug) {
@@ -182,6 +204,9 @@ const EventDetail = () => {
           quantity: 1,
           buyerEmail: profile?.email || user.email,
           buyerName: profile?.full_name || "Guest",
+          eventDate: event.date,
+          eventTime: event.time,
+          eventLocation: event.location,
         },
       });
 
