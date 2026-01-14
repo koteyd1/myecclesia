@@ -172,6 +172,62 @@ export default function MyProfiles() {
     }
   };
 
+  const deleteMinisterProfile = async () => {
+    if (!user || !minister) return;
+
+    try {
+      const { error } = await supabase
+        .from("ministers")
+        .delete()
+        .eq("id", minister.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Minister profile deleted",
+        description: "Your minister profile has been deleted successfully.",
+      });
+
+      setMinister(null);
+    } catch (error) {
+      console.error("Error deleting minister profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete minister profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteOrganizationProfile = async () => {
+    if (!user || !organization) return;
+
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .delete()
+        .eq("id", organization.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Organization profile deleted",
+        description: "Your organization profile has been deleted successfully.",
+      });
+
+      setOrganization(null);
+    } catch (error) {
+      console.error("Error deleting organization profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete organization profile",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
@@ -325,6 +381,36 @@ export default function MyProfiles() {
                         Edit
                       </Button>
                     </Link>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete minister profile</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete your minister profile? This action cannot be undone.
+                            Any events you created will remain in your account, but may no longer be linked to this profile.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={deleteMinisterProfile}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </>
               ) : (
@@ -395,6 +481,36 @@ export default function MyProfiles() {
                         Edit
                       </Button>
                     </Link>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete organization profile</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete your organization profile? This action cannot be undone.
+                            Any events you created will remain in your account, but may no longer be linked to this profile.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={deleteOrganizationProfile}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </>
               ) : (
