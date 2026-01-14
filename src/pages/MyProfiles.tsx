@@ -18,7 +18,8 @@ import {
   Settings,
   Calendar,
   Trash2,
-  MapPin
+  MapPin,
+  Ticket
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { EventManagement } from "@/components/EventManagement";
@@ -77,6 +78,7 @@ interface Event {
   price: number | null;
   available_tickets: number | null;
   created_at: string;
+  tickets_sold: number;
 }
 
 export default function MyProfiles() {
@@ -133,7 +135,32 @@ export default function MyProfiles() {
         .eq("created_by", user.id)
         .order("date", { ascending: true });
 
-      setEvents(eventsData || []);
+      // Fetch ticket counts for all events
+      const eventIds = eventsData?.map(e => e.id) || [];
+      let ticketCounts: Record<string, number> = {};
+      
+      if (eventIds.length > 0) {
+        const { data: ticketsData } = await supabase
+          .from("tickets")
+          .select("event_id, payment_metadata")
+          .in("event_id", eventIds)
+          .eq("status", "confirmed");
+
+        // Count tickets per event (accounting for quantity in metadata)
+        ticketCounts = (ticketsData || []).reduce((acc, ticket) => {
+          const quantity = (ticket.payment_metadata as { quantity?: number })?.quantity || 1;
+          acc[ticket.event_id] = (acc[ticket.event_id] || 0) + quantity;
+          return acc;
+        }, {} as Record<string, number>);
+      }
+
+      // Merge ticket counts with events
+      const eventsWithTickets = (eventsData || []).map(event => ({
+        ...event,
+        tickets_sold: ticketCounts[event.id] || 0
+      }));
+
+      setEvents(eventsWithTickets);
 
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -569,6 +596,10 @@ export default function MyProfiles() {
                         {event.price && event.price > 0 && (
                           <Badge variant="outline" className="text-xs">£{event.price}</Badge>
                         )}
+                        <Badge variant="default" className="text-xs bg-primary/10 text-primary hover:bg-primary/20">
+                          <Ticket className="w-3 h-3 mr-1" />
+                          {event.tickets_sold} sold
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
