@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { featuredEvents, siteMetadata } from "@/lib/seo";
 
 export default function Home() {
@@ -25,6 +26,17 @@ export default function Home() {
             retreats, worship nights, and leadership gatherings so your church
             calendar stays full of meaningful encounters.
           </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/events/new"
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:shadow-blue-500/10 dark:focus-visible:ring-offset-zinc-950"
+            >
+              Create event
+            </Link>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Share your conference, worship night, or retreat.
+            </p>
+          </div>
         </div>
         <div className="w-full rounded-3xl border border-zinc-200 bg-white/70 p-6 text-left shadow-xl backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">

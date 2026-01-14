@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { siteMetadata } from "@/lib/seo";
@@ -76,11 +76,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
-  themeColor: siteMetadata.themeColor,
   other: {
     "msapplication-TileColor": siteMetadata.themeColor,
     google: "notranslate",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: siteMetadata.themeColor,
 };
 
 export default function RootLayout({
