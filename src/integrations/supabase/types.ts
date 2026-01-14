@@ -1144,38 +1144,120 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          is_active: boolean | null
+          max_per_order: number | null
+          name: string
+          price: number
+          quantity_available: number
+          quantity_sold: number
+          sale_end_date: string | null
+          sale_start_date: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          is_active?: boolean | null
+          max_per_order?: number | null
+          name: string
+          price?: number
+          quantity_available?: number
+          quantity_sold?: number
+          sale_end_date?: string | null
+          sale_start_date?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          is_active?: boolean | null
+          max_per_order?: number | null
+          name?: string
+          price?: number
+          quantity_available?: number
+          quantity_sold?: number
+          sale_end_date?: string | null
+          sale_start_date?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
+          check_in_status: string | null
+          checked_in_at: string | null
+          checked_in_by: string | null
           created_at: string | null
           event_id: string
           id: string
           payment_id: string | null
           payment_metadata: Json | null
+          quantity: number
           status: string
+          ticket_type_id: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          check_in_status?: string | null
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           created_at?: string | null
           event_id: string
           id?: string
           payment_id?: string | null
           payment_metadata?: Json | null
+          quantity?: number
           status?: string
+          ticket_type_id?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          check_in_status?: string | null
+          checked_in_at?: string | null
+          checked_in_by?: string | null
           created_at?: string | null
           event_id?: string
           id?: string
           payment_id?: string | null
           payment_metadata?: Json | null
+          quantity?: number
           status?: string
+          ticket_type_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tickets_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_calendar: {
         Row: {
