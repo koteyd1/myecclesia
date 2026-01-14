@@ -49,10 +49,33 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
   const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [hasExistingFreeTicket, setHasExistingFreeTicket] = useState(false);
 
   useEffect(() => {
     fetchTicketTypes();
-  }, [event.id]);
+    if (user) {
+      checkExistingFreeTicket();
+    }
+  }, [event.id, user]);
+
+  const checkExistingFreeTicket = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("id")
+        .eq("event_id", event.id)
+        .eq("user_id", user.id)
+        .neq("status", "cancelled")
+        .limit(1);
+
+      if (error) throw error;
+      setHasExistingFreeTicket(data && data.length > 0);
+    } catch (error) {
+      console.error("Error checking existing ticket:", error);
+    }
+  };
 
   const fetchTicketTypes = async () => {
     try {
@@ -278,8 +301,38 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     );
   }
 
-  // If no ticket types and FREE event, show free ticket button
+  // If no ticket types and FREE event, show free ticket button or "already registered"
   if (ticketTypes.length === 0 && event.price === 0) {
+    // User already has a ticket for this free event
+    if (hasExistingFreeTicket) {
+      return (
+        <Card className="border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-primary" />
+              Your Ticket
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">
+              <Badge className="bg-emerald-500 text-white mb-3">Already Registered</Badge>
+              <p className="text-sm text-muted-foreground mb-4">
+                You already have a ticket for this event
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate("/my-tickets")}
+              >
+                <Ticket className="h-4 w-4 mr-2" />
+                View My Tickets
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
