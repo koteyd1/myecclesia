@@ -625,11 +625,36 @@ const EventDetail = () => {
                 <CardHeader>
                   <CardTitle>Event Registration</CardTitle>
                   <CardDescription>
-                    {event.price === 0 ? "This event is free to attend" : `Event fee: £${event.price}`}
+                    {event.ticket_url || event.external_url 
+                      ? "Get tickets from the organizer" 
+                      : event.price === 0 
+                        ? "This event is free to attend" 
+                        : `Event fee: £${event.price}`
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isSalesEnded() ? (
+                  {/* External ticket link - prioritize this */}
+                  {(event.ticket_url || event.external_url) ? (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">External Registration</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Tickets for this event are managed by the organizer.
+                        </p>
+                        <Button 
+                          className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(event.ticket_url || event.external_url, '_blank')}
+                        >
+                          <Ticket className="h-4 w-4 mr-2" />
+                          Get Tickets
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <p>You'll be redirected to the organizer's website to complete your registration.</p>
+                      </div>
+                    </div>
+                  ) : isSalesEnded() ? (
                     <div className="p-4 bg-muted/50 border border-muted rounded-lg text-center">
                       <h4 className="font-semibold text-muted-foreground mb-2">Sales Ended</h4>
                       <p className="text-sm text-muted-foreground">
@@ -645,16 +670,17 @@ const EventDetail = () => {
                             <h4 className="font-semibold text-success">Registered!</h4>
                           </div>
                           <p className="text-sm text-muted-foreground mb-4">
-                            You're registered for this event. Check your dashboard for details.
+                            You're registered for this event. Check your dashboard or My Tickets for details.
                           </p>
-                          <Button 
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => navigate("/dashboard")}
-                          >
-                            View in Dashboard
-                          </Button>
-                          {isRegistered && (
+                          <div className="space-y-2">
+                            <Button 
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => navigate("/my-tickets")}
+                            >
+                              <Ticket className="h-4 w-4 mr-2" />
+                              View My Tickets
+                            </Button>
                             <Button 
                               variant={isInCalendar ? "destructive" : "outline"}
                               className="w-full"
@@ -673,11 +699,11 @@ const EventDetail = () => {
                                 </>
                               )}
                             </Button>
-                          )}
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-4">
-              {/* Use new TicketPurchase component for events with ticket types */}
+                          {/* In-platform ticket purchase for events without external links */}
                           <TicketPurchase 
                             event={{
                               id: event.id,
@@ -689,26 +715,11 @@ const EventDetail = () => {
                               location: event.location,
                             }}
                           />
-                          {event.price === 0 && (
-                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                              <h4 className="font-semibold text-primary mb-2">Register for Event</h4>
-                              <p className="text-sm text-muted-foreground mb-4">
-                                This is a free event. Click below to register.
-                              </p>
-                              <Button 
-                                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                                onClick={handleRegister}
-                                disabled={registering}
-                              >
-                                {registering ? "Registering..." : "Register Now - Free"}
-                              </Button>
-                            </div>
-                          )}
                           <div className="text-xs text-muted-foreground">
                             <p>
                               {event.price > 0 
-                                ? "After payment, you'll receive a confirmation email with your ticket details."
-                                : "Registration is instant and you can manage your registrations from your dashboard."
+                                ? "After payment, your ticket will be available in My Tickets."
+                                : "Your ticket will be instantly available in My Tickets."
                               }
                             </p>
                           </div>
