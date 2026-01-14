@@ -37,6 +37,9 @@ import SiteAnalytics from "./pages/SiteAnalytics";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import OpportunityForm from "./pages/OpportunityForm";
+import MyTickets from "./pages/MyTickets";
+import TicketScanner from "./pages/TicketScanner";
+import VerifyTicket from "./pages/VerifyTicket";
 
 import NotFound from "./pages/NotFound";
 
@@ -87,6 +90,10 @@ const App = () => (
               <Route path="/opportunities/new" element={<OpportunityForm />} />
               <Route path="/opportunities/edit/:id" element={<OpportunityForm />} />
               <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+              <Route path="/my-tickets" element={<MyTickets />} />
+              <Route path="/scan-tickets" element={<TicketScanner />} />
+              <Route path="/scan-tickets/:eventId" element={<TicketScanner />} />
+              <Route path="/verify-ticket/:ticketId" element={<VerifyTicket />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
