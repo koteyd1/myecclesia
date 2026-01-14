@@ -15,9 +15,25 @@ import {
   User, 
   CheckCircle, 
   Clock,
-  Settings
+  Settings,
+  Calendar,
+  Trash2,
+  MapPin
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { EventManagement } from "@/components/EventManagement";
+import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   full_name?: string;
@@ -50,13 +66,28 @@ interface Organization {
   created_at: string;
 }
 
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  category: string | null;
+  slug: string;
+  price: number | null;
+  available_tickets: number | null;
+  created_at: string;
+}
+
 export default function MyProfiles() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [minister, setMinister] = useState<Minister | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showEventForm, setShowEventForm] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -95,6 +126,15 @@ export default function MyProfiles() {
 
       setOrganization(orgData);
 
+      // Fetch user's events
+      const { data: eventsData } = await supabase
+        .from("events")
+        .select("id, title, date, time, location, category, slug, price, available_tickets, created_at")
+        .eq("created_by", user.id)
+        .order("date", { ascending: true });
+
+      setEvents(eventsData || []);
+
     } catch (error) {
       console.error("Error fetching user data:", error);
       toast({
@@ -104,6 +144,31 @@ export default function MyProfiles() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const deleteEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Event deleted",
+        description: "Your event has been deleted successfully",
+      });
+
+      setEvents(events.filter(e => e.id !== eventId));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive",
+      });
     }
   };
 
@@ -351,14 +416,117 @@ export default function MyProfiles() {
           </Card>
         </div>
 
+        {/* My Events Section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                My Events ({events.length})
+              </div>
+              <Button onClick={() => setShowEventForm(!showEventForm)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {showEventForm && (
+              <div className="mb-6 p-4 border rounded-lg bg-muted/50">
+                <EventManagement 
+                  organizationId={organization?.id}
+                  ministerId={minister?.id}
+                  onEventCreated={() => {
+                    setShowEventForm(false);
+                    fetchUserData();
+                  }}
+                />
+              </div>
+            )}
+
+            {events.length === 0 && !showEventForm ? (
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-semibold mb-2">No Events Yet</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create your first event to start selling tickets and connecting with attendees.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {events.map((event) => (
+                  <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold">{event.title}</h4>
+                        {event.category && (
+                          <Badge variant="secondary" className="text-xs">{event.category}</Badge>
+                        )}
+                        {event.price && event.price > 0 && (
+                          <Badge variant="outline" className="text-xs">£{event.price}</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(event.date), "MMM dd, yyyy")}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {event.time}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/events/${event.slug}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{event.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => deleteEvent(event.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Quick Stats */}
-        {(minister || organization) && (
+        {(minister || organization || events.length > 0) && (
           <Card className="mt-8">
             <CardHeader>
               <CardTitle>Profile Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-primary">
                     {(minister ? 1 : 0) + (organization ? 1 : 0)}
@@ -376,6 +544,12 @@ export default function MyProfiles() {
                     {(!minister?.is_verified && minister ? 1 : 0) + (!organization?.is_verified && organization ? 1 : 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Pending Verification</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {events.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Events Created</div>
                 </div>
               </div>
             </CardContent>
