@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,103 @@ const corsHeaders = {
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[VERIFY-TICKET-PAYMENT] ${step}${detailsStr}`);
+};
+
+const sendConfirmationEmail = async (
+  email: string,
+  ticketId: string,
+  eventTitle: string,
+  eventDate: string,
+  eventTime: string,
+  eventLocation: string,
+  quantity: number,
+  amountPaid: number,
+  currency: string
+) => {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) {
+    logStep("RESEND_API_KEY not set, skipping email");
+    return;
+  }
+
+  const resend = new Resend(resendKey);
+  const ticketNumber = ticketId.slice(0, 8).toUpperCase();
+  const formattedAmount = new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: currency.toUpperCase()
+  }).format(amountPaid / 100);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  try {
+    await resend.emails.send({
+      from: "MyEcclesia <tickets@myecclesia.org.uk>",
+      to: [email],
+      subject: `🎟️ Your Ticket for ${eventTitle}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #6366f1; margin: 0;">🎟️ Ticket Confirmed!</h1>
+              </div>
+              
+              <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                <h2 style="margin: 0 0 20px 0; font-size: 24px;">${eventTitle}</h2>
+                <div style="display: grid; gap: 15px;">
+                  <div>
+                    <strong>📅 Date:</strong> ${formatDate(eventDate)}
+                  </div>
+                  <div>
+                    <strong>🕐 Time:</strong> ${eventTime}
+                  </div>
+                  <div>
+                    <strong>📍 Location:</strong> ${eventLocation}
+                  </div>
+                  <div>
+                    <strong>🎫 Quantity:</strong> ${quantity} ticket${quantity > 1 ? 's' : ''}
+                  </div>
+                  <div>
+                    <strong>💳 Amount Paid:</strong> ${formattedAmount}
+                  </div>
+                </div>
+              </div>
+              
+              <div style="background-color: #f0fdf4; border: 2px solid #22c55e; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+                <p style="margin: 0 0 10px 0; color: #666;">Your Ticket Number</p>
+                <p style="font-size: 28px; font-weight: bold; color: #22c55e; margin: 0; letter-spacing: 2px;">${ticketNumber}</p>
+              </div>
+              
+              <div style="text-align: center; margin-bottom: 30px;">
+                <a href="https://myecclesia.lovable.app/my-tickets" style="display: inline-block; background-color: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">View My Tickets</a>
+              </div>
+              
+              <div style="border-top: 1px solid #e5e5e5; padding-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                <p>Thank you for your purchase!</p>
+                <p style="margin: 0;">MyEcclesia - Connecting Christians through faith and community</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+    logStep("Confirmation email sent", { email, ticketNumber });
+  } catch (error) {
+    logStep("Error sending email", { error: error instanceof Error ? error.message : String(error) });
+  }
 };
 
 serve(async (req) => {
@@ -168,6 +266,22 @@ serve(async (req) => {
       }).catch(e => {
         logStep("Warning: Could not update quantity_sold", { error: e.message });
       });
+    }
+
+    // Send confirmation email
+    const customerEmail = session.customer_details?.email || user.email;
+    if (customerEmail) {
+      await sendConfirmationEmail(
+        customerEmail,
+        ticket.id,
+        metadata.event_title || "Event",
+        metadata.event_date || "",
+        metadata.event_time || "",
+        metadata.event_location || "",
+        quantity,
+        session.amount_total || 0,
+        session.currency || "gbp"
+      );
     }
 
     return new Response(JSON.stringify({ 
