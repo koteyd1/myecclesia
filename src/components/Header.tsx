@@ -94,9 +94,6 @@ const Header = () => {
               <Link to="/calendar" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
                 Calendar
               </Link>
-              <Link to="/community" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                Community
-              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
                   <span>Blog</span>
@@ -239,9 +236,6 @@ const Header = () => {
             </DropdownMenu>
             <Link to="/calendar" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
               Calendar
-            </Link>
-            <Link to="/community" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Community
             </Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
               Blog
