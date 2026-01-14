@@ -1251,6 +1251,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tickets_ticket_type_id_fkey"
             columns: ["ticket_type_id"]
             isOneToOne: false
