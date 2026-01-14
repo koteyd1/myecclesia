@@ -61,7 +61,7 @@ interface TicketRecord {
 }
 
 interface AdminTicketsProps {
-  user: any;
+  user?: any;
 }
 
 export const AdminTickets = ({ user }: AdminTicketsProps) => {
