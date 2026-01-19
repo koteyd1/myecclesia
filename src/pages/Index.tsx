@@ -3,7 +3,7 @@ import FeaturedEventsCarousel from "@/components/FeaturedEventsCarousel";
 import EventCard from "@/components/EventCard";
 import CategoryBrowser from "@/components/CategoryBrowser";
 import PopularNearYou from "@/components/PopularNearYou";
-import { EventRecommendations } from "@/components/EventRecommendations";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Heart, Star, ArrowRight, BookOpen, TrendingUp } from "lucide-react";
@@ -225,8 +225,6 @@ const Index = () => {
         {/* Popular in Your Area */}
         <PopularNearYou />
         
-        {/* Personalized Recommendations - Only show for logged-in users */}
-        {user && <EventRecommendations />}
         {/* Trending/Upcoming Events Section */}
         <section id="events" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
           <div className="container mx-auto">
