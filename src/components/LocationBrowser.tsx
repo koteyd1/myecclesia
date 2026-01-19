@@ -59,19 +59,43 @@ const LocationBrowser = () => {
         // Parse locations to extract city and country
         const locationCounts: Record<string, { city: string; country: string; count: number }> = {};
         
+        // Common postcode patterns to filter out
+        const postcodePattern = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d?[A-Z]{0,2}$|^\d{4,5}(-\d{4})?$|^[A-Z]\d[A-Z]\s*\d[A-Z]\d$/i;
+        
         (data || []).forEach(event => {
           if (!event.location) return;
           
-          // Parse location - assume format like "City, Country" or just "City"
-          const parts = event.location.split(',').map(p => p.trim());
-          let city = parts[0] || event.location;
-          let country = parts.length > 1 ? parts[parts.length - 1] : '';
+          // Split by comma and clean each part
+          const parts = event.location.split(',').map(p => p.trim()).filter(p => p.length > 0);
           
-          // Clean up common patterns
-          city = city.replace(/\d+/g, '').trim(); // Remove numbers
+          // Find the best city candidate (skip postcodes and street addresses)
+          let city = '';
+          let country = '';
           
-          // Skip if city is too short or looks like an address
-          if (city.length < 3) return;
+          for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            
+            // Skip if it looks like a postcode
+            if (postcodePattern.test(part)) continue;
+            
+            // Skip if it contains numbers (likely street address or postcode)
+            if (/\d/.test(part)) continue;
+            
+            // Skip very short parts or common address prefixes
+            if (part.length < 3) continue;
+            if (/^(unit|suite|floor|building|block|apt|apartment|room)/i.test(part)) continue;
+            
+            // First valid part is likely the city/town
+            if (!city) {
+              city = part;
+            } else if (i === parts.length - 1) {
+              // Last part is likely the country
+              country = part;
+            }
+          }
+          
+          // Skip if no valid city found
+          if (!city || city.length < 3) return;
           
           const key = `${city}|${country}`.toLowerCase();
           
