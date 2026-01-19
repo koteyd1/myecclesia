@@ -3,6 +3,7 @@ import FeaturedEventsCarousel from "@/components/FeaturedEventsCarousel";
 import EventCard from "@/components/EventCard";
 import CategoryBrowser from "@/components/CategoryBrowser";
 import PopularNearYou from "@/components/PopularNearYou";
+import LocationBrowser from "@/components/LocationBrowser";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -224,6 +225,9 @@ const Index = () => {
         
         {/* Popular in Your Area */}
         <PopularNearYou />
+        
+        {/* Browse by Location */}
+        <LocationBrowser />
         
         {/* Trending/Upcoming Events Section */}
         <section id="events" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
