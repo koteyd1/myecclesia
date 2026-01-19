@@ -20,18 +20,20 @@ const LocationCard = ({ city, country, count, onClick }: {
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 w-full text-left"
+      className="group flex flex-col p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 w-full text-left min-h-[100px]"
     >
-      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
-        <MapPin className="h-5 w-5 text-primary" />
+      <div className="flex items-start gap-3 mb-2">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
+          <MapPin className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="font-medium text-foreground leading-tight">{city}</p>
+          {country && <p className="text-sm text-muted-foreground mt-0.5">{country}</p>}
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">{city}</p>
-        <p className="text-sm text-muted-foreground truncate">{country}</p>
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center justify-between mt-auto pt-2">
         <span className="text-sm font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-          {count}
+          {count} {count === 1 ? 'event' : 'events'}
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
       </div>
