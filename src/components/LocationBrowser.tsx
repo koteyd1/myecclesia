@@ -160,7 +160,7 @@ const LocationBrowser = () => {
             <span className="text-sm font-medium text-primary uppercase tracking-wide">Find Local Events</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
-            Browse by Location
+            Browse by City
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             Discover events happening in cities near you
@@ -186,7 +186,7 @@ const LocationBrowser = () => {
             className="gap-2"
           >
             <Building2 className="h-4 w-4" />
-            View All Locations
+            View All Cities
           </Button>
         </div>
       </div>
