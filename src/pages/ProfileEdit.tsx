@@ -16,6 +16,7 @@ import { Upload, User, Shield, Download, Trash2 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DataExportButton } from "@/components/DataExportButton";
+import { TwoFactorSetup } from "@/components/TwoFactorSetup";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Full name must be at least 2 characters"),
@@ -268,6 +269,11 @@ export default function ProfileEdit() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Two-Factor Authentication Section */}
+        <div className="max-w-2xl mx-auto">
+          <TwoFactorSetup />
+        </div>
 
         {/* GDPR / Data Privacy Section */}
         <Card className="max-w-2xl mx-auto border-muted">

@@ -9,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Shield } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
-import { validateEmail, validatePassword, validateName, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
-import { performSecureSignIn, cleanupAuthState } from "@/utils/authCleanup";
+import { validateEmail, validatePassword, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
+import { cleanupAuthState } from "@/utils/authCleanup";
 import { SEOHead } from "@/components/SEOHead";
+import { TwoFactorVerify } from "@/components/TwoFactorVerify";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +22,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -108,16 +110,35 @@ const Auth = () => {
     authRateLimit.recordAttempt();
 
     try {
-      const { data, error } = await performSecureSignIn(supabase, sanitizedEmail, sanitizedPassword, redirectUrl);
+      // Clean up any existing auth state before signing in
+      cleanupAuthState();
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password: sanitizedPassword,
+      });
 
       if (error) throw error;
+
+      // Check if MFA is required
+      if (data.session?.user) {
+        const { data: factorsData } = await supabase.auth.mfa.listFactors();
+        const verifiedFactors = factorsData?.totp?.filter(f => f.status === 'verified') || [];
+        
+        if (verifiedFactors.length > 0) {
+          // User has MFA enabled, show verification screen
+          setMfaFactorId(verifiedFactors[0].id);
+          setIsLoading(false);
+          return;
+        }
+      }
 
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       });
       
-      // performSecureSignIn handles the redirect
+      navigate(redirectUrl);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -318,6 +339,23 @@ const Auth = () => {
     }
   };
 
+  const handleMfaSuccess = () => {
+    setMfaFactorId(null);
+    toast({
+      title: "Welcome back!",
+      description: "You have been signed in successfully.",
+    });
+    navigate(redirectUrl);
+  };
+
+  const handleMfaCancel = async () => {
+    // Sign out and return to login
+    await supabase.auth.signOut();
+    setMfaFactorId(null);
+    setEmail("");
+    setPassword("");
+  };
+
   return (
     <>
       <SEOHead
@@ -346,6 +384,14 @@ const Auth = () => {
           </div>
         </div>
 
+        {/* MFA Verification Screen */}
+        {mfaFactorId ? (
+          <TwoFactorVerify
+            factorId={mfaFactorId}
+            onSuccess={handleMfaSuccess}
+            onCancel={handleMfaCancel}
+          />
+        ) : (
         <Card>
           {isPasswordReset ? (
             <>
@@ -516,6 +562,7 @@ const Auth = () => {
             </>
           )}
         </Card>
+        )}
       </div>
     </div>
     </>
