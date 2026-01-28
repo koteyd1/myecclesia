@@ -9,10 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, User } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Upload, User, Shield, Download, Trash2 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { DeleteAccountButton } from "@/components/DeleteAccountButton";
+import { DataExportButton } from "@/components/DataExportButton";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Full name must be at least 2 characters"),
@@ -167,7 +170,8 @@ export default function ProfileEdit() {
         canonicalUrl={`${window.location.origin}/profile/edit`}
       />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Profile Edit Card */}
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -264,8 +268,59 @@ export default function ProfileEdit() {
             </form>
           </CardContent>
         </Card>
-      </main>
 
+        {/* GDPR / Data Privacy Section */}
+        <Card className="max-w-2xl mx-auto border-muted">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              Data & Privacy
+            </CardTitle>
+            <CardDescription>
+              Manage your personal data in accordance with GDPR. You have the right to access, 
+              export, or delete your data at any time.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Data Export */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-lg">
+              <div>
+                <h4 className="font-medium text-foreground flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Download Your Data
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Get a copy of all personal data we hold about you in JSON format.
+                </p>
+              </div>
+              <DataExportButton />
+            </div>
+
+            <Separator />
+
+            {/* Delete Account */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+              <div>
+                <h4 className="font-medium text-foreground flex items-center gap-2">
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                  Delete Your Account
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+              </div>
+              <DeleteAccountButton />
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              For any data-related requests or questions, contact us at{" "}
+              <a href="mailto:privacy@myecclesia.org.uk" className="text-primary hover:underline">
+                privacy@myecclesia.org.uk
+              </a>
+            </p>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }
