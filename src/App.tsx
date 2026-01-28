@@ -7,6 +7,7 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CookieConsent from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
@@ -23,6 +24,7 @@ import EventGuidelines from "./pages/EventGuidelines";
 import HelpCentre from "./pages/HelpCentre";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import CookiePolicy from "./pages/CookiePolicy";
 
 import Sitemap from "./pages/Sitemap";
 import OrganizationProfile from "./pages/OrganizationProfile";
@@ -74,6 +76,7 @@ const App = () => (
               <Route path="/help-centre" element={<HelpCentre />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
               
               <Route path="/sitemap" element={<Sitemap />} />
               <Route path="/organization/:slug" element={<OrganizationProfile />} />
@@ -101,6 +104,7 @@ const App = () => (
             </Routes>
           </main>
           <Footer />
+          <CookieConsent />
         </div>
       </TooltipProvider>
     </AuthProvider>

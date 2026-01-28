@@ -107,17 +107,25 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center text-gray-300 gap-4 sm:gap-0">
             <p>&copy; 2025 MyEcclesia. All rights reserved.</p>
-            <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 sm:mt-0">
               <Link to="/sitemap" className="hover:text-primary transition-colors text-sm">
                 Sitemap
               </Link>
-              <span>|</span>
+              <span className="hidden sm:inline">|</span>
               <Link to="/privacy-policy" className="hover:text-primary transition-colors text-sm">
-                Privacy
+                Privacy Policy
               </Link>
-              <span>|</span>
+              <span className="hidden sm:inline">|</span>
               <Link to="/terms-and-conditions" className="hover:text-primary transition-colors text-sm">
-                Terms
+                Terms & Conditions
+              </Link>
+              <span className="hidden sm:inline">|</span>
+              <Link to="/cookie-policy" className="hover:text-primary transition-colors text-sm">
+                Cookie Policy
+              </Link>
+              <span className="hidden sm:inline">|</span>
+              <Link to="/contact" className="hover:text-primary transition-colors text-sm">
+                Contact
               </Link>
             </div>
           </div>
