@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { MapPin, Heart, Calendar, ExternalLink, Ticket } from "lucide-react";
+import { MapPin, Heart, Calendar, ExternalLink, Ticket, Building2, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,10 @@ interface EventCardProps {
   organizer?: string;
   ticket_url?: string | null;
   external_url?: string | null;
+  organization_id?: string | null;
+  minister_id?: string | null;
+  organizations?: { slug: string; name: string } | null;
+  ministers?: { slug: string; full_name: string } | null;
 }
 
 const EventCard = ({ 
@@ -38,6 +43,8 @@ const EventCard = ({
   organizer,
   ticket_url,
   external_url,
+  organizations,
+  ministers,
 }: EventCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -268,17 +275,49 @@ const EventCard = ({
           <span className="line-clamp-1">{location}</span>
         </div>
 
-        {/* Organizer */}
-        {organizer && (
+        {/* Organizer with Profile Links */}
+        {(organizer || organizations || ministers) && (
           <div className="flex items-center gap-2 pt-3 border-t border-border/50">
             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-xs font-semibold text-primary">
-                {organizer.charAt(0).toUpperCase()}
+                {(organizations?.name || ministers?.full_name || organizer || '?').charAt(0).toUpperCase()}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground line-clamp-1">
-              {organizer}
+            <span className="text-xs text-muted-foreground line-clamp-1 flex-1">
+              {organizations?.name || ministers?.full_name || organizer}
             </span>
+            
+            {/* Profile Link Buttons */}
+            {organizations && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/organizations/${organizations.slug}`);
+                }}
+                title={`View ${organizations.name}'s profile`}
+              >
+                <Building2 className="h-3 w-3" />
+                Profile
+              </Button>
+            )}
+            {ministers && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/ministers/${ministers.slug}`);
+                }}
+                title={`View ${ministers.full_name}'s profile`}
+              >
+                <User className="h-3 w-3" />
+                Profile
+              </Button>
+            )}
           </div>
         )}
       </div>
