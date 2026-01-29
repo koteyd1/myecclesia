@@ -263,6 +263,34 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
   // If no ticket types and paid event, show legacy single price purchase
   if (!loading && ticketTypes.length === 0 && event.price > 0) {
+    // Prompt unauthenticated users to sign in
+    if (!user) {
+      return (
+        <Card className="border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-primary" />
+              Purchase Tickets
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">
+              <div className="text-3xl font-bold text-primary mb-2">
+                £{event.price.toFixed(2)}
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">Sign in to purchase tickets</p>
+              <Button
+                className="w-full bg-gradient-primary hover:opacity-90"
+                onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
+              >
+                Sign In to Buy Ticket
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
@@ -333,6 +361,34 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
       );
     }
 
+    // Prompt unauthenticated users to sign in
+    if (!user) {
+      return (
+        <Card className="border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Ticket className="h-5 w-5 text-primary" />
+              Get Your Free Ticket
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">
+              <div className="text-3xl font-bold text-emerald-600 mb-2">
+                Free
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">Sign in to get your free ticket</p>
+              <Button
+                className="w-full bg-gradient-primary hover:opacity-90"
+                onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
+              >
+                Sign In to Get Ticket
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
@@ -367,6 +423,60 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
   const totalAmount = getTotalAmount();
   const totalTickets = getTotalTickets();
+
+  // Prompt unauthenticated users to sign in for multi-ticket events
+  if (!user) {
+    return (
+      <Card className="border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Ticket className="h-5 w-5 text-primary" />
+            Select Tickets
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {ticketTypes.map((ticketType) => {
+            const available = ticketType.quantity_available - ticketType.quantity_sold;
+            const isSoldOut = available <= 0;
+
+            return (
+              <div
+                key={ticketType.id}
+                className={`p-4 border rounded-lg ${isSoldOut ? "opacity-50 bg-muted" : "bg-card"}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{ticketType.name}</span>
+                      {isSoldOut && <Badge variant="destructive">Sold Out</Badge>}
+                    </div>
+                    {ticketType.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{ticketType.description}</p>
+                    )}
+                    <div className="text-lg font-semibold mt-2">
+                      {ticketType.price === 0 ? "Free" : `£${ticketType.price.toFixed(2)}`}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          
+          <div className="border-t pt-4">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Sign in to select and purchase tickets
+            </p>
+            <Button
+              className="w-full bg-gradient-primary hover:opacity-90"
+              onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
+            >
+              Sign In to Get Tickets
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-primary/20">
