@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,15 +7,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info } from 'lucide-react';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TicketTypeManager } from '@/components/TicketTypeManager';
 import { Link } from 'react-router-dom';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+type RegistrationType = 'in_platform' | 'external_event' | 'external_tickets';
 
 const eventSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -32,6 +37,7 @@ const eventSchema = z.object({
   denominations: z.string().optional(),
   duration: z.string().optional(),
   requirements: z.string().optional(),
+  registration_type: z.enum(['in_platform', 'external_event', 'external_tickets']).default('in_platform'),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -107,8 +113,11 @@ export function EventManagement({ organizationId, ministerId, onEventCreated }: 
       denominations: '',
       duration: '',
       requirements: '',
+      registration_type: 'in_platform',
     }
   });
+
+  const registrationType = useWatch({ control: form.control, name: 'registration_type' });
 
   const onSubmit = async (formData: EventFormData) => {
     if (!user) {
@@ -483,35 +492,125 @@ export function EventManagement({ organizationId, ministerId, onEventCreated }: 
               )}
             />
 
-            {/* Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Registration Type Selector */}
+            <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="external_url"
+                name="registration_type"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>External Event URL</FormLabel>
+                  <FormItem className="space-y-3">
+                    <FormLabel className="text-base font-semibold">Registration & Ticketing</FormLabel>
+                    <FormDescription>
+                      Choose how attendees will register or purchase tickets for your event.
+                    </FormDescription>
                     <FormControl>
-                      <Input placeholder="https://example.com/event" {...field} />
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="grid gap-3"
+                      >
+                        <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="in_platform" id="in_platform" className="mt-1" />
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="in_platform" className="flex items-center gap-2 font-medium cursor-pointer">
+                              <TicketCheck className="h-4 w-4 text-primary" />
+                              In-Platform Tickets (Free or Paid)
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Manage registrations directly on MyEcclesia. Perfect for free events or paid events using Stripe. 
+                              You'll be able to add ticket types (e.g., General, VIP) after creating the event.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="external_tickets" id="external_tickets" className="mt-1" />
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="external_tickets" className="flex items-center gap-2 font-medium cursor-pointer">
+                              <Ticket className="h-4 w-4 text-accent-foreground" />
+                              External Ticket Provider
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Link to an external ticketing platform (e.g., Eventbrite, Ticketmaster). 
+                              Attendees will be redirected to purchase tickets elsewhere.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="external_event" id="external_event" className="mt-1" />
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="external_event" className="flex items-center gap-2 font-medium cursor-pointer">
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                              External Event Page
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Link to an external website for all event details. The event will display on MyEcclesia 
+                              but clicking "View Event" will redirect to your external page.
+                            </p>
+                          </div>
+                        </div>
+                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="ticket_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ticket Purchase URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://tickets.example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Conditional URL Fields */}
+              {registrationType === 'external_tickets' && (
+                <FormField
+                  control={form.control}
+                  name="ticket_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Ticket Purchase URL *
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://eventbrite.com/your-event" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The URL where attendees can purchase tickets
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {registrationType === 'external_event' && (
+                <FormField
+                  control={form.control}
+                  name="external_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        External Event Page URL *
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://yourchurch.com/revival-night" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The URL where attendees will find full event details and registration
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {registrationType === 'in_platform' && (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    After creating this event, you'll be able to add ticket types (free or paid) with quantities and pricing.
+                    {form.watch('price') === 0 && " Since this is a free event, attendees will be limited to one ticket per person."}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="flex gap-3">
