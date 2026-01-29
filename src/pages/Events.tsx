@@ -52,7 +52,12 @@ const Events = () => {
 
       const { data, error } = await supabase
         .from("events")
-        .select("id, slug, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets, ticket_url, external_url")
+        .select(`
+          id, slug, title, date, time, location, description, image, price, category, denominations, organizer, available_tickets, ticket_url, external_url,
+          organization_id, minister_id,
+          organizations:organization_id (slug, name),
+          ministers:minister_id (slug, full_name)
+        `)
         .order("date", { ascending: true });
 
       if (error) throw error;
@@ -591,6 +596,10 @@ const Events = () => {
                        denominations={event.denominations || ""}
                        ticket_url={event.ticket_url}
                        external_url={event.external_url}
+                       organization_id={event.organization_id}
+                       minister_id={event.minister_id}
+                       organizations={event.organizations}
+                       ministers={event.ministers}
                      />
                   </div>
                 ))}
