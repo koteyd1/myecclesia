@@ -33,13 +33,13 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.cleanup-old-events]
-verify_jwt = true
+verify_jwt = false
 
 [functions.schedule-cleanup]
-verify_jwt = true
+verify_jwt = false
 
 [functions.trigger-cleanup]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-welcome-email]
 verify_jwt = false

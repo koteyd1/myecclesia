@@ -17,29 +17,31 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
     const authHeader = req.headers.get('authorization') || ''
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-    if (!token) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
-    // Verify user and admin role
-    const supabaseUser = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } } })
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
-    if (userError || !user) {
+    // Verify user using getClaims
+    const supabaseUser = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } })
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid token' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
+    
+    const userId = claimsData.claims.sub as string
 
     const supabaseAdmin = createClient(supabaseUrl, serviceKey)
     const { data: roleRow, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle()
     if (roleError || roleRow?.role !== 'admin') {
       return new Response(
@@ -52,7 +54,7 @@ Deno.serve(async (req) => {
 
     // Call the schedule-cleanup function with the user's JWT
     const { data, error } = await supabaseUser.functions.invoke('schedule-cleanup', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: authHeader }
     })
 
     if (error) {
