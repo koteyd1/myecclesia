@@ -122,29 +122,58 @@ const Index = () => {
   useSiteTracking("Home - myEcclesia");
   const { toast } = useToast();
 
-  // Check for email confirmation and show success toast
+  // Check for email confirmation and redirect organization users
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
-    
-    // Check for successful email confirmation indicators
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type') || urlParams.get('type');
-    const confirmationSuccess = urlParams.get('confirmed');
-    
-    // If user just confirmed their email (has access_token with signup type, or confirmed param)
-    if ((accessToken && type === 'signup') || confirmationSuccess === 'true') {
-      toast({
-        title: "🎉 Email Confirmed!",
-        description: "Welcome to MyEcclesia! Your account is now active and you can start exploring events.",
-        duration: 6000,
-      });
+    const checkConfirmationAndRedirect = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'));
       
-      // Clean up URL parameters
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
-    }
-  }, [toast]);
+      // Check for successful email confirmation indicators
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type') || urlParams.get('type');
+      const confirmationSuccess = urlParams.get('confirmed');
+      
+      // If user just confirmed their email (has access_token with signup type, or confirmed param)
+      if ((accessToken && type === 'signup') || confirmationSuccess === 'true') {
+        // Check if user is an organization account that needs to complete setup
+        if (user) {
+          const accountType = user.user_metadata?.account_type;
+          
+          if (accountType === 'organization') {
+            // Check if they already have an organization profile
+            const { data: existingOrg } = await supabase
+              .from('organizations')
+              .select('id')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (!existingOrg) {
+              // Redirect to organization setup
+              toast({
+                title: "🎉 Email Confirmed!",
+                description: "Let's set up your organization profile.",
+                duration: 4000,
+              });
+              navigate('/organization/new');
+              return;
+            }
+          }
+        }
+        
+        toast({
+          title: "🎉 Email Confirmed!",
+          description: "Welcome to MyEcclesia! Your account is now active and you can start exploring events.",
+          duration: 6000,
+        });
+        
+        // Clean up URL parameters
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    };
+    
+    checkConfirmationAndRedirect();
+  }, [toast, user, navigate]);
 
   // Use cached events data
   const { data: events = [], loading, error } = useCache(
