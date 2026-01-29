@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,12 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield, User, Building2 } from "lucide-react";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { validateEmail, validatePassword, sanitizeInput, INPUT_LIMITS } from "@/utils/validation";
 import { cleanupAuthState } from "@/utils/authCleanup";
 import { SEOHead } from "@/components/SEOHead";
 import { TwoFactorVerify } from "@/components/TwoFactorVerify";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+type AccountType = "individual" | "organization";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,10 +23,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [accountType, setAccountType] = useState<AccountType>("individual");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
@@ -202,13 +207,19 @@ const Auth = () => {
       // Clean up any existing auth state before signing up
       cleanupAuthState();
       
+      // Determine redirect URL based on account type
+      const redirectTo = accountType === "organization" 
+        ? `${window.location.origin}/organization/new`
+        : `${window.location.origin}/`;
+      
       const { error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password: sanitizedPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: redirectTo,
           data: {
             full_name: sanitizedFullName,
+            account_type: accountType,
           },
         },
       });
@@ -217,13 +228,16 @@ const Auth = () => {
 
       toast({
         title: "Check your email",
-        description: "We've sent you a confirmation link to complete your registration.",
+        description: accountType === "organization" 
+          ? "We've sent you a confirmation link. After confirming, you'll be able to set up your organization profile."
+          : "We've sent you a confirmation link to complete your registration.",
       });
       
       // Clear form
       setEmail("");
       setPassword("");
       setFullName("");
+      setAccountType("individual");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -483,12 +497,59 @@ const Auth = () => {
                   
                   <TabsContent value="signup">
                     <form onSubmit={handleSignUp} className="space-y-4">
+                      {/* Account Type Selection */}
+                      <div className="space-y-3">
+                        <Label>Account Type</Label>
+                        <RadioGroup
+                          value={accountType}
+                          onValueChange={(value) => setAccountType(value as AccountType)}
+                          className="grid grid-cols-2 gap-3"
+                        >
+                          <Label
+                            htmlFor="individual"
+                            className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              accountType === "individual"
+                                ? "border-primary bg-primary/5"
+                                : "border-muted hover:border-muted-foreground/50"
+                            }`}
+                          >
+                            <RadioGroupItem value="individual" id="individual" className="sr-only" />
+                            <User className={`h-6 w-6 mb-2 ${accountType === "individual" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-sm font-medium ${accountType === "individual" ? "text-primary" : ""}`}>
+                              Individual
+                            </span>
+                            <span className="text-xs text-muted-foreground text-center mt-1">
+                              Personal account
+                            </span>
+                          </Label>
+                          <Label
+                            htmlFor="organization"
+                            className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              accountType === "organization"
+                                ? "border-primary bg-primary/5"
+                                : "border-muted hover:border-muted-foreground/50"
+                            }`}
+                          >
+                            <RadioGroupItem value="organization" id="organization" className="sr-only" />
+                            <Building2 className={`h-6 w-6 mb-2 ${accountType === "organization" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-sm font-medium ${accountType === "organization" ? "text-primary" : ""}`}>
+                              Organization
+                            </span>
+                            <span className="text-xs text-muted-foreground text-center mt-1">
+                              Church or ministry
+                            </span>
+                          </Label>
+                        </RadioGroup>
+                      </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="fullName">Full Name</Label>
+                        <Label htmlFor="fullName">
+                          {accountType === "organization" ? "Contact Person Name" : "Full Name"}
+                        </Label>
                         <Input
                           id="fullName"
                           type="text"
-                          placeholder="Enter your full name"
+                          placeholder={accountType === "organization" ? "Enter contact person name" : "Enter your full name"}
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           maxLength={INPUT_LIMITS.NAME_MAX}
@@ -530,8 +591,13 @@ const Auth = () => {
                         )}
                       </div>
                       <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? "Creating account..." : "Sign Up"}
+                        {isLoading ? "Creating account..." : accountType === "organization" ? "Create Organization Account" : "Sign Up"}
                       </Button>
+                      {accountType === "organization" && (
+                        <p className="text-xs text-muted-foreground text-center">
+                          After signing up, you'll be guided to complete your organization profile
+                        </p>
+                      )}
                     </form>
                   </TabsContent>
                   
