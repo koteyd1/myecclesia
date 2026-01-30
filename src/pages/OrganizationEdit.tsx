@@ -53,7 +53,7 @@ const organizationSchema = z.object({
 type OrganizationFormData = z.infer<typeof organizationSchema>;
 
 export default function OrganizationEdit() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -61,6 +61,7 @@ export default function OrganizationEdit() {
   const [isLoadingOrg, setIsLoadingOrg] = useState(true);
   const [newService, setNewService] = useState('');
   const [organizationSlug, setOrganizationSlug] = useState<string | null>(null);
+  const [isAdminEditing, setIsAdminEditing] = useState(false);
 
   const form = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationSchema),
@@ -94,12 +95,17 @@ export default function OrganizationEdit() {
       if (!user || !id) return;
 
       try {
-        const { data, error } = await supabase
+        // Admins can edit any organization, regular users only their own
+        let query = supabase
           .from('organizations')
           .select('*')
-          .eq('id', id)
-          .eq('user_id', user.id)
-          .single();
+          .eq('id', id);
+
+        if (!isAdmin) {
+          query = query.eq('user_id', user.id);
+        }
+
+        const { data, error } = await query.single();
 
         if (error) throw error;
 
@@ -109,9 +115,12 @@ export default function OrganizationEdit() {
             description: "Organization not found or you don't have permission to edit it.",
             variant: "destructive",
           });
-          navigate('/my-profiles');
+          navigate(isAdmin ? '/admin' : '/my-profiles');
           return;
         }
+
+        // Track if admin is editing someone else's organization
+        setIsAdminEditing(isAdmin && data.user_id !== user.id);
 
         setOrganizationSlug(data.slug);
 
@@ -155,7 +164,7 @@ export default function OrganizationEdit() {
     } else if (!authLoading && !user) {
       navigate('/auth');
     }
-  }, [user, id, authLoading, navigate, reset, toast]);
+  }, [user, id, authLoading, isAdmin, navigate, reset, toast]);
 
   const addService = (service: string) => {
     if (service && !servicesOffered.includes(service)) {
@@ -192,7 +201,8 @@ export default function OrganizationEdit() {
         Object.entries(data.social_media_links).filter(([, url]) => url && url.trim() !== '')
       );
 
-      const { error } = await supabase
+      // Admins can update any organization
+      let updateQuery = supabase
         .from('organizations')
         .update({
           name: data.name,
@@ -208,8 +218,13 @@ export default function OrganizationEdit() {
           social_media_links: cleanSocialLinks,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
+
+      if (!isAdmin) {
+        updateQuery = updateQuery.eq('user_id', user.id);
+      }
+
+      const { error } = await updateQuery;
 
       if (error) throw error;
 
@@ -218,7 +233,7 @@ export default function OrganizationEdit() {
         description: "Your organization profile has been updated successfully.",
       });
 
-      navigate('/my-profiles');
+      navigate(isAdminEditing ? '/admin' : '/my-profiles');
     } catch (error) {
       console.error('Error updating organization:', error);
       toast({
@@ -258,11 +273,11 @@ export default function OrganizationEdit() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Button
         variant="ghost"
-        onClick={() => navigate('/my-profiles')}
+        onClick={() => navigate(isAdminEditing ? '/admin' : '/my-profiles')}
         className="mb-4"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to My Profiles
+        {isAdminEditing ? 'Back to Admin Dashboard' : 'Back to My Profiles'}
       </Button>
 
       <div className="mb-8">

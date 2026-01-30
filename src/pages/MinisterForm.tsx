@@ -39,7 +39,7 @@ interface BookingLink {
 export default function MinisterForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
@@ -52,6 +52,8 @@ export default function MinisterForm() {
   const [bookingLinks, setBookingLinks] = useState<BookingLink[]>([]);
   const [newBookingService, setNewBookingService] = useState("");
   const [newBookingUrl, setNewBookingUrl] = useState("");
+  const [isAdminEditing, setIsAdminEditing] = useState(false);
+  const [ministerUserId, setMinisterUserId] = useState<string | null>(null);
 
   const form = useForm<MinisterFormData>({
     resolver: zodResolver(ministerSchema),
@@ -69,7 +71,7 @@ export default function MinisterForm() {
   }, [user, id, navigate]);
 
   const fetchMinisterData = async () => {
-    if (!id) return;
+    if (!id || !user) return;
 
     try {
       const { data, error } = await supabase
@@ -79,6 +81,21 @@ export default function MinisterForm() {
         .single();
 
       if (error) throw error;
+
+      // Check if user has permission (owner or admin)
+      if (data.user_id !== user.id && !isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to edit this profile.",
+          variant: "destructive",
+        });
+        navigate('/my-profiles');
+        return;
+      }
+
+      // Track if admin is editing someone else's profile
+      setMinisterUserId(data.user_id);
+      setIsAdminEditing(isAdmin && data.user_id !== user.id);
 
       form.reset({
         full_name: data.full_name,
@@ -186,7 +203,7 @@ export default function MinisterForm() {
         denomination: data.denomination || null,
         ministry_focus: data.ministry_focus,
         mission_statement: data.mission_statement || null,
-        user_id: user.id,
+        user_id: id && isAdminEditing ? ministerUserId : user.id, // Keep original user_id when admin is editing
         services_offered: servicesOffered,
         profile_image_url: profileImageUrl || null,
         banner_url: bannerUrl || null,
@@ -208,6 +225,9 @@ export default function MinisterForm() {
           title: "Success",
           description: "Minister profile updated successfully",
         });
+        
+        navigate(isAdminEditing ? '/admin' : '/my-profiles');
+        return;
       } else {
         // Create new minister
         const { data: newMinister, error } = await supabase
@@ -259,7 +279,9 @@ export default function MinisterForm() {
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle>{id ? "Edit Minister Profile" : "Create Minister Profile"}</CardTitle>
+            <CardTitle>
+              {id ? (isAdminEditing ? "Edit Minister Profile (Admin)" : "Edit Minister Profile") : "Create Minister Profile"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -465,7 +487,7 @@ export default function MinisterForm() {
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? "Saving..." : id ? "Update Profile" : "Create Profile"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                <Button type="button" variant="outline" onClick={() => isAdminEditing ? navigate('/admin') : navigate(-1)}>
                   Cancel
                 </Button>
               </div>

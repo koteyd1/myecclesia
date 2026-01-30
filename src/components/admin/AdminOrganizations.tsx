@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, Check, X, MapPin, Globe, User } from 'lucide-react';
+import { Eye, Check, X, MapPin, Globe, User, Edit } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 
 export default function AdminOrganizations() {
@@ -363,21 +364,36 @@ export default function AdminOrganizations() {
                                         Delete Organization
                                       </Button>
                                       
-                                      <Button
-                                        variant={selectedOrg.is_verified ? "outline" : "default"}
-                                        onClick={() => verifyOrgMutation.mutate({
-                                          id: selectedOrg.id,
-                                          verified: !selectedOrg.is_verified
-                                        })}
-                                        disabled={verifyOrgMutation.isPending}
-                                      >
-                                        {selectedOrg.is_verified ? 'Unverify' : 'Verify'} Organization
-                                      </Button>
+                                      <div className="flex gap-2">
+                                        <Link to={`/organization/edit/${selectedOrg.id}`}>
+                                          <Button variant="outline">
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit
+                                          </Button>
+                                        </Link>
+                                        
+                                        <Button
+                                          variant={selectedOrg.is_verified ? "outline" : "default"}
+                                          onClick={() => verifyOrgMutation.mutate({
+                                            id: selectedOrg.id,
+                                            verified: !selectedOrg.is_verified
+                                          })}
+                                          disabled={verifyOrgMutation.isPending}
+                                        >
+                                          {selectedOrg.is_verified ? 'Unverify' : 'Verify'} Organization
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 )}
                               </DialogContent>
                             </Dialog>
+
+                            <Link to={`/organization/edit/${org.id}`}>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
 
                             <Button
                               variant={org.is_verified ? "outline" : "default"}
