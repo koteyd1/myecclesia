@@ -39,7 +39,7 @@ interface BookingLink {
 export default function MinisterForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
@@ -145,7 +145,27 @@ export default function MinisterForm() {
   };
 
   const onSubmit = async (data: MinisterFormData) => {
-    if (!user) return;
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a minister profile",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    // Double-check user is authenticated with Supabase
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser?.id) {
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to continue",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -217,8 +237,20 @@ export default function MinisterForm() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   if (!user) {
-    return <div>Please sign in to access this page.</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Please sign in to access this page.</p>
+      </div>
+    );
   }
 
   return (

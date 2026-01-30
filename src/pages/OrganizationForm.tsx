@@ -52,7 +52,7 @@ const organizationSchema = z.object({
 type OrganizationFormData = z.infer<typeof organizationSchema>;
 
 export default function OrganizationForm() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,12 +102,25 @@ export default function OrganizationForm() {
   };
 
   const onSubmit = async (data: OrganizationFormData) => {
-    if (!user) {
+    if (!user?.id) {
       toast({
         title: "Authentication required",
         description: "Please sign in to create an organization profile",
         variant: "destructive",
       });
+      navigate('/auth');
+      return;
+    }
+
+    // Double-check user is authenticated with Supabase
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser?.id) {
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to continue",
+        variant: "destructive",
+      });
+      navigate('/auth');
       return;
     }
 
@@ -165,6 +178,14 @@ export default function OrganizationForm() {
       setIsSubmitting(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
