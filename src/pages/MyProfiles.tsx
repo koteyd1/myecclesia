@@ -618,13 +618,18 @@ export default function MyProfiles() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Link to={`/events/${event.slug}`}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" title="View event">
                           <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Link to={`/event/edit/${event.id}`}>
+                        <Button variant="outline" size="sm" title="Edit event">
+                          <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" title="Delete event">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </AlertDialogTrigger>
