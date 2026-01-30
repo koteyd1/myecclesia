@@ -5,7 +5,8 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { TicketPurchase } from "@/components/TicketPurchase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -108,7 +109,7 @@ const EventDetail = () => {
       // Primary lookup: by slug
       let { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select("*, organizations:organization_id(id, slug, name, logo_url), ministers:minister_id(id, slug, full_name, profile_image_url)")
         .eq("slug", slug)
         .maybeSingle();
 
@@ -118,7 +119,7 @@ const EventDetail = () => {
       if (!data && isUuid(slug)) {
         const byId = await supabase
           .from("events")
-          .select("*")
+          .select("*, organizations:organization_id(id, slug, name, logo_url), ministers:minister_id(id, slug, full_name, profile_image_url)")
           .eq("id", slug)
           .maybeSingle();
 
@@ -652,11 +653,57 @@ const EventDetail = () => {
                   </div>
                 </div>
 
-                {(event.organizer || event.requirements || event.denominations) && (
+                {(event.organizer || event.organizations || event.ministers || event.requirements || event.denominations) && (
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      {event.organizer && <p><strong>Organizer:</strong> {event.organizer}</p>}
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      {/* Organization Profile Link */}
+                      {event.organizations && (
+                        <div className="flex items-center gap-3">
+                          <strong className="shrink-0">Organizer:</strong>
+                          <Link 
+                            to={`/organizations/${event.organizations.slug}`}
+                            className="flex items-center gap-2 text-primary hover:underline font-medium"
+                          >
+                            {event.organizations.logo_url && (
+                              <img 
+                                src={event.organizations.logo_url} 
+                                alt={event.organizations.name}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                            )}
+                            <Building2 className="h-4 w-4" />
+                            {event.organizations.name}
+                          </Link>
+                        </div>
+                      )}
+                      
+                      {/* Minister Profile Link */}
+                      {event.ministers && (
+                        <div className="flex items-center gap-3">
+                          <strong className="shrink-0">Minister:</strong>
+                          <Link 
+                            to={`/ministers/${event.ministers.slug}`}
+                            className="flex items-center gap-2 text-primary hover:underline font-medium"
+                          >
+                            {event.ministers.profile_image_url && (
+                              <img 
+                                src={event.ministers.profile_image_url} 
+                                alt={event.ministers.full_name}
+                                className="w-6 h-6 rounded-full object-cover"
+                              />
+                            )}
+                            <User className="h-4 w-4" />
+                            {event.ministers.full_name}
+                          </Link>
+                        </div>
+                      )}
+                      
+                      {/* Fallback organizer text (for events without linked profiles) */}
+                      {event.organizer && !event.organizations && !event.ministers && (
+                        <p><strong>Organizer:</strong> {event.organizer}</p>
+                      )}
+                      
                       {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
                       {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
                       {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
