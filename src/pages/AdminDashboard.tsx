@@ -64,13 +64,14 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="tickets">Tickets</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="organizations">Organizations</TabsTrigger>
+            <TabsTrigger value="ministers">Ministers</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
 
@@ -101,6 +102,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="organizations">
             <AdminOrganizations />
+          </TabsContent>
+
+          <TabsContent value="ministers">
+            <AdminMinisters user={user} />
           </TabsContent>
 
           <TabsContent value="users">
