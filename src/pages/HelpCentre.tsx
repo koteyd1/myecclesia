@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, BookOpen, Heart, Mail, Gift, MapPin, Clock, Search } from "lucide-react";
+import { Calendar, Users, BookOpen, Heart, Mail, Gift, MapPin, Clock, Search, Ticket, Briefcase, Plus, CheckCircle } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 
 const HelpCentre = () => {
@@ -26,17 +26,17 @@ const HelpCentre = () => {
         </div>
 
         {/* Quick Features Overview */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                Events & Calendar
+                Events & Tickets
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Discover and manage church events, add them to your personal calendar
+                Discover events, purchase tickets, and manage your bookings
               </p>
             </CardContent>
           </Card>
@@ -44,13 +44,27 @@ const HelpCentre = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Blog & Resources
+                <Plus className="h-5 w-5 text-primary" />
+                Create Events
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Read inspiring articles and spiritual content from the community
+                Host your own events and reach the Christian community
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                Opportunities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Find jobs, volunteer roles, and ministry positions
               </p>
             </CardContent>
           </Card>
@@ -64,7 +78,7 @@ const HelpCentre = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Connect with your church community and stay updated
+                Connect with churches, ministers, and organizations
               </p>
             </CardContent>
           </Card>
@@ -173,8 +187,8 @@ const HelpCentre = () => {
                     <h5 className="font-semibold mb-2">✅ Verification Process</h5>
                     <p className="text-sm text-muted-foreground">
                       Minister and Organization profiles require admin verification before going public. 
-                      This ensures authenticity and maintains trust in our community. You can create and 
-                      edit your profiles anytime, but they won't be visible to others until verified.
+                      Similarly, all events require verification before becoming publicly visible.
+                      This ensures authenticity and maintains trust in our community.
                     </p>
                   </div>
                 </div>
@@ -185,33 +199,121 @@ const HelpCentre = () => {
               <AccordionTrigger className="text-left">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-primary" />
-                  <span className="text-lg font-semibold">Events & Calendar</span>
+                  <span className="text-lg font-semibold">Events & Tickets</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-4">
                 <div className="pl-8">
                   <h3 className="font-semibold mb-2">Browsing Events</h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• Visit the "Events" page to see all upcoming events</li>
+                    <li>• Visit the "Events" page to see all upcoming verified events</li>
                     <li>• Use filters to find events by category, date, or location</li>
+                    <li>• Browse by category or location on the homepage</li>
                     <li>• Click on any event to see detailed information</li>
-                    <li>• View events on the interactive map</li>
                   </ul>
                   
-                  <h3 className="font-semibold mt-6 mb-2">Event Registration</h3>
+                  <h3 className="font-semibold mt-6 mb-2">Purchasing Tickets</h3>
                   <ul className="space-y-2 text-muted-foreground">
-                    <li>• Click "Register" on any event page</li>
-                    <li>• Fill in required information</li>
-                    <li>• Check for any special requirements</li>
-                    <li>• Receive confirmation email</li>
+                    <li>• View available ticket types and prices on event pages</li>
+                    <li>• Select your ticket quantity and complete payment</li>
+                    <li>• Free events allow instant registration</li>
+                    <li>• Paid events are processed securely via Stripe</li>
+                    <li>• Receive confirmation email with your ticket details</li>
                   </ul>
                   
-                  <h3 className="font-semibold mt-6 mb-2">Personal Calendar</h3>
+                  <h3 className="font-semibold mt-6 mb-2">Managing Your Tickets</h3>
                   <ul className="space-y-2 text-muted-foreground">
+                    <li>• View all your tickets in "My Tickets" from your dashboard</li>
+                    <li>• Each ticket has a unique QR code for check-in</li>
                     <li>• Add events to your personal calendar</li>
-                    <li>• Set reminders for important events</li>
-                    <li>• Export calendar to your phone or email app</li>
-                    <li>• View calendar in different formats (month, week, day)</li>
+                    <li>• Save events to access later</li>
+                  </ul>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Creating Events */}
+            <AccordionItem value="creating-events">
+              <AccordionTrigger className="text-left">
+                <div className="flex items-center gap-3">
+                  <Plus className="h-5 w-5 text-primary" />
+                  <span className="text-lg font-semibold">Creating Events</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <div className="pl-8">
+                  <h3 className="font-semibold mb-2">Who Can Create Events?</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Any registered user can create events</li>
+                    <li>• You don't need a verified organization or minister profile</li>
+                    <li>• Go to "My Profiles" in your dashboard to access event creation</li>
+                  </ul>
+                  
+                  <h3 className="font-semibold mt-6 mb-2">Event Verification Process</h3>
+                  <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>⚠️ Important:</strong> All events require admin verification before they become publicly visible. 
+                      This ensures quality and authenticity of events on our platform.
+                    </p>
+                  </div>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Submit your event with complete details</li>
+                    <li>• Your event will show as "Pending Verification"</li>
+                    <li>• Our team will review and verify your event</li>
+                    <li>• Once verified, your event becomes publicly visible</li>
+                    <li>• You can view and edit your events anytime in "My Profiles"</li>
+                  </ul>
+                  
+                  <h3 className="font-semibold mt-6 mb-2">Event Details to Include</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Clear title and description</li>
+                    <li>• Date, time, and duration</li>
+                    <li>• Location with full address</li>
+                    <li>• Category and denomination (if applicable)</li>
+                    <li>• Ticket types and pricing</li>
+                    <li>• Event image (recommended)</li>
+                  </ul>
+
+                  <h3 className="font-semibold mt-6 mb-2">Selling Tickets</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Set up Stripe Connect to receive payments</li>
+                    <li>• Create multiple ticket types (e.g., Early Bird, Standard, VIP)</li>
+                    <li>• Set prices, quantities, and sale dates</li>
+                    <li>• Track ticket sales and check in attendees</li>
+                  </ul>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Opportunities */}
+            <AccordionItem value="opportunities">
+              <AccordionTrigger className="text-left">
+                <div className="flex items-center gap-3">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  <span className="text-lg font-semibold">Opportunities</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <div className="pl-8">
+                  <h3 className="font-semibold mb-2">Finding Opportunities</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Browse jobs, volunteer roles, and internships</li>
+                    <li>• Filter by type, location, and remote availability</li>
+                    <li>• View opportunities from verified organizations and ministers</li>
+                  </ul>
+                  
+                  <h3 className="font-semibold mt-6 mb-2">Applying for Opportunities</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Click on any opportunity to view full details</li>
+                    <li>• Apply directly through the platform or via external link</li>
+                    <li>• Track your applications in your dashboard</li>
+                  </ul>
+                  
+                  <h3 className="font-semibold mt-6 mb-2">Posting Opportunities</h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li>• Verified organizations and ministers can post opportunities</li>
+                    <li>• Include job description, requirements, and application method</li>
+                    <li>• Manage applications from your dashboard</li>
                   </ul>
                 </div>
               </AccordionContent>
