@@ -564,29 +564,15 @@ export default function MyProfiles() {
           <CardContent className="space-y-4">
             {showEventForm && (
               <div className="mb-6 p-4 border rounded-lg bg-muted/50">
-                {/* Only pass verified profile IDs - prefer organization if both are verified */}
-                {!organization?.is_verified && !minister?.is_verified ? (
-                  <div className="text-center py-6">
-                    <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold mb-2">Verification Required</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      You need a verified organization or minister profile to create events. 
-                      Your profile is pending verification by an admin.
-                    </p>
-                    <Button variant="outline" onClick={() => setShowEventForm(false)}>
-                      Close
-                    </Button>
-                  </div>
-                ) : (
-                  <EventManagement 
-                    organizationId={organization?.is_verified ? organization.id : undefined}
-                    ministerId={!organization?.is_verified && minister?.is_verified ? minister.id : undefined}
-                    onEventCreated={() => {
-                      setShowEventForm(false);
-                      fetchUserData();
-                    }}
-                  />
-                )}
+                {/* Auto-link verified profiles if available - prefer organization if both are verified */}
+                <EventManagement 
+                  organizationId={organization?.is_verified ? organization.id : undefined}
+                  ministerId={!organization?.is_verified && minister?.is_verified ? minister.id : undefined}
+                  onEventCreated={() => {
+                    setShowEventForm(false);
+                    fetchUserData();
+                  }}
+                />
               </div>
             )}
 
