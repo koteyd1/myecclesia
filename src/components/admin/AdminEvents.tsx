@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Star, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { SearchBar } from "@/components/SearchBar";
@@ -380,19 +380,32 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredEvents.map((event) => (
-          <Card key={event.id} className={event.is_featured ? "ring-2 ring-primary" : ""}>
+          <Card key={event.id} className={`${event.is_featured ? "ring-2 ring-primary" : ""} ${!event.is_verified ? "opacity-75" : ""}`}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-lg">{event.title}</CardTitle>
                   <CardDescription>{event.organizer}</CardDescription>
                 </div>
-                {event.is_featured && (
-                  <Badge className="bg-primary text-primary-foreground">
-                    <Star className="h-3 w-3 mr-1 fill-current" />
-                    Featured
-                  </Badge>
-                )}
+                <div className="flex gap-1">
+                  {!event.is_verified && (
+                    <Badge variant="outline" className="text-amber-600 border-amber-600">
+                      Pending
+                    </Badge>
+                  )}
+                  {event.is_verified && (
+                    <Badge className="bg-green-600 text-white">
+                      <ShieldCheck className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
+                  {event.is_featured && (
+                    <Badge className="bg-primary text-primary-foreground">
+                      <Star className="h-3 w-3 mr-1 fill-current" />
+                      Featured
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -410,8 +423,47 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
                 <p><strong>Price:</strong> £{event.price}</p>
               </div>
               
-              {/* Featured Toggle */}
+              {/* Verification Toggle */}
               <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className={`h-4 w-4 ${event.is_verified ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  <Label htmlFor={`verified-${event.id}`} className="text-sm">
+                    Verified
+                  </Label>
+                </div>
+                <Switch
+                  id={`verified-${event.id}`}
+                  checked={event.is_verified || false}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      const { error } = await supabase
+                        .from("events")
+                        .update({ is_verified: checked })
+                        .eq("id", event.id);
+                      
+                      if (error) throw error;
+                      
+                      toast({
+                        title: checked ? "Event Verified!" : "Event Unverified",
+                        description: checked 
+                          ? "This event is now publicly visible."
+                          : "This event is no longer publicly visible.",
+                      });
+                      fetchEvents();
+                    } catch (error) {
+                      console.error("Error updating verification status:", error);
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Failed to update verification status.",
+                      });
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Featured Toggle */}
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Star className={`h-4 w-4 ${event.is_featured ? 'text-primary fill-primary' : 'text-muted-foreground'}`} />
                   <Label htmlFor={`featured-${event.id}`} className="text-sm">

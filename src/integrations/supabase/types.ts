@@ -311,6 +311,7 @@ export type Database = {
           id: string
           image: string | null
           is_featured: boolean | null
+          is_verified: boolean | null
           location: string
           minister_id: string | null
           organization_id: string | null
@@ -337,6 +338,7 @@ export type Database = {
           id?: string
           image?: string | null
           is_featured?: boolean | null
+          is_verified?: boolean | null
           location: string
           minister_id?: string | null
           organization_id?: string | null
@@ -363,6 +365,7 @@ export type Database = {
           id?: string
           image?: string | null
           is_featured?: boolean | null
+          is_verified?: boolean | null
           location?: string
           minister_id?: string | null
           organization_id?: string | null
