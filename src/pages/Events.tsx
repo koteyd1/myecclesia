@@ -90,25 +90,48 @@ const Events = () => {
     navigate(newUrl, { replace: true });
   }, [location.pathname, navigate]);
 
-  // Debounced search function - only handles URL update, not state
-  const debouncedSearch = useMemo(
-    () => performanceUtils.debounce((term: string) => {
+  // Debounced URL update for text inputs - prevents URL sync issues while typing
+  const debouncedURLUpdate = useMemo(
+    () => performanceUtils.debounce((filters: Record<string, string>) => {
       setCurrentPage(1);
-      updateURL({
-        search: term,
-        category: selectedCategory,
-        denomination: selectedDenomination,
-        price: priceFilter,
-        startDate,
-        endDate,
-        minPrice,
-        maxPrice,
-        location: locationFilter,
-        availability: availabilityFilter
-      }, 1);
-    }, 300),
-    [selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, updateURL]
+      updateURL(filters, 1);
+    }, 500),
+    [updateURL]
   );
+
+  // Debounced search function - only handles URL update, not state
+  const debouncedSearch = useCallback((term: string) => {
+    debouncedURLUpdate({
+      search: term,
+      category: selectedCategory,
+      denomination: selectedDenomination,
+      price: priceFilter,
+      startDate,
+      endDate,
+      minPrice,
+      maxPrice,
+      location: locationFilter,
+      availability: availabilityFilter
+    });
+  }, [selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, debouncedURLUpdate]);
+
+  // Debounced handler for text input filters (location, price range)
+  const debouncedTextFilterUpdate = useCallback((field: string, value: string) => {
+    const filters: Record<string, string> = {
+      search: searchTerm,
+      category: selectedCategory,
+      denomination: selectedDenomination,
+      price: priceFilter,
+      startDate,
+      endDate,
+      minPrice,
+      maxPrice,
+      location: locationFilter,
+      availability: availabilityFilter
+    };
+    filters[field] = value;
+    debouncedURLUpdate(filters);
+  }, [searchTerm, selectedCategory, selectedDenomination, priceFilter, startDate, endDate, minPrice, maxPrice, locationFilter, availabilityFilter, debouncedURLUpdate]);
 
   const categoryOptions = [
     "Church Service",
@@ -493,7 +516,11 @@ const Events = () => {
                       type="number"
                       placeholder="Min Price"
                       value={minPrice}
-                      onChange={(e) => { setMinPrice(e.target.value); setTimeout(handleFilterChange, 0); }}
+                      onChange={(e) => { 
+                        const value = e.target.value;
+                        setMinPrice(value); 
+                        debouncedTextFilterUpdate('minPrice', value);
+                      }}
                       min="0"
                       step="0.01"
                       className="text-sm"
@@ -502,7 +529,11 @@ const Events = () => {
                       type="number"
                       placeholder="Max Price"
                       value={maxPrice}
-                      onChange={(e) => { setMaxPrice(e.target.value); setTimeout(handleFilterChange, 0); }}
+                      onChange={(e) => { 
+                        const value = e.target.value;
+                        setMaxPrice(value); 
+                        debouncedTextFilterUpdate('maxPrice', value);
+                      }}
                       min="0"
                       step="0.01"
                       className="text-sm"
@@ -519,7 +550,11 @@ const Events = () => {
                   <Input
                     placeholder="Search by location..."
                     value={locationFilter}
-                    onChange={(e) => { setLocationFilter(e.target.value); setTimeout(handleFilterChange, 0); }}
+                    onChange={(e) => { 
+                      const value = e.target.value;
+                      setLocationFilter(value); 
+                      debouncedTextFilterUpdate('location', value);
+                    }}
                     className="text-sm"
                   />
                 </div>
