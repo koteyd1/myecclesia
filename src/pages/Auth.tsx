@@ -229,8 +229,8 @@ const Auth = () => {
       toast({
         title: "Check your email",
         description: accountType === "organization" 
-          ? "We've sent you a confirmation link. After confirming, you'll be able to set up your organization profile."
-          : "We've sent you a confirmation link to complete your registration.",
+          ? "We've sent you a confirmation link. After confirming, you'll be able to set up your organization profile. Please check your junk/spam folder if you don't see it."
+          : "We've sent you a confirmation link to complete your registration. Please check your junk/spam folder if you don't see it.",
       });
       
       // Clear form
