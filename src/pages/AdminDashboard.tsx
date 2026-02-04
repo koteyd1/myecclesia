@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminEvents } from "@/components/admin/AdminEvents";
+import { AdminPendingEvents } from "@/components/admin/AdminPendingEvents";
 import { AdminBlogPosts } from "@/components/admin/AdminBlogPosts";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import AdminMinisters from "@/components/admin/AdminMinisters";
@@ -64,8 +65,9 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="tickets">Tickets</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="review">Review</TabsTrigger>
@@ -77,6 +79,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="events">
             <AdminEvents user={user} />
+          </TabsContent>
+
+          <TabsContent value="pending">
+            <AdminPendingEvents />
           </TabsContent>
 
           <TabsContent value="tickets">
