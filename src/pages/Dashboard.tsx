@@ -169,72 +169,99 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Links</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
-              <Link to="/my-profiles">
-                <Button variant="outline" size="sm">
-                  <User className="h-4 w-4 mr-2" />
-                  My Profiles
-                </Button>
-              </Link>
-              <Link to="/my-tickets">
-                <Button variant="outline" size="sm">
-                  <QrCode className="h-4 w-4 mr-2" />
-                  My Tickets
-                </Button>
-              </Link>
-              <Link to="/scan-tickets">
-                <Button variant="outline" size="sm">
-                  <ScanLine className="h-4 w-4 mr-2" />
-                  Scan Tickets
-                </Button>
-              </Link>
-              <Link to="/my-profiles">
-                <Button size="sm">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Create Event
-                </Button>
-              </Link>
-              <Link to="/profile/edit">
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Edit Profile
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/events")}
-              >
-                Browse Events
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/event-guidelines")}
-              >
-                Event Guidelines & Safety
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/calendar")}
-              >
-                Event Calendar
-              </Button>
-              <Button
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate("/contact")}
-              >
-                Contact Support
-              </Button>
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Tickets Group */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Ticket className="h-5 w-5 text-primary" />
+                </div>
+                <span className="font-medium">Tickets</span>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/my-tickets" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <QrCode className="h-4 w-4 mr-1" />
+                    My Tickets
+                  </Button>
+                </Link>
+                <Link to="/scan-tickets" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <ScanLine className="h-4 w-4 mr-1" />
+                    Scan
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
+
+          {/* Profile & Events Group */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
+                <span className="font-medium">Manage</span>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/my-profiles" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    My Profiles
+                  </Button>
+                </Link>
+                <Link to="/profile/edit" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Settings className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions Group */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CalendarIcon className="h-5 w-5 text-primary" />
+                </div>
+                <span className="font-medium">Quick Actions</span>
+              </div>
+              <div className="flex gap-2">
+                <Link to="/my-profiles" className="flex-1">
+                  <Button size="sm" className="w-full">
+                    <CalendarIcon className="h-4 w-4 mr-1" />
+                    Create Event
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => navigate("/events")}
+                >
+                  Browse
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary Links */}
+        <div className="mb-8 flex flex-wrap gap-2 justify-center">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/calendar")}>
+            <Calendar className="h-4 w-4 mr-1" />
+            Calendar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/event-guidelines")}>
+            Guidelines
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/contact")}>
+            Support
+          </Button>
         </div>
 
         <Tabs defaultValue="events" className="space-y-4">
