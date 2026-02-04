@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, Eye, Calendar, MapPin, Clock } from "lucide-react";
+import { ShieldCheck, Eye, Calendar, MapPin, Clock, CheckCheck } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ export const AdminPendingEvents = () => {
   const [pendingEvents, setPendingEvents] = useState<any[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVerifyingAll, setIsVerifyingAll] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -81,6 +82,40 @@ export const AdminPendingEvents = () => {
     }
   };
 
+  const handleVerifyAll = async () => {
+    if (pendingEvents.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to verify all ${pendingEvents.length} pending events?`)) {
+      return;
+    }
+
+    setIsVerifyingAll(true);
+    try {
+      const eventIds = pendingEvents.map(event => event.id);
+      const { error } = await supabase
+        .from("events")
+        .update({ is_verified: true })
+        .in("id", eventIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "All Events Verified!",
+        description: `${pendingEvents.length} events are now publicly visible.`,
+      });
+      fetchPendingEvents();
+    } catch (error) {
+      console.error("Error verifying all events:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to verify all events.",
+      });
+    } finally {
+      setIsVerifyingAll(false);
+    }
+  };
+
   const handleViewEvent = (slug: string) => {
     navigate(`/events/${slug}`);
   };
@@ -102,6 +137,16 @@ export const AdminPendingEvents = () => {
             {pendingEvents.length} event{pendingEvents.length !== 1 ? 's' : ''} awaiting verification
           </p>
         </div>
+        {pendingEvents.length > 0 && (
+          <Button 
+            onClick={handleVerifyAll} 
+            disabled={isVerifyingAll}
+            variant="default"
+          >
+            <CheckCheck className="h-4 w-4 mr-2" />
+            {isVerifyingAll ? "Verifying..." : "Verify All"}
+          </Button>
+        )}
       </div>
 
       <SearchBar
