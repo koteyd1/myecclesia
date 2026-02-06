@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { MapPin, Heart, Calendar, ExternalLink, Ticket, Building2, User, Clock } from "lucide-react";
+import { MapPin, Heart, Calendar, ExternalLink, Ticket, Building2, User, Clock, Share2 } from "lucide-react";
+import { SocialShare } from "@/components/SocialShare";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -243,23 +244,31 @@ const EventListItem = ({
           )}
         </div>
 
-        {/* Save Button */}
-        <button 
-          className={`p-2 rounded-full transition-all ${
-            isSaved 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-muted hover:bg-muted/80'
-          } ${savingState ? 'opacity-50' : ''}`}
-          onClick={handleSaveToggle}
-          disabled={savingState}
-          aria-label={isSaved ? "Remove from saved" : "Save event"}
-        >
-          <Heart 
-            className={`h-4 w-4 transition-colors ${
-              isSaved ? 'text-white fill-white' : 'text-muted-foreground hover:text-red-500'
-            }`} 
+        {/* Action Buttons */}
+        <div className="flex items-center gap-1.5">
+          <SocialShare
+            url={`/events/${slug || id}`}
+            title={title}
+            description={`${formatDate(date)} at ${location}`}
+            className="p-2 h-auto bg-muted hover:bg-muted/80 border-0"
           />
-        </button>
+          <button 
+            className={`p-2 rounded-full transition-all ${
+              isSaved 
+                ? 'bg-red-500 hover:bg-red-600' 
+                : 'bg-muted hover:bg-muted/80'
+            } ${savingState ? 'opacity-50' : ''}`}
+            onClick={handleSaveToggle}
+            disabled={savingState}
+            aria-label={isSaved ? "Remove from saved" : "Save event"}
+          >
+            <Heart 
+              className={`h-4 w-4 transition-colors ${
+                isSaved ? 'text-white fill-white' : 'text-muted-foreground hover:text-red-500'
+              }`} 
+            />
+          </button>
+        </div>
       </div>
     </div>
   );
