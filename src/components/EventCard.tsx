@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { MapPin, Heart, Calendar, ExternalLink, Ticket, Building2, User } from "lucide-react";
+import { MapPin, Heart, Calendar, ExternalLink, Ticket, Building2, User, Share2 } from "lucide-react";
+import { SocialShare } from "@/components/SocialShare";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -203,25 +204,33 @@ const EventCard = ({
           )}
         </div>
 
-        {/* Save Button */}
-        <button 
-          className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all ${
-            isSaved 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-white/90 backdrop-blur-sm hover:bg-white'
-          } ${savingState ? 'opacity-50' : ''}`}
-          onClick={handleSaveToggle}
-          disabled={savingState}
-          aria-label={isSaved ? "Remove from saved" : "Save event"}
-        >
-          <Heart 
-            className={`h-4 w-4 transition-colors ${
-              isSaved 
-                ? 'text-white fill-white' 
-                : 'text-muted-foreground hover:text-red-500'
-            }`} 
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          <SocialShare
+            url={`/events/${slug || id}`}
+            title={title}
+            description={`${formatDateEventbrite(date).day}, ${formatDateEventbrite(date).month} ${formatDateEventbrite(date).dayNum} at ${location}`}
+            className="p-2 h-auto bg-white/90 backdrop-blur-sm hover:bg-white shadow-md border-0"
           />
-        </button>
+          <button 
+            className={`p-2 rounded-full shadow-md transition-all ${
+              isSaved 
+                ? 'bg-red-500 hover:bg-red-600' 
+                : 'bg-white/90 backdrop-blur-sm hover:bg-white'
+            } ${savingState ? 'opacity-50' : ''}`}
+            onClick={handleSaveToggle}
+            disabled={savingState}
+            aria-label={isSaved ? "Remove from saved" : "Save event"}
+          >
+            <Heart 
+              className={`h-4 w-4 transition-colors ${
+                isSaved 
+                  ? 'text-white fill-white' 
+                  : 'text-muted-foreground hover:text-red-500'
+              }`} 
+            />
+          </button>
+        </div>
 
         {/* Category Badge */}
         {category && (
