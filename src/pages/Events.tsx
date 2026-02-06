@@ -5,13 +5,14 @@ import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { BreadcrumbNav } from "@/components/BreadcrumbNav";
 import EventCard from "@/components/EventCard";
+import EventListItem from "@/components/EventListItem";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, X, ChevronDown, Calendar, MapPin, DollarSign, Users, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { useCache } from "@/utils/cache";
 import { performanceUtils } from "@/utils/performance";
 import { useSiteTracking } from "@/hooks/useSiteTracking";
@@ -37,6 +38,9 @@ const Events = () => {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(parseInt(urlParams.get("page") || "1"));
   const [isInitialized, setIsInitialized] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">(
+    () => (localStorage.getItem("eventsViewMode") as "grid" | "list") || "grid"
+  );
   const eventsPerPage = 30;
 
   // Use cached events data
@@ -596,15 +600,45 @@ const Events = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Results Count */}
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {startIndex + 1}-{Math.min(endIndex, sortedEvents.length)} of {sortedEvents.length} events
-              {hasActiveFilters && " (filtered)"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </p>
+          {/* Results Count & View Toggle */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <p className="text-sm text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, sortedEvents.length)} of {sortedEvents.length} events
+                {hasActiveFilters && " (filtered)"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </p>
+            </div>
+            
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => {
+                  setViewMode("grid");
+                  localStorage.setItem("eventsViewMode", "grid");
+                }}
+              >
+                <LayoutGrid className="h-4 w-4 mr-1.5" />
+                Grid
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => {
+                  setViewMode("list");
+                  localStorage.setItem("eventsViewMode", "list");
+                }}
+              >
+                <List className="h-4 w-4 mr-1.5" />
+                List
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -613,32 +647,60 @@ const Events = () => {
           {/* Events List */}
           <div className="space-y-4">
             {currentEvents.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {currentEvents.map((event) => (
-                  <div key={event.id} id={`event-${event.id}`}>
-                     <EventCard 
-                       id={event.id}
-                       slug={event.slug}
-                       title={event.title}
-                       date={event.date}
-                       time={event.time}
-                       location={event.location}
-                       description={event.description}
-                       image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
-                       price={event.price || 0}
-                       availableTickets={event.available_tickets || 0}
-                       category={event.category || "Event"}
-                       denominations={event.denominations || ""}
-                       ticket_url={event.ticket_url}
-                       external_url={event.external_url}
-                       organization_id={event.organization_id}
-                       minister_id={event.minister_id}
-                       organizations={event.organizations}
-                       ministers={event.ministers}
-                     />
-                  </div>
-                ))}
-              </div>
+              viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {currentEvents.map((event) => (
+                    <div key={event.id} id={`event-${event.id}`}>
+                       <EventCard 
+                         id={event.id}
+                         slug={event.slug}
+                         title={event.title}
+                         date={event.date}
+                         time={event.time}
+                         location={event.location}
+                         description={event.description}
+                         image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                         price={event.price || 0}
+                         availableTickets={event.available_tickets || 0}
+                         category={event.category || "Event"}
+                         denominations={event.denominations || ""}
+                         ticket_url={event.ticket_url}
+                         external_url={event.external_url}
+                         organization_id={event.organization_id}
+                         minister_id={event.minister_id}
+                         organizations={event.organizations}
+                         ministers={event.ministers}
+                       />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {currentEvents.map((event) => (
+                    <EventListItem
+                      key={event.id}
+                      id={event.id}
+                      slug={event.slug}
+                      title={event.title}
+                      date={event.date}
+                      time={event.time}
+                      location={event.location}
+                      description={event.description}
+                      image={event.image || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=400&fit=crop"}
+                      price={event.price || 0}
+                      availableTickets={event.available_tickets || 0}
+                      category={event.category || "Event"}
+                      denominations={event.denominations || ""}
+                      ticket_url={event.ticket_url}
+                      external_url={event.external_url}
+                      organization_id={event.organization_id}
+                      minister_id={event.minister_id}
+                      organizations={event.organizations}
+                      ministers={event.ministers}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
