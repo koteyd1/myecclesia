@@ -1,15 +1,89 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DOMPurify from "dompurify";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, User, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, User, Clock, ExternalLink, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/SEOHead";
 import { linkifyText } from "@/utils/linkify";
 import { useSiteTracking, useBlogTracking } from "@/hooks/useSiteTracking";
+
+// Process HTML content to make links more user-friendly
+const processContentLinks = (htmlContent: string): string => {
+  if (!htmlContent) return '';
+  
+  // Create a temporary DOM element to parse HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+  
+  // Find all anchor tags
+  const links = tempDiv.querySelectorAll('a');
+  
+  links.forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    const linkText = link.textContent || '';
+    
+    // Check if it's a myecclesia event link
+    const isMyEcclesiaLink = href.includes('myecclesia') || 
+                              href.includes('localhost') || 
+                              href.startsWith('/events/');
+    const isEventLink = href.includes('/events/') || href.includes('/event/');
+    
+    if (isMyEcclesiaLink && isEventLink) {
+      // Style as an event link button
+      link.className = 'inline-flex items-center gap-2 px-4 py-2 my-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors no-underline font-medium text-sm';
+      
+      // Add ticket icon before the text
+      const iconSpan = document.createElement('span');
+      iconSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>';
+      link.insertBefore(iconSpan, link.firstChild);
+      
+      // Clean up the text if it's just a raw URL
+      if (linkText.startsWith('http') || linkText.includes('myecclesia.')) {
+        // Extract event name from URL if possible
+        const eventSlugMatch = href.match(/\/events\/([^\/\?]+)/);
+        if (eventSlugMatch) {
+          const eventSlug = eventSlugMatch[1];
+          const eventName = eventSlug
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+          link.textContent = '';
+          link.appendChild(iconSpan);
+          link.appendChild(document.createTextNode(' View Event: ' + eventName));
+        } else {
+          link.textContent = '';
+          link.appendChild(iconSpan);
+          link.appendChild(document.createTextNode(' View Event'));
+        }
+      }
+    } else if (linkText.startsWith('http') || linkText === href) {
+      // Style regular external links nicely
+      link.className = 'inline-flex items-center gap-1 text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors font-medium';
+      
+      // Simplify long URLs to domain name
+      try {
+        const url = new URL(href);
+        link.textContent = url.hostname.replace('www.', '');
+      } catch {
+        // Keep original text if URL parsing fails
+      }
+    } else {
+      // Style other links
+      link.className = 'text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors font-medium';
+    }
+    
+    // Add external link indicator for external links
+    if (href.startsWith('http') && !href.includes('myecclesia')) {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+  
+  return tempDiv.innerHTML;
+};
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -268,8 +342,13 @@ const BlogPost = () => {
               )}
               
               <div 
-                className="space-y-6 text-foreground leading-relaxed prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blogPost.content) }}
+                className="space-y-6 text-foreground leading-relaxed prose prose-lg max-w-none prose-a:no-underline"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(
+                    processContentLinks(blogPost.content),
+                    { ADD_ATTR: ['target', 'rel'] }
+                  ) 
+                }}
               />
             </div>
 
