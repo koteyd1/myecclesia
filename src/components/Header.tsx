@@ -1,6 +1,6 @@
-import { User, Settings, LogOut, ChevronDown, Briefcase, Ticket, ScanLine } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Briefcase, Ticket, ScanLine, LayoutDashboard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -86,7 +86,7 @@ const Header = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/organizations" className="w-full">
-                      Organizations
+                      Organisations
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -168,7 +168,24 @@ const Header = () => {
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-52 bg-popover border shadow-lg">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                      {user.email}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center gap-2">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-tickets" className="flex items-center gap-2">
+                        <Ticket className="h-4 w-4" />
+                        Tickets
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/my-profiles" className="flex items-center gap-2">
                         <User className="h-4 w-4" />
@@ -176,38 +193,24 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/my-tickets" className="flex items-center gap-2">
-                        <Ticket className="h-4 w-4" />
-                        My Tickets
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/scan-tickets" className="flex items-center gap-2">
-                        <ScanLine className="h-4 w-4" />
-                        Scan Tickets
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
                       <Link to="/profile/edit" className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
-                        Edit Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Dashboard
+                        Settings
                       </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="flex items-center gap-2">
-                          <Settings className="h-4 w-4" />
-                          Admin Panel
-                        </Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="flex items-center gap-2">
+                            <Shield className="h-4 w-4" />
+                            Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
-                    <DropdownMenuItem onClick={handleAuthAction} className="flex items-center gap-2 text-red-600">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleAuthAction} className="flex items-center gap-2 text-destructive focus:text-destructive">
                       <LogOut className="h-4 w-4" />
                       Sign Out
                     </DropdownMenuItem>
@@ -242,7 +245,7 @@ const Header = () => {
                   <Link to="/ministers" className="w-full">Ministers</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/organizations" className="w-full">Organizations</Link>
+                  <Link to="/organizations" className="w-full">Organisations</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
