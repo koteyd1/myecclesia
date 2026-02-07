@@ -11,6 +11,7 @@ import { Calendar, Users, Heart, Star, ArrowRight, BookOpen, TrendingUp } from "
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { SignupPrompt } from "@/components/SignupPrompt";
 import { StructuredData, createOrganizationSchema } from "@/components/StructuredData";
 import { SEOOptimizations } from "@/components/SEOOptimizations";
 import { supabase } from "@/integrations/supabase/client";
@@ -266,6 +267,7 @@ const Index = () => {
         canonicalUrl="https://myecclesia.org.uk/"
       />
       <div className="min-h-screen bg-background">
+        <SignupPrompt delayMs={5000} />
         <SEOOptimizations />
         <StructuredData data={createOrganizationSchema()} />
         <Hero />
