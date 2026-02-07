@@ -23,42 +23,55 @@ const processContentLinks = (htmlContent: string): string => {
   const links = tempDiv.querySelectorAll('a');
   
   links.forEach((link) => {
-    const href = link.getAttribute('href') || '';
+    let href = link.getAttribute('href') || '';
     const linkText = link.textContent || '';
     
-    // Check if it's a myecclesia event link
-    const isMyEcclesiaLink = href.includes('myecclesia') || 
+    // Check if it's a myecclesia link and convert to relative path
+    const isMyEcclesiaLink = href.includes('myecclesia.org') || 
+                              href.includes('myecclesia.com') ||
+                              href.includes('myecclesia.lovable.app') ||
                               href.includes('localhost') || 
                               href.startsWith('/events/');
     const isEventLink = href.includes('/events/') || href.includes('/event/');
     
-    if (isMyEcclesiaLink && isEventLink) {
-      // Style as an event link button
-      link.className = 'inline-flex items-center gap-2 px-4 py-2 my-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors no-underline font-medium text-sm';
-      
-      // Add ticket icon before the text
-      const iconSpan = document.createElement('span');
-      iconSpan.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>';
-      link.insertBefore(iconSpan, link.firstChild);
-      
-      // Clean up the text if it's just a raw URL
-      if (linkText.startsWith('http') || linkText.includes('myecclesia.')) {
-        // Extract event name from URL if possible
-        const eventSlugMatch = href.match(/\/events\/([^\/\?]+)/);
-        if (eventSlugMatch) {
-          const eventSlug = eventSlugMatch[1];
-          const eventName = eventSlug
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-          link.textContent = '';
-          link.appendChild(iconSpan);
-          link.appendChild(document.createTextNode(' View Event: ' + eventName));
-        } else {
-          link.textContent = '';
-          link.appendChild(iconSpan);
-          link.appendChild(document.createTextNode(' View Event'));
-        }
+    // Convert external myecclesia URLs to relative paths
+    if (isMyEcclesiaLink && href.startsWith('http')) {
+      try {
+        const url = new URL(href);
+        href = url.pathname + url.search + url.hash;
+        link.setAttribute('href', href);
+      } catch {
+        // Keep original if parsing fails
       }
+    }
+    
+    if (isMyEcclesiaLink && isEventLink) {
+      // Extract event name from URL
+      const eventSlugMatch = href.match(/\/events\/([^\/\?#]+)/);
+      const eventSlug = eventSlugMatch ? eventSlugMatch[1] : '';
+      const eventName = eventSlug
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      
+      // Create a styled event card link
+      link.className = 'group flex items-center gap-3 p-3 my-2 bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded-xl transition-all no-underline';
+      link.innerHTML = `
+        <span class="flex-shrink-0 w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary-foreground"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+        </span>
+        <span class="flex-1 min-w-0">
+          <span class="block text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">${eventName || 'View Event'}</span>
+          <span class="block text-xs text-muted-foreground">Click to view event details</span>
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+      `;
+    } else if (isMyEcclesiaLink && href.startsWith('/events')) {
+      // General events page link
+      link.className = 'inline-flex items-center gap-2 px-4 py-2 my-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors no-underline font-medium text-sm';
+      link.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+        Browse All Events
+      `;
     } else if (linkText.startsWith('http') || linkText === href) {
       // Style regular external links nicely
       link.className = 'inline-flex items-center gap-1 text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors font-medium';
@@ -70,13 +83,11 @@ const processContentLinks = (htmlContent: string): string => {
       } catch {
         // Keep original text if URL parsing fails
       }
-    } else {
-      // Style other links
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    } else if (href.startsWith('http') && !isMyEcclesiaLink) {
+      // External links
       link.className = 'text-primary hover:text-primary/80 underline decoration-primary/30 hover:decoration-primary transition-colors font-medium';
-    }
-    
-    // Add external link indicator for external links
-    if (href.startsWith('http') && !href.includes('myecclesia')) {
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
     }
