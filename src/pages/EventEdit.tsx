@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ImageUpload } from "@/components/ImageUpload";
+import { EventMediaUpload } from "@/components/EventMediaUpload";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowLeft, Save, Image, Calendar, MapPin, Clock } from "lucide-react";
 
@@ -221,7 +221,7 @@ export default function EventEdit() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Image className="h-5 w-5" />
-                  Event Image
+                  Event Media
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -231,11 +231,10 @@ export default function EventEdit() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <ImageUpload
+                        <EventMediaUpload
                           currentImageUrl={field.value}
                           onImageUrlChange={field.onChange}
-                          label=""
-                          placeholder="Add an eye-catching image for your event"
+                          label="Event Image"
                         />
                       </FormControl>
                       <FormMessage />
