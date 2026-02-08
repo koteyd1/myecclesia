@@ -17,7 +17,7 @@ const Blog = () => {
   const [blogPosts, setBlogPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  useSiteTracking("Blog - myEcclesia");
+  useSiteTracking("Newsletter - myEcclesia");
 
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const Blog = () => {
   const blogSchema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    "name": "MyEcclesia Christian Blog",
+    "name": "MyEcclesia Newsletter",
     "description": "Inspiring Christian stories, faith reflections, and church community updates from MyEcclesia",
     "url": "https://myecclesia.org.uk/blog",
     "author": {
@@ -94,9 +94,9 @@ const Blog = () => {
   return (
     <>
       <SEOHead 
-        title="Christian Blog – Faith Stories & Community Updates | MyEcclesia"
-        description="Read inspiring Christian stories, faith reflections, and church community updates. Stay connected with the UK Christian community through our blog."
-        keywords="Christian blog, faith stories, church community, Christian testimony, spiritual growth, UK Christianity"
+        title="Newsletter – Faith Stories & Community Updates | MyEcclesia"
+        description="Read inspiring Christian stories, faith reflections, and church community updates. Stay connected with the UK Christian community through our newsletter."
+        keywords="Christian newsletter, faith stories, church community, Christian testimony, spiritual growth, UK Christianity"
         canonicalUrl="https://myecclesia.org.uk/blog"
       />
       <div className="min-h-screen bg-background">
@@ -105,7 +105,7 @@ const Blog = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BreadcrumbNav />
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Christian Blog</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Newsletter</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Stay connected with our community through inspiring stories, faith reflections, and updates on church life.
           </p>
@@ -116,7 +116,7 @@ const Blog = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search blog posts..."
+              placeholder="Search articles..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -141,7 +141,7 @@ const Blog = () => {
         {/* Blog Posts Grid */}
         {isLoading ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">Loading blog posts...</p>
+            <p className="text-muted-foreground text-lg">Loading articles...</p>
           </div>
         ) : filteredPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -157,7 +157,7 @@ const Blog = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">No blog posts found matching your criteria.</p>
+            <p className="text-muted-foreground text-lg">No articles found matching your criteria.</p>
             <p className="text-muted-foreground">Try adjusting your search or category filter.</p>
           </div>
         )}
@@ -168,7 +168,7 @@ const Blog = () => {
           <div className="mt-16 pt-16 border-t">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-semibold text-foreground mb-4">Explore Topics</h2>
-              <p className="text-muted-foreground">Discover our active blog categories and dive into topics that inspire your faith journey</p>
+              <p className="text-muted-foreground">Discover our active categories and dive into topics that inspire your faith journey</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categories.slice(1).map((category) => {
