@@ -96,7 +96,7 @@ const Header = () => {
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-primary transition-colors">
-                  <span>Blog</span>
+                  <span>Newsletter</span>
                   <ChevronDown className="h-3 w-3" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -253,7 +253,7 @@ const Header = () => {
               Calendar
             </Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Blog
+              Newsletter
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors whitespace-nowrap">

@@ -58,7 +58,7 @@ const Footer = () => {
                   to="/blog"
                   className="hover:text-primary transition-colors"
                 >
-                  Church Blog
+                  Newsletter
                 </Link>
               </li>
               <li>
@@ -73,7 +73,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Latest Blog Articles</h4>
+            <h4 className="font-semibold mb-4">Latest Newsletter Articles</h4>
             <ul className="space-y-2 text-gray-300">
               {featuredBlogs.length > 0 ? (
                 featuredBlogs.map((blog) => (
@@ -92,7 +92,7 @@ const Footer = () => {
                     to="/blog"
                     className="hover:text-primary transition-colors"
                   >
-                    View All Blog Posts
+                    View All Articles
                   </Link>
                 </li>
               )}
