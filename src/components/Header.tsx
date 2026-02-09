@@ -146,7 +146,7 @@ const Header = () => {
             </div>
             
             <Link 
-              to="/dashboard" 
+              to={user ? "/my-profiles" : "/auth"} 
               className="bg-primary text-primary-foreground px-6 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               Create Event
@@ -279,7 +279,7 @@ const Header = () => {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/dashboard" className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap ml-auto">
+            <Link to={user ? "/my-profiles" : "/auth"} className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap ml-auto">
               Create Event
             </Link>
           </div>
