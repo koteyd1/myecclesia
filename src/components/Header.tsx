@@ -147,7 +147,7 @@ const Header = () => {
             
             <Link 
               to="/dashboard" 
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="bg-primary text-primary-foreground px-6 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               Create Event
             </Link>
@@ -155,12 +155,6 @@ const Header = () => {
 
           {/* Mobile Navigation Toggle & Auth Buttons */}
           <div className="flex items-center space-x-3">
-            {/* Dashboard link for authenticated users */}
-            {user && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hidden md:flex">
-                Dashboard
-              </Button>
-            )}
             
             {/* Profile Dropdown for authenticated users */}
             {user ? (
