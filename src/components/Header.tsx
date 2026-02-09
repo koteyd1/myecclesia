@@ -136,15 +136,20 @@ const Header = () => {
                       Help Centre
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/donate" className="w-full">
+                      Donate
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             
             <Link 
-              to="/donate" 
+              to="/dashboard" 
               className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              Donate
+              Create Event
             </Link>
           </nav>
 
@@ -270,6 +275,9 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/help-centre" className="w-full">Help Centre</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/donate" className="w-full">Donate</Link>
+                </DropdownMenuItem>
                 {user && (
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard" className="w-full">Dashboard</Link>
@@ -277,8 +285,8 @@ const Header = () => {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/donate" className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap ml-auto">
-              Donate
+            <Link to="/dashboard" className="bg-primary text-primary-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap ml-auto">
+              Create Event
             </Link>
           </div>
         </div>
