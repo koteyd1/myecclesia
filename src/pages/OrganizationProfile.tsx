@@ -96,7 +96,7 @@ export default function OrganizationProfile() {
 
       <main className="min-h-screen bg-background">
         {/* Banner Section */}
-        {organization.banner_url && (
+        {organization.banner_url ? (
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img
               src={organization.banner_url}
@@ -105,11 +105,15 @@ export default function OrganizationProfile() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
+        ) : (
+          <div className="relative h-48 md:h-64 bg-gradient-to-r from-primary/20 to-primary/5 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          </div>
         )}
 
         <div className="container mx-auto px-4 py-8">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row gap-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-6 mb-8 -mt-20 relative z-10">
             <div className="flex-shrink-0">
               {organization.logo_url && (
                 <img
