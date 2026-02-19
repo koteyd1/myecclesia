@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin, Clock, Building2, User, Briefcase, Heart, GraduationCap, Filter, Plus } from "lucide-react";
+import { Search, MapPin, Building2, User, Heart, BookOpen, Users, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,13 @@ interface Opportunity {
   organization?: { name: string; logo_url: string | null; slug: string } | null;
   minister?: { full_name: string; profile_image_url: string | null; slug: string } | null;
 }
+
+const serviceCategories = [
+  { value: "all", label: "All Services", icon: null },
+  { value: "job", label: "Professional", icon: <BookOpen className="h-4 w-4" /> },
+  { value: "volunteer", label: "Community", icon: <Heart className="h-4 w-4" /> },
+  { value: "internship", label: "Mentorship", icon: <Users className="h-4 w-4" /> },
+];
 
 const Opportunities = () => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -81,61 +88,33 @@ const Opportunities = () => {
     return matchesSearch && matchesType && matchesLocation;
   });
 
-  const uniqueTypes = ["all", "job", "volunteer", "internship"];
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "job":
-        return <Briefcase className="h-4 w-4" />;
-      case "volunteer":
-        return <Heart className="h-4 w-4" />;
-      case "internship":
-        return <GraduationCap className="h-4 w-4" />;
-      default:
-        return <Briefcase className="h-4 w-4" />;
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "job":
-        return "Jobs";
-      case "volunteer":
-        return "Volunteering";
-      case "internship":
-        return "Internships";
-      default:
-        return "All";
-    }
-  };
-
   return (
     <>
       <SEOHead
         title="Faith Based Services | MyEcclesia"
-        description="Find faith-based service opportunities, jobs, and internships at churches and Christian organizations. Serve your community with meaningful work."
+        description="Discover faith-based services from trusted churches, organisations, and kingdom leaders. Find counseling, worship, youth ministry, and more."
       />
 
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-12 md:py-16">
+        <div className="bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-14 md:py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
                 Faith Based Services
               </h1>
-              <p className="text-lg text-muted-foreground mb-8">
-                Discover meaningful service opportunities with churches and Christian organizations. Find jobs, volunteer roles, and internships.
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Connect with trusted ministries and organisations offering services to strengthen your faith and community.
               </p>
 
               {/* Search Bar */}
               <div className="relative max-w-xl mx-auto">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  placeholder="Search opportunities by title, description, or location..."
+                  placeholder="Search services, providers, or locations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-12 text-base"
+                  className="pl-12 h-12 text-base rounded-full border-border/60 bg-card shadow-sm"
                 />
               </div>
             </div>
@@ -147,17 +126,17 @@ const Opportunities = () => {
           {/* Filters & Post Button */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex flex-wrap items-center gap-3">
-              {/* Type Filter Badges */}
+              {/* Category Filter Badges */}
               <div className="flex flex-wrap gap-2">
-                {uniqueTypes.map((type) => (
+                {serviceCategories.map((cat) => (
                   <Badge
-                    key={type}
-                    variant={typeFilter === type ? "default" : "outline"}
+                    key={cat.value}
+                    variant={typeFilter === cat.value ? "default" : "outline"}
                     className="cursor-pointer px-4 py-2 text-sm transition-colors hover:bg-primary/10"
-                    onClick={() => setTypeFilter(type)}
+                    onClick={() => setTypeFilter(cat.value)}
                   >
-                    {type !== "all" && getTypeIcon(type)}
-                    <span className="ml-1">{getTypeLabel(type)}</span>
+                    {cat.icon}
+                    <span className={cat.icon ? "ml-1" : ""}>{cat.label}</span>
                   </Badge>
                 ))}
               </div>
@@ -179,33 +158,33 @@ const Opportunities = () => {
             {user && (
               <Button onClick={() => navigate("/opportunities/new")} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Post Opportunity
+                Promote a Service
               </Button>
             )}
           </div>
 
           {/* Results Count */}
           <p className="text-sm text-muted-foreground mb-6">
-            {filteredOpportunities.length} {filteredOpportunities.length === 1 ? "opportunity" : "opportunities"} found
+            {filteredOpportunities.length} {filteredOpportunities.length === 1 ? "service" : "services"} found
           </p>
 
-          {/* Opportunities Grid */}
+          {/* Services Grid */}
           {loading ? (
             <div className="flex justify-center py-12">
               <LoadingSpinner />
             </div>
           ) : filteredOpportunities.length === 0 ? (
             <div className="text-center py-16">
-              <Briefcase className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No opportunities found</h3>
+              <Heart className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No services found</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery || typeFilter !== "all" || locationFilter !== "all"
                   ? "Try adjusting your filters or search terms."
-                  : "Check back soon for new opportunities."}
+                  : "Check back soon for new services."}
               </p>
               {user && (
                 <Button onClick={() => navigate("/opportunities/new")}>
-                  Post the first opportunity
+                  Promote the first service
                 </Button>
               )}
             </div>

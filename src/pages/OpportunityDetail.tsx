@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Clock, Building2, User, Briefcase, Heart, GraduationCap, ExternalLink, Calendar, Share2, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Building2, User, Heart, BookOpen, Users, ExternalLink, Share2, Mail, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/LoadingStates";
 import { SEOHead } from "@/components/SEOHead";
 import { SocialShare } from "@/components/SocialShare";
-import { format, isPast, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface Opportunity {
   id: string;
@@ -45,19 +42,12 @@ const OpportunityDetail = () => {
 
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
-  const [coverLetter, setCoverLetter] = useState("");
-  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchOpportunity();
-      if (user) {
-        checkExistingApplication();
-      }
     }
-  }, [id, user]);
+  }, [id]);
 
   const fetchOpportunity = async () => {
     try {
@@ -77,7 +67,7 @@ const OpportunityDetail = () => {
       console.error("Error fetching opportunity:", error);
       toast({
         title: "Error",
-        description: "Failed to load opportunity details.",
+        description: "Failed to load service details.",
         variant: "destructive",
       });
     } finally {
@@ -85,82 +75,31 @@ const OpportunityDetail = () => {
     }
   };
 
-  const checkExistingApplication = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("opportunity_applications")
-        .select("id")
-        .eq("opportunity_id", id)
-        .eq("user_id", user?.id)
-        .maybeSingle();
-
-      if (!error && data) {
-        setHasApplied(true);
-      }
-    } catch (error) {
-      console.error("Error checking application:", error);
-    }
-  };
-
-  const handleApply = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    setApplying(true);
-    try {
-      const { error } = await supabase.from("opportunity_applications").insert({
-        opportunity_id: id,
-        user_id: user.id,
-        cover_letter: coverLetter || null,
-      });
-
-      if (error) throw error;
-
-      setHasApplied(true);
-      setApplyDialogOpen(false);
-      toast({
-        title: "Application submitted!",
-        description: "Your application has been sent successfully.",
-      });
-    } catch (error: any) {
-      console.error("Error applying:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit application.",
-        variant: "destructive",
-      });
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  const getTypeConfig = (type: string) => {
+  const getServiceConfig = (type: string) => {
     switch (type) {
       case "job":
         return {
-          icon: <Briefcase className="h-5 w-5" />,
-          label: "Job",
-          color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+          icon: <BookOpen className="h-5 w-5" />,
+          label: "Professional Service",
+          className: "bg-primary/10 text-primary border-primary/20",
         };
       case "volunteer":
         return {
           icon: <Heart className="h-5 w-5" />,
-          label: "Volunteer",
-          color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300",
+          label: "Community Service",
+          className: "bg-secondary/10 text-secondary border-secondary/20",
         };
       case "internship":
         return {
-          icon: <GraduationCap className="h-5 w-5" />,
-          label: "Internship",
-          color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+          icon: <Users className="h-5 w-5" />,
+          label: "Mentorship",
+          className: "bg-accent-foreground/10 text-accent-foreground border-accent-foreground/20",
         };
       default:
         return {
-          icon: <Briefcase className="h-5 w-5" />,
-          label: "Opportunity",
-          color: "bg-gray-100 text-gray-800",
+          icon: <Heart className="h-5 w-5" />,
+          label: "Service",
+          className: "bg-muted text-muted-foreground",
         };
     }
   };
@@ -176,31 +115,28 @@ const OpportunityDetail = () => {
   if (!opportunity) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold mb-4">Opportunity not found</h2>
+        <h2 className="text-2xl font-bold mb-4">Service not found</h2>
         <Button onClick={() => navigate("/opportunities")}>
-          Browse Opportunities
+          Browse Services
         </Button>
       </div>
     );
   }
 
-  const typeConfig = getTypeConfig(opportunity.opportunity_type);
+  const serviceConfig = getServiceConfig(opportunity.opportunity_type);
   const posterName = opportunity.organization?.name || opportunity.minister?.full_name || "Unknown";
   const posterSlug = opportunity.organization?.slug || opportunity.minister?.slug;
   const posterType = opportunity.organization_id ? "organization" : "minister";
   const posterImage = opportunity.organization?.logo_url || opportunity.minister?.profile_image_url;
   const posterMission = opportunity.organization?.mission_statement || opportunity.minister?.mission_statement;
 
-  const isDeadlinePassed = opportunity.deadline ? isPast(parseISO(opportunity.deadline)) : false;
-  const canApplyInApp = opportunity.application_method === "in_app" || opportunity.application_method === "both";
-  const hasExternalLink = opportunity.external_url && (opportunity.application_method === "external" || opportunity.application_method === "both");
-
+  const hasExternalLink = opportunity.external_url;
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
 
   return (
     <>
       <SEOHead
-        title={`${opportunity.title} | MyEcclesia`}
+        title={`${opportunity.title} — ${posterName} | MyEcclesia`}
         description={opportunity.description.replace(/<[^>]*>/g, "").substring(0, 160)}
       />
 
@@ -214,53 +150,51 @@ const OpportunityDetail = () => {
               className="mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Opportunities
+              Back to Services
             </Button>
 
             <div className="max-w-4xl">
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <Badge className={`${typeConfig.color} gap-1`}>
-                  {typeConfig.icon}
-                  {typeConfig.label}
+                <Badge variant="outline" className={`gap-1.5 ${serviceConfig.className}`}>
+                  {serviceConfig.icon}
+                  {serviceConfig.label}
                 </Badge>
                 {opportunity.is_remote && (
-                  <Badge variant="outline">Remote</Badge>
-                )}
-                {isDeadlinePassed && (
-                  <Badge variant="destructive">Deadline Passed</Badge>
+                  <Badge variant="outline">Remote Available</Badge>
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
                 {opportunity.title}
               </h1>
 
-              {/* Poster Info */}
+              {/* Provider Info — prominent */}
               <Link
                 to={`/${posterType}/${posterSlug}`}
-                className="inline-flex items-center gap-3 group"
+                className="inline-flex items-center gap-4 group p-4 -ml-4 rounded-xl hover:bg-card/80 transition-colors"
               >
                 {posterImage ? (
                   <img
                     src={posterImage}
                     alt={posterName}
-                    className="h-12 w-12 rounded-full object-cover"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-border"
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
                     {opportunity.organization_id ? (
-                      <Building2 className="h-6 w-6 text-primary" />
+                      <Building2 className="h-7 w-7 text-primary" />
                     ) : (
-                      <User className="h-6 w-6 text-primary" />
+                      <User className="h-7 w-7 text-primary" />
                     )}
                   </div>
                 )}
                 <div>
-                  <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <p className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
                     {posterName}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Posted {format(parseISO(opportunity.created_at), "MMMM d, yyyy")}
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {opportunity.location}
                   </p>
                 </div>
               </Link>
@@ -273,10 +207,10 @@ const OpportunityDetail = () => {
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Description */}
+              {/* About this Service */}
               <Card>
                 <CardHeader>
-                  <CardTitle>About this Opportunity</CardTitle>
+                  <CardTitle>About this Service</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div
@@ -286,11 +220,11 @@ const OpportunityDetail = () => {
                 </CardContent>
               </Card>
 
-              {/* Responsibilities */}
+              {/* What's Included / Responsibilities */}
               {opportunity.responsibilities && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Responsibilities</CardTitle>
+                    <CardTitle>What's Included</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div
@@ -301,11 +235,11 @@ const OpportunityDetail = () => {
                 </Card>
               )}
 
-              {/* Requirements */}
+              {/* Who It's For / Requirements */}
               {opportunity.requirements && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Requirements</CardTitle>
+                    <CardTitle>Who This Is For</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div
@@ -316,7 +250,7 @@ const OpportunityDetail = () => {
                 </Card>
               )}
 
-              {/* About the Organization/Minister */}
+              {/* About the Provider */}
               {posterMission && (
                 <Card>
                   <CardHeader>
@@ -328,7 +262,7 @@ const OpportunityDetail = () => {
                       to={`/${posterType}/${posterSlug}`}
                       className="inline-flex items-center gap-2 mt-4 text-primary hover:underline"
                     >
-                      Learn more about {posterName}
+                      View full profile
                       <ExternalLink className="h-4 w-4" />
                     </Link>
                   </CardContent>
@@ -338,7 +272,7 @@ const OpportunityDetail = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Quick Info Card */}
+              {/* Quick Info */}
               <Card>
                 <CardContent className="pt-6 space-y-4">
                   <div className="flex items-center gap-3">
@@ -353,7 +287,7 @@ const OpportunityDetail = () => {
                     <div className="flex items-center gap-3">
                       <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Hours</p>
+                        <p className="text-sm text-muted-foreground">Availability</p>
                         <p className="font-medium">{opportunity.hours_per_week}</p>
                       </div>
                     </div>
@@ -361,101 +295,39 @@ const OpportunityDetail = () => {
 
                   {opportunity.salary_range && (
                     <div className="flex items-center gap-3">
-                      <Briefcase className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <BookOpen className="h-5 w-5 text-muted-foreground shrink-0" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Compensation</p>
+                        <p className="text-sm text-muted-foreground">Pricing</p>
                         <p className="font-medium">{opportunity.salary_range}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {opportunity.deadline && (
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Application Deadline</p>
-                        <p className={`font-medium ${isDeadlinePassed ? "text-destructive" : ""}`}>
-                          {format(parseISO(opportunity.deadline), "MMMM d, yyyy")}
-                        </p>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* Apply Card */}
+              {/* Contact / Engage Card */}
               <Card>
-                <CardContent className="pt-6">
-                  {hasApplied ? (
-                    <div className="text-center py-4">
-                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                      <p className="font-semibold text-foreground">Application Submitted</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        You've already applied for this opportunity.
-                      </p>
-                    </div>
-                  ) : isDeadlinePassed ? (
-                    <div className="text-center py-4">
-                      <p className="font-semibold text-destructive">Deadline Passed</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        This opportunity is no longer accepting applications.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {canApplyInApp && (
-                        <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button className="w-full" size="lg">
-                              Apply Now
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Apply for {opportunity.title}</DialogTitle>
-                              <DialogDescription>
-                                Submit your application to {posterName}. You can include a cover letter below.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div>
-                                <Label htmlFor="cover-letter">Cover Letter (Optional)</Label>
-                                <Textarea
-                                  id="cover-letter"
-                                  placeholder="Tell them why you're interested in this opportunity..."
-                                  value={coverLetter}
-                                  onChange={(e) => setCoverLetter(e.target.value)}
-                                  className="mt-2 min-h-[150px]"
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter>
-                              <Button variant="outline" onClick={() => setApplyDialogOpen(false)}>
-                                Cancel
-                              </Button>
-                              <Button onClick={handleApply} disabled={applying}>
-                                {applying ? "Submitting..." : "Submit Application"}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      )}
+                <CardContent className="pt-6 space-y-3">
+                  <h3 className="font-semibold text-foreground mb-2">Get in Touch</h3>
 
-                      {hasExternalLink && (
-                        <Button
-                          variant={canApplyInApp ? "outline" : "default"}
-                          className="w-full gap-2"
-                          size="lg"
-                          asChild
-                        >
-                          <a href={opportunity.external_url!} target="_blank" rel="noopener noreferrer">
-                            Apply on External Site
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                  {hasExternalLink && (
+                    <Button className="w-full gap-2" size="lg" asChild>
+                      <a href={opportunity.external_url!} target="_blank" rel="noopener noreferrer">
+                        <Globe className="h-4 w-4" />
+                        Visit Website
+                      </a>
+                    </Button>
                   )}
+
+                  <Button
+                    variant={hasExternalLink ? "outline" : "default"}
+                    className="w-full gap-2"
+                    size="lg"
+                    onClick={() => navigate(`/${posterType}/${posterSlug}`)}
+                  >
+                    <User className="h-4 w-4" />
+                    View Provider Profile
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -464,14 +336,14 @@ const OpportunityDetail = () => {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Share2 className="h-4 w-4" />
-                    Share this Opportunity
+                    Share this Service
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <SocialShare
                     url={currentUrl}
                     title={opportunity.title}
-                    description={`${opportunity.opportunity_type} opportunity at ${posterName}`}
+                    description={`${serviceConfig.label} by ${posterName}`}
                   />
                 </CardContent>
               </Card>
