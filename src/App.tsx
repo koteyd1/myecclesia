@@ -44,6 +44,9 @@ import MyTickets from "./pages/MyTickets";
 import TicketScanner from "./pages/TicketScanner";
 import VerifyTicket from "./pages/VerifyTicket";
 import EventEdit from "./pages/EventEdit";
+import ChurchProfile from "./pages/ChurchProfile";
+import ChurchForm from "./pages/ChurchForm";
+import Churches from "./pages/Churches";
 
 import NotFound from "./pages/NotFound";
 
@@ -100,6 +103,10 @@ const App = () => (
               <Route path="/scan-tickets/:eventId" element={<TicketScanner />} />
               <Route path="/verify-ticket/:ticketId" element={<VerifyTicket />} />
               <Route path="/event/edit/:id" element={<EventEdit />} />
+              <Route path="/churches" element={<Churches />} />
+              <Route path="/church/new" element={<ChurchForm />} />
+              <Route path="/church/edit/:id" element={<ChurchForm />} />
+              <Route path="/church/:slug" element={<ChurchProfile />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
