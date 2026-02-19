@@ -32,6 +32,7 @@ const eventSchema = z.object({
   denominations: z.string().optional(),
   duration: z.string().optional(),
   requirements: z.string().optional(),
+  registration_type: z.string().default("ticketed"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -68,6 +69,7 @@ export default function EventEdit() {
       denominations: "",
       duration: "",
       requirements: "",
+      registration_type: "ticketed",
     },
   });
 
@@ -118,6 +120,7 @@ export default function EventEdit() {
         denominations: data.denominations || "",
         duration: data.duration || "",
         requirements: data.requirements || "",
+        registration_type: data.registration_type || "ticketed",
       });
     } catch (error) {
       console.error("Error fetching event:", error);
@@ -154,6 +157,7 @@ export default function EventEdit() {
           denominations: data.denominations || null,
           duration: data.duration || null,
           requirements: data.requirements || null,
+          registration_type: data.registration_type || "ticketed",
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);

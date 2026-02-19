@@ -28,6 +28,7 @@ const EventDetail = () => {
   const [isInCalendar, setIsInCalendar] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [rsvpCount, setRsvpCount] = useState(0);
   
   // Track event views (only for authenticated users)
   useEventTracking(user ? event?.id : null);
@@ -96,6 +97,9 @@ const EventDetail = () => {
     if (event && user) {
       checkRegistrationStatus();
       checkCalendarStatus();
+      if (event.registration_type === 'rsvp') {
+        fetchRsvpCount();
+      }
     }
   }, [event, user]);
 
@@ -244,6 +248,20 @@ const EventDetail = () => {
     }
   };
 
+  const fetchRsvpCount = async () => {
+    if (!event?.id) return;
+    try {
+      const { count } = await supabase
+        .from("event_registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+      setRsvpCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching RSVP count:", error);
+    }
+  };
+
   const handlePurchaseTicket = async () => {
     if (!user || !event) {
       navigate("/auth");
@@ -369,9 +387,15 @@ const EventDetail = () => {
 
       setIsRegistered(true);
       toast({
-        title: "Registration Successful!",
-        description: "You have successfully registered for this event.",
+        title: event.registration_type === 'rsvp' ? "RSVP Confirmed! 🎉" : "Registration Successful!",
+        description: event.registration_type === 'rsvp' 
+          ? "You've confirmed your attendance. See you there!"
+          : "You have successfully registered for this event.",
       });
+      
+      if (event.registration_type === 'rsvp') {
+        fetchRsvpCount();
+      }
     } catch (error: any) {
       console.error("Error registering for event:", error);
       toast({
@@ -421,7 +445,7 @@ const EventDetail = () => {
         const startDate = new Date(`${event.date}T${event.time}`);
         const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
 
-        const formatDate = (date: Date) => {
+        const formatDateICS = (date: Date) => {
           return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         };
 
@@ -431,8 +455,8 @@ const EventDetail = () => {
           'PRODID:-//ChurchEvents//Event//EN',
           'BEGIN:VEVENT',
           `UID:${event.id}@churchevents.com`,
-          `DTSTART:${formatDate(startDate)}`,
-          `DTEND:${formatDate(endDate)}`,
+          `DTSTART:${formatDateICS(startDate)}`,
+          `DTEND:${formatDateICS(endDate)}`,
           `SUMMARY:${event.title}`,
           `DESCRIPTION:${event.description}`,
           `LOCATION:${event.location}`,
@@ -610,19 +634,21 @@ const EventDetail = () => {
                     </Badge>
                   )}
                 </div>
-                {event.price === 0 ? (
-                  <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                  {event.registration_type === 'rsvp' ? (
+                    <Badge className="bg-primary text-primary-foreground">
+                      RSVP
+                    </Badge>
+                  ) : event.price === 0 ? (
                     <Badge className="bg-success text-success-foreground">
                       Free
                     </Badge>
-                  </div>
-                ) : (
-                  <div className="absolute top-4 right-4">
+                  ) : (
                     <Badge variant="outline" className="bg-white/90 text-foreground">
                       £{event.price}
                     </Badge>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               <div className="space-y-6">
@@ -649,7 +675,12 @@ const EventDetail = () => {
                   </div>
                   <div className="flex items-center text-muted-foreground">
                     <Users className="h-5 w-5 mr-3 text-primary" />
-                    <span>{event.availableTickets} spots available</span>
+                    <span>
+                      {event.registration_type === 'rsvp' 
+                        ? `${rsvpCount} ${rsvpCount === 1 ? 'person' : 'people'} going`
+                        : `${event.availableTickets} spots available`
+                      }
+                    </span>
                   </div>
                 </div>
 
@@ -717,19 +748,23 @@ const EventDetail = () => {
             <div className="lg:col-span-1">
               <Card className="sticky top-8">
                 <CardHeader>
-                  <CardTitle>Event Registration</CardTitle>
+                  <CardTitle>
+                    {event.registration_type === 'rsvp' ? 'RSVP' : 'Event Registration'}
+                  </CardTitle>
                   <CardDescription>
-                    {event.ticket_url || event.external_url 
-                      ? "Get tickets from the organizer" 
-                      : event.price === 0 
-                        ? "This event is free to attend" 
-                        : `Event fee: £${event.price}`
+                    {event.registration_type === 'rsvp'
+                      ? "Let the organizer know you're coming"
+                      : event.ticket_url || event.external_url 
+                        ? "Get tickets from the organizer" 
+                        : event.price === 0 
+                          ? "This event is free to attend" 
+                          : `Event fee: £${event.price}`
                     }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* External ticket link - prioritize this */}
-                  {(event.ticket_url || event.external_url) ? (
+                  {/* External ticket link */}
+                  {(event.ticket_url || event.external_url) && event.registration_type !== 'rsvp' ? (
                     <div className="space-y-4">
                       <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                         <h4 className="font-semibold text-primary mb-2">External Registration</h4>
@@ -750,9 +785,14 @@ const EventDetail = () => {
                     </div>
                   ) : isSalesEnded() ? (
                     <div className="p-4 bg-muted/50 border border-muted rounded-lg text-center">
-                      <h4 className="font-semibold text-muted-foreground mb-2">Sales Ended</h4>
+                      <h4 className="font-semibold text-muted-foreground mb-2">
+                        {event.registration_type === 'rsvp' ? 'RSVPs Closed' : 'Sales Ended'}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                        Registration for this event is no longer available.
+                        {event.registration_type === 'rsvp' 
+                          ? "RSVPs for this event are no longer being accepted."
+                          : "Registration for this event is no longer available."
+                        }
                       </p>
                     </div>
                   ) : user ? (
@@ -761,20 +801,27 @@ const EventDetail = () => {
                         <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <CheckCircle className="h-5 w-5 text-success" />
-                            <h4 className="font-semibold text-success">Registered!</h4>
+                            <h4 className="font-semibold text-success">
+                              {event.registration_type === 'rsvp' ? "You're going!" : "Registered!"}
+                            </h4>
                           </div>
                           <p className="text-sm text-muted-foreground mb-4">
-                            You're registered for this event. Check your dashboard or My Tickets for details.
+                            {event.registration_type === 'rsvp'
+                              ? "You've confirmed your attendance. The organizer has been notified."
+                              : "You're registered for this event. Check your dashboard or My Tickets for details."
+                            }
                           </p>
                           <div className="space-y-2">
-                            <Button 
-                              variant="outline"
-                              className="w-full"
-                              onClick={() => navigate("/my-tickets")}
-                            >
-                              <Ticket className="h-4 w-4 mr-2" />
-                              View My Tickets
-                            </Button>
+                            {event.registration_type !== 'rsvp' && (
+                              <Button 
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => navigate("/my-tickets")}
+                              >
+                                <Ticket className="h-4 w-4 mr-2" />
+                                View My Tickets
+                              </Button>
+                            )}
                             <Button 
                               variant={isInCalendar ? "destructive" : "outline"}
                               className="w-full"
@@ -793,6 +840,26 @@ const EventDetail = () => {
                                 </>
                               )}
                             </Button>
+                          </div>
+                        </div>
+                      ) : event.registration_type === 'rsvp' ? (
+                        <div className="space-y-4">
+                          <Button
+                            className="w-full"
+                            size="lg"
+                            onClick={handleRegister}
+                            disabled={registering}
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            {registering ? "Confirming..." : "RSVP – I'm Coming"}
+                          </Button>
+                          {rsvpCount > 0 && (
+                            <p className="text-sm text-muted-foreground text-center">
+                              {rsvpCount} {rsvpCount === 1 ? 'person has' : 'people have'} already RSVP'd
+                            </p>
+                          )}
+                          <div className="text-xs text-muted-foreground text-center">
+                            <p>Free event · No ticket required · Just let the organizer know you'll be there</p>
                           </div>
                         </div>
                       ) : (
