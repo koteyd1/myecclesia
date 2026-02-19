@@ -158,7 +158,7 @@ const Opportunities = () => {
             {user && (
               <Button onClick={() => navigate("/opportunities/new")} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Promote a Service
+                Promote Service
               </Button>
             )}
           </div>

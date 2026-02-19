@@ -240,7 +240,7 @@ const OpportunityForm = () => {
   if (!hasVerifiedProfiles) {
     return (
       <div className="container mx-auto px-4 py-16 text-center max-w-lg">
-        <SEOHead title="Promote a Service | MyEcclesia" />
+        <SEOHead title="Promote Service | MyEcclesia" />
         <Building2 className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
         <h2 className="text-2xl font-bold mb-4">Verification Required</h2>
         <p className="text-muted-foreground mb-6">
@@ -260,7 +260,7 @@ const OpportunityForm = () => {
 
   return (
     <>
-      <SEOHead title={id ? "Edit Service | MyEcclesia" : "Promote a Service | MyEcclesia"} />
+      <SEOHead title={id ? "Edit Service | MyEcclesia" : "Promote Service | MyEcclesia"} />
 
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-3xl">
@@ -271,7 +271,7 @@ const OpportunityForm = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>{id ? "Edit Service" : "Promote a Service"}</CardTitle>
+              <CardTitle>{id ? "Edit Service" : "Promote Service"}</CardTitle>
               <CardDescription>
                 {id ? "Update your service listing." : "Showcase a service offered by your organisation or ministry to the community."}
               </CardDescription>
