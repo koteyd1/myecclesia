@@ -246,27 +246,27 @@ export default function Ministers() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Browse Ministers | MyEcclesia"
-        description="Discover and connect with verified ministers and ministry leaders. Find speakers, mentors, and spiritual guides in your area."
+        title="Browse Kingdom Leaders | MyEcclesia"
+        description="Discover and connect with verified kingdom leaders and ministry leaders. Find speakers, mentors, and spiritual guides in your area."
         canonicalUrl={`${window.location.origin}/ministers`}
-        keywords="ministers, ministry leaders, speakers, preachers, spiritual guides, church leaders"
+        keywords="kingdom leaders, ministry leaders, speakers, preachers, spiritual guides, church leaders"
       />
       
       <StructuredData
         data={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Ministers Directory",
-          "description": "Browse verified ministers and ministry leaders",
+          "name": "Kingdom Leaders Directory",
+          "description": "Browse verified kingdom leaders and ministry leaders",
           "url": `${window.location.origin}/ministers`
         }}
       />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Browse Ministers</h1>
+          <h1 className="text-3xl font-bold mb-2">Browse Kingdom Leaders</h1>
           <p className="text-muted-foreground">
-            Discover and connect with verified ministers and ministry leaders
+            Discover and connect with verified kingdom leaders and ministry leaders
           </p>
         </div>
 
@@ -276,7 +276,7 @@ export default function Ministers() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search ministers by name, ministry focus, or location..."
+                placeholder="Search kingdom leaders by name, ministry focus, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -338,7 +338,7 @@ export default function Ministers() {
               </DropdownMenu>
 
               <span className="text-sm text-muted-foreground">
-                {filteredMinisters.length} minister{filteredMinisters.length !== 1 ? 's' : ''} found
+                {filteredMinisters.length} kingdom leader{filteredMinisters.length !== 1 ? 's' : ''} found
               </span>
             </div>
 
@@ -365,7 +365,7 @@ export default function Ministers() {
         {filteredMinisters.length === 0 ? (
           <div className="text-center py-12">
             <User className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Ministers Found</h3>
+            <h3 className="text-lg font-semibold mb-2">No Kingdom Leaders Found</h3>
             <p className="text-muted-foreground mb-4">
               Try adjusting your search criteria or filters
             </p>

@@ -64,7 +64,7 @@ const HelpCentre = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Find jobs, volunteer roles, and ministry positions
+                Find faith-based service opportunities and ministry positions
               </p>
             </CardContent>
           </Card>
@@ -78,7 +78,7 @@ const HelpCentre = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Connect with churches, ministers, and organizations
+                Connect with churches, kingdom leaders, and organizations
               </p>
             </CardContent>
           </Card>
@@ -145,16 +145,16 @@ const HelpCentre = () => {
                   <div>
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      Minister Profile
+                      Kingdom Leader Profile
                     </h4>
                     <p className="text-muted-foreground mb-2">
-                      A public profile for individual ministers, speakers, worship leaders, and spiritual guides.
+                      A public profile for individual kingdom leaders, speakers, worship leaders, and spiritual guides.
                     </p>
                     <div className="text-sm text-muted-foreground">
                       <strong>Purpose:</strong> Showcase your ministry and connect with others<br/>
                       <strong>Who can see it:</strong> Public (after admin verification)<br/>
                       <strong>Features:</strong> Ministry focus, mission statement, services offered, social links, booking contacts, follower system<br/>
-                      <strong>Examples:</strong> Guest preachers, worship leaders, youth ministers, counselors, online devotional creators
+                       <strong>Examples:</strong> Guest preachers, worship leaders, youth ministers, counselors, online devotional creators
                     </div>
                   </div>
 
@@ -177,8 +177,8 @@ const HelpCentre = () => {
                   <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                     <h5 className="font-semibold mb-2">👥 Can I have multiple profiles?</h5>
                     <p className="text-sm text-muted-foreground">
-                      Yes! You can create both a Minister profile and an Organization profile. For example, 
-                      a pastor might have both a personal Minister profile and represent their church with 
+                      Yes! You can create both a Kingdom Leader profile and an Organization profile. For example, 
+                      a pastor might have both a personal Kingdom Leader profile and represent their church with 
                       an Organization profile.
                     </p>
                   </div>
@@ -186,7 +186,7 @@ const HelpCentre = () => {
                   <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
                     <h5 className="font-semibold mb-2">✅ Verification Process</h5>
                     <p className="text-sm text-muted-foreground">
-                      Minister and Organization profiles require admin verification before going public. 
+                       Kingdom Leader and Organization profiles require admin verification before going public. 
                       Similarly, all events require verification before becoming publicly visible.
                       This ensures authenticity and maintains trust in our community.
                     </p>
@@ -245,7 +245,7 @@ const HelpCentre = () => {
                   <h3 className="font-semibold mb-2">Who Can Create Events?</h3>
                   <ul className="space-y-2 text-muted-foreground">
                     <li>• Any registered user can create events</li>
-                    <li>• You don't need a verified organization or minister profile</li>
+                    <li>• You don't need a verified organization or kingdom leader profile</li>
                     <li>• Go to "My Profiles" in your dashboard to access event creation</li>
                   </ul>
                   
@@ -290,28 +290,28 @@ const HelpCentre = () => {
               <AccordionTrigger className="text-left">
                 <div className="flex items-center gap-3">
                   <Briefcase className="h-5 w-5 text-primary" />
-                  <span className="text-lg font-semibold">Opportunities</span>
+                  <span className="text-lg font-semibold">Faith Based Services</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-4">
                 <div className="pl-8">
-                  <h3 className="font-semibold mb-2">Finding Opportunities</h3>
+                  <h3 className="font-semibold mb-2">Finding Faith Based Services</h3>
                   <ul className="space-y-2 text-muted-foreground">
                     <li>• Browse jobs, volunteer roles, and internships</li>
                     <li>• Filter by type, location, and remote availability</li>
-                    <li>• View opportunities from verified organizations and ministers</li>
+                    <li>• View opportunities from verified organizations and kingdom leaders</li>
                   </ul>
                   
-                  <h3 className="font-semibold mt-6 mb-2">Applying for Opportunities</h3>
+                  <h3 className="font-semibold mt-6 mb-2">Applying for Faith Based Services</h3>
                   <ul className="space-y-2 text-muted-foreground">
                     <li>• Click on any opportunity to view full details</li>
                     <li>• Apply directly through the platform or via external link</li>
                     <li>• Track your applications in your dashboard</li>
                   </ul>
                   
-                  <h3 className="font-semibold mt-6 mb-2">Posting Opportunities</h3>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li>• Verified organizations and ministers can post opportunities</li>
+                   <h3 className="font-semibold mt-6 mb-2">Posting Faith Based Services</h3>
+                   <ul className="space-y-2 text-muted-foreground">
+                     <li>• Verified organizations and kingdom leaders can post opportunities</li>
                     <li>• Include job description, requirements, and application method</li>
                     <li>• Manage applications from your dashboard</li>
                   </ul>

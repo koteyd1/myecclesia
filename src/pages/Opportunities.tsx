@@ -112,8 +112,8 @@ const Opportunities = () => {
   return (
     <>
       <SEOHead
-        title="Jobs & Volunteering | MyEcclesia"
-        description="Find jobs, volunteering opportunities, and internships at churches and Christian organizations. Serve your community with meaningful work."
+        title="Faith Based Services | MyEcclesia"
+        description="Find faith-based service opportunities, jobs, and internships at churches and Christian organizations. Serve your community with meaningful work."
       />
 
       <div className="min-h-screen bg-background">
@@ -122,10 +122,10 @@ const Opportunities = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Jobs & Volunteering Opportunities
+                Faith Based Services
               </h1>
               <p className="text-lg text-muted-foreground mb-8">
-                Discover meaningful work with churches and Christian organizations. Find jobs, volunteer roles, and internships.
+                Discover meaningful service opportunities with churches and Christian organizations. Find jobs, volunteer roles, and internships.
               </p>
 
               {/* Search Bar */}

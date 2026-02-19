@@ -76,12 +76,12 @@ const Header = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/opportunities" className="w-full">
-                      Jobs & Volunteering
+                      Faith Based Services
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/ministers" className="w-full">
-                      Ministers
+                      Kingdom Leaders
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -238,10 +238,10 @@ const Header = () => {
                   <Link to="/events" className="w-full">All Events</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/opportunities" className="w-full">Jobs & Volunteering</Link>
+                  <Link to="/opportunities" className="w-full">Faith Based Services</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/ministers" className="w-full">Ministers</Link>
+                  <Link to="/ministers" className="w-full">Kingdom Leaders</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/organizations" className="w-full">Organisations</Link>

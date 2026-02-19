@@ -156,7 +156,7 @@ const OpportunityForm = () => {
     if (!selectedPosterId) {
       toast({
         title: "Error",
-        description: "Please select an organization or minister profile to post as.",
+        description: "Please select an organization or kingdom leader profile to post as.",
         variant: "destructive",
       });
       return;
@@ -244,14 +244,14 @@ const OpportunityForm = () => {
         <Building2 className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
         <h2 className="text-2xl font-bold mb-4">Verification Required</h2>
         <p className="text-muted-foreground mb-6">
-          To post opportunities, you need a verified organization or minister profile. Please create and verify your profile first.
+          To post opportunities, you need a verified organization or kingdom leader profile. Please create and verify your profile first.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={() => navigate("/organization/new")}>
             Create Organization
           </Button>
           <Button variant="outline" onClick={() => navigate("/minister/new")}>
-            Create Minister Profile
+            Create Kingdom Leader Profile
           </Button>
         </div>
       </div>
@@ -325,12 +325,12 @@ const OpportunityForm = () => {
                       >
                         <div className="flex items-center gap-3">
                           <User className="h-5 w-5 text-primary" />
-                          <span className="font-medium">Minister</span>
+                          <span className="font-medium">Kingdom Leader</span>
                         </div>
                         {posterType === "minister" && (
                           <Select value={selectedPosterId} onValueChange={setSelectedPosterId}>
                             <SelectTrigger className="mt-3">
-                              <SelectValue placeholder="Select minister profile" />
+                              <SelectValue placeholder="Select kingdom leader profile" />
                             </SelectTrigger>
                             <SelectContent>
                               {userMinisters.map((minister) => (
