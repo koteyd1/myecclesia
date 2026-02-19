@@ -1,9 +1,8 @@
-import { MapPin, Clock, Building2, User, Briefcase, Heart, GraduationCap, ExternalLink, Calendar } from "lucide-react";
+import { MapPin, Building2, User, Heart, BookOpen, Music, Users, ExternalLink, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
-import { format, isPast, parseISO } from "date-fns";
 
 interface Opportunity {
   id: string;
@@ -31,144 +30,133 @@ interface OpportunityCardProps {
 const OpportunityCard = ({ opportunity }: OpportunityCardProps) => {
   const navigate = useNavigate();
 
-  const getTypeConfig = (type: string) => {
+  const getServiceConfig = (type: string) => {
     switch (type) {
       case "job":
         return {
-          icon: <Briefcase className="h-4 w-4" />,
-          label: "Job",
-          color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+          icon: <BookOpen className="h-3.5 w-3.5" />,
+          label: "Professional",
+          className: "bg-primary/10 text-primary border-primary/20",
         };
       case "volunteer":
         return {
-          icon: <Heart className="h-4 w-4" />,
-          label: "Volunteer",
-          color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300",
+          icon: <Heart className="h-3.5 w-3.5" />,
+          label: "Community",
+          className: "bg-secondary/10 text-secondary border-secondary/20",
         };
       case "internship":
         return {
-          icon: <GraduationCap className="h-4 w-4" />,
-          label: "Internship",
-          color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+          icon: <Users className="h-3.5 w-3.5" />,
+          label: "Mentorship",
+          className: "bg-accent-foreground/10 text-accent-foreground border-accent-foreground/20",
         };
       default:
         return {
-          icon: <Briefcase className="h-4 w-4" />,
-          label: "Opportunity",
-          color: "bg-gray-100 text-gray-800",
+          icon: <Heart className="h-3.5 w-3.5" />,
+          label: "Service",
+          className: "bg-muted text-muted-foreground",
         };
     }
   };
 
-  const typeConfig = getTypeConfig(opportunity.opportunity_type);
+  const serviceConfig = getServiceConfig(opportunity.opportunity_type);
   const posterName = opportunity.organization?.name || opportunity.minister?.full_name || "Unknown";
   const posterSlug = opportunity.organization?.slug || opportunity.minister?.slug;
   const posterType = opportunity.organization_id ? "organization" : "minister";
   const posterImage = opportunity.organization?.logo_url || opportunity.minister?.profile_image_url;
 
-  const isDeadlinePassed = opportunity.deadline ? isPast(parseISO(opportunity.deadline)) : false;
-
-  const truncateDescription = (text: string, maxLength: number = 120) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + "...";
+  const truncateDescription = (text: string, maxLength: number = 100) => {
+    const clean = text.replace(/<[^>]*>/g, "");
+    if (clean.length <= maxLength) return clean;
+    return clean.substring(0, maxLength).trim() + "...";
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 flex flex-col h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge className={`${typeConfig.color} gap-1 shrink-0`}>
-                {typeConfig.icon}
-                {typeConfig.label}
-              </Badge>
-              {opportunity.is_remote && (
-                <Badge variant="outline" className="shrink-0">
-                  Remote
-                </Badge>
-              )}
-            </div>
-            <h3
-              className="font-semibold text-lg text-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors"
-              onClick={() => navigate(`/opportunities/${opportunity.id}`)}
-            >
-              {opportunity.title}
-            </h3>
-          </div>
-        </div>
-
-        {/* Poster Info */}
+    <Card className="group hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden border-border/60">
+      {/* Provider header */}
+      <CardHeader className="pb-3 space-y-4">
         <Link
           to={`/${posterType}/${posterSlug}`}
-          className="flex items-center gap-2 mt-3 group/poster"
+          className="flex items-center gap-3 group/poster"
         >
           {posterImage ? (
             <img
               src={posterImage}
               alt={posterName}
-              className="h-8 w-8 rounded-full object-cover"
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-border"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
               {opportunity.organization_id ? (
-                <Building2 className="h-4 w-4 text-primary" />
+                <Building2 className="h-5 w-5 text-primary" />
               ) : (
-                <User className="h-4 w-4 text-primary" />
+                <User className="h-5 w-5 text-primary" />
               )}
             </div>
           )}
-          <span className="text-sm text-muted-foreground group-hover/poster:text-primary transition-colors">
-            {posterName}
-          </span>
+          <div className="min-w-0">
+            <p className="font-semibold text-foreground group-hover/poster:text-primary transition-colors truncate">
+              {posterName}
+            </p>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">{opportunity.location}</span>
+              {opportunity.is_remote && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                  Remote
+                </Badge>
+              )}
+            </div>
+          </div>
         </Link>
+
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className={`gap-1 text-xs ${serviceConfig.className}`}>
+            {serviceConfig.icon}
+            {serviceConfig.label}
+          </Badge>
+        </div>
       </CardHeader>
 
-      <CardContent className="flex-1 pt-0">
-        <p className="text-sm text-muted-foreground mb-4">
-          {truncateDescription(opportunity.description.replace(/<[^>]*>/g, ""))}
+      <CardContent className="flex-1 pt-0 space-y-3">
+        <h3
+          className="font-semibold text-base text-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors leading-snug"
+          onClick={() => navigate(`/opportunities/${opportunity.id}`)}
+        >
+          {opportunity.title}
+        </h3>
+        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+          {truncateDescription(opportunity.description, 130)}
         </p>
 
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4 shrink-0" />
-            <span className="truncate">{opportunity.location}</span>
-          </div>
-
-          {opportunity.hours_per_week && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4 shrink-0" />
-              <span>{opportunity.hours_per_week}</span>
-            </div>
-          )}
-
-          {opportunity.salary_range && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Briefcase className="h-4 w-4 shrink-0" />
-              <span>{opportunity.salary_range}</span>
-            </div>
-          )}
-
-          {opportunity.deadline && (
-            <div className={`flex items-center gap-2 ${isDeadlinePassed ? "text-destructive" : "text-muted-foreground"}`}>
-              <Calendar className="h-4 w-4 shrink-0" />
-              <span>
-                {isDeadlinePassed ? "Deadline passed: " : "Apply by: "}
-                {format(parseISO(opportunity.deadline), "MMM d, yyyy")}
-              </span>
-            </div>
-          )}
-        </div>
+        {opportunity.salary_range && (
+          <p className="text-xs font-medium text-primary">
+            {opportunity.salary_range}
+          </p>
+        )}
       </CardContent>
 
-      <CardFooter className="pt-4 border-t">
+      <CardFooter className="pt-4 border-t border-border/50 gap-2">
         <Button
-          className="w-full"
+          variant="default"
+          className="flex-1 gap-1.5"
+          size="sm"
           onClick={() => navigate(`/opportunities/${opportunity.id}`)}
-          disabled={isDeadlinePassed}
         >
-          {isDeadlinePassed ? "Deadline Passed" : "View Details"}
+          Learn More
+          <ArrowRight className="h-3.5 w-3.5" />
         </Button>
+        {opportunity.external_url && (
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <a href={opportunity.external_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

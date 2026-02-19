@@ -156,7 +156,7 @@ const OpportunityForm = () => {
     if (!selectedPosterId) {
       toast({
         title: "Error",
-        description: "Please select an organization or kingdom leader profile to post as.",
+        description: "Please select an organisation or kingdom leader profile to post as.",
         variant: "destructive",
       });
       return;
@@ -165,7 +165,7 @@ const OpportunityForm = () => {
     if ((applicationMethod === "external" || applicationMethod === "both") && !externalUrl) {
       toast({
         title: "Error",
-        description: "Please provide an external application URL.",
+        description: "Please provide a website or booking URL.",
         variant: "destructive",
       });
       return;
@@ -201,7 +201,7 @@ const OpportunityForm = () => {
 
         toast({
           title: "Success",
-          description: "Opportunity updated successfully!",
+          description: "Service updated successfully!",
         });
       } else {
         const { error } = await supabase.from("opportunities").insert(opportunityData);
@@ -210,7 +210,7 @@ const OpportunityForm = () => {
 
         toast({
           title: "Success",
-          description: "Opportunity posted successfully!",
+          description: "Service promoted successfully!",
         });
       }
 
@@ -219,7 +219,7 @@ const OpportunityForm = () => {
       console.error("Error saving opportunity:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save opportunity.",
+        description: error.message || "Failed to save service.",
         variant: "destructive",
       });
     } finally {
@@ -240,11 +240,11 @@ const OpportunityForm = () => {
   if (!hasVerifiedProfiles) {
     return (
       <div className="container mx-auto px-4 py-16 text-center max-w-lg">
-        <SEOHead title="Post Opportunity | MyEcclesia" />
+        <SEOHead title="Promote a Service | MyEcclesia" />
         <Building2 className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
         <h2 className="text-2xl font-bold mb-4">Verification Required</h2>
         <p className="text-muted-foreground mb-6">
-          To post opportunities, you need a verified organization or kingdom leader profile. Please create and verify your profile first.
+          To promote services, you need a verified organisation or kingdom leader profile. Please create and verify your profile first.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={() => navigate("/organization/new")}>
@@ -260,20 +260,20 @@ const OpportunityForm = () => {
 
   return (
     <>
-      <SEOHead title={id ? "Edit Opportunity | MyEcclesia" : "Post Opportunity | MyEcclesia"} />
+      <SEOHead title={id ? "Edit Service | MyEcclesia" : "Promote a Service | MyEcclesia"} />
 
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-3xl">
           <Button variant="ghost" onClick={() => navigate("/opportunities")} className="mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Opportunities
+            Back to Services
           </Button>
 
           <Card>
             <CardHeader>
-              <CardTitle>{id ? "Edit Opportunity" : "Post New Opportunity"}</CardTitle>
+              <CardTitle>{id ? "Edit Service" : "Promote a Service"}</CardTitle>
               <CardDescription>
-                {id ? "Update your opportunity listing." : "Create a job, volunteering, or internship opportunity for your organization."}
+                {id ? "Update your service listing." : "Showcase a service offered by your organisation or ministry to the community."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -349,26 +349,26 @@ const OpportunityForm = () => {
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="title">Title *</Label>
+                    <Label htmlFor="title">Service Name *</Label>
                     <Input
                       id="title"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., Youth Ministry Volunteer"
+                      placeholder="e.g., Marriage Counseling, Youth Worship, Bible Study"
                       required
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="opportunity-type">Opportunity Type *</Label>
+                    <Label htmlFor="opportunity-type">Service Category *</Label>
                     <Select value={opportunityType} onValueChange={(v: any) => setOpportunityType(v)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="volunteer">Volunteering</SelectItem>
-                        <SelectItem value="job">Job</SelectItem>
-                        <SelectItem value="internship">Internship</SelectItem>
+                        <SelectItem value="volunteer">Community Service</SelectItem>
+                        <SelectItem value="job">Professional Service</SelectItem>
+                        <SelectItem value="internship">Mentorship</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -379,7 +379,7 @@ const OpportunityForm = () => {
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe the opportunity, what the role involves, and what makes it special..."
+                      placeholder="Describe your service, who it helps, and what makes it unique..."
                       className="min-h-[150px]"
                       required
                     />
@@ -399,67 +399,55 @@ const OpportunityForm = () => {
                     />
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                   <div className="flex items-center space-x-2">
                     <Switch id="remote" checked={isRemote} onCheckedChange={setIsRemote} />
-                    <Label htmlFor="remote">This is a remote opportunity</Label>
+                    <Label htmlFor="remote">Available remotely / online</Label>
                   </div>
                 </div>
 
                 {/* Details */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="hours">Hours per Week</Label>
+                    <Label htmlFor="hours">Availability</Label>
                     <Input
                       id="hours"
                       value={hoursPerWeek}
                       onChange={(e) => setHoursPerWeek(e.target.value)}
-                      placeholder="e.g., 10-15 hours"
+                      placeholder="e.g., Weekdays, Saturdays, By appointment"
                     />
                   </div>
 
-                  {opportunityType !== "volunteer" && (
                     <div>
-                      <Label htmlFor="salary">Salary/Compensation</Label>
+                      <Label htmlFor="salary">Pricing (optional)</Label>
                       <Input
                         id="salary"
                         value={salaryRange}
                         onChange={(e) => setSalaryRange(e.target.value)}
-                        placeholder="e.g., £25,000-£30,000"
+                        placeholder="e.g., Free, Donation-based, £50/session"
                       />
                     </div>
-                  )}
-
-                  <div>
-                    <Label htmlFor="deadline">Application Deadline</Label>
-                    <Input
-                      id="deadline"
-                      type="date"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                    />
-                  </div>
                 </div>
 
                 {/* Requirements & Responsibilities */}
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="responsibilities">Responsibilities</Label>
+                    <Label htmlFor="responsibilities">What's Included</Label>
                     <Textarea
                       id="responsibilities"
                       value={responsibilities}
                       onChange={(e) => setResponsibilities(e.target.value)}
-                      placeholder="List the main responsibilities of this role..."
+                      placeholder="Describe what people can expect from this service..."
                       className="min-h-[100px]"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="requirements">Requirements</Label>
+                    <Label htmlFor="requirements">Who This Is For</Label>
                     <Textarea
                       id="requirements"
                       value={requirements}
                       onChange={(e) => setRequirements(e.target.value)}
-                      placeholder="List any skills, qualifications, or experience required..."
+                      placeholder="Describe who would benefit from this service..."
                       className="min-h-[100px]"
                     />
                   </div>
@@ -468,14 +456,14 @@ const OpportunityForm = () => {
                 {/* Application Method */}
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="application-method">Application Method *</Label>
+                    <Label htmlFor="application-method">Contact Method *</Label>
                     <Select value={applicationMethod} onValueChange={(v: any) => setApplicationMethod(v)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="in_app">In-app applications only</SelectItem>
-                        <SelectItem value="external">External link only</SelectItem>
+                        <SelectItem value="in_app">Through profile only</SelectItem>
+                        <SelectItem value="external">External website</SelectItem>
                         <SelectItem value="both">Both options</SelectItem>
                       </SelectContent>
                     </Select>
@@ -483,13 +471,13 @@ const OpportunityForm = () => {
 
                   {(applicationMethod === "external" || applicationMethod === "both") && (
                     <div>
-                      <Label htmlFor="external-url">External Application URL *</Label>
+                      <Label htmlFor="external-url">Website / Booking URL *</Label>
                       <Input
                         id="external-url"
                         type="url"
                         value={externalUrl}
                         onChange={(e) => setExternalUrl(e.target.value)}
-                        placeholder="https://example.com/apply"
+                        placeholder="https://example.com/book"
                         required={applicationMethod === "external"}
                       />
                     </div>
@@ -503,7 +491,7 @@ const OpportunityForm = () => {
                   </Button>
                   <Button type="submit" disabled={saving} className="gap-2">
                     <Save className="h-4 w-4" />
-                    {saving ? "Saving..." : id ? "Update Opportunity" : "Post Opportunity"}
+                    {saving ? "Saving..." : id ? "Update Service" : "Promote Service"}
                   </Button>
                 </div>
               </form>
