@@ -120,7 +120,7 @@ export default function MinisterForm() {
       console.error("Error fetching minister data:", error);
       toast({
         title: "Error",
-        description: "Failed to load minister profile",
+        description: "Failed to load kingdom leader profile",
         variant: "destructive",
       });
     }
@@ -165,7 +165,7 @@ export default function MinisterForm() {
     if (!user?.id) {
       toast({
         title: "Authentication required",
-        description: "Please sign in to create a minister profile",
+        description: "Please sign in to create a kingdom leader profile",
         variant: "destructive",
       });
       navigate('/auth');
@@ -223,7 +223,7 @@ export default function MinisterForm() {
 
         toast({
           title: "Success",
-          description: "Minister profile updated successfully",
+          description: "Kingdom leader profile updated successfully",
         });
         
         navigate(isAdminEditing ? '/admin' : '/my-profiles');
@@ -240,7 +240,7 @@ export default function MinisterForm() {
 
         toast({
           title: "Success",
-          description: "Minister profile created successfully. It will be reviewed before going live.",
+          description: "Kingdom leader profile created successfully. It will be reviewed before going live.",
         });
 
         navigate(`/minister/${newMinister.slug}`);
@@ -249,7 +249,7 @@ export default function MinisterForm() {
       console.error("Error saving minister:", error);
       toast({
         title: "Error",
-        description: "Failed to save minister profile",
+        description: "Failed to save kingdom leader profile",
         variant: "destructive",
       });
     } finally {
@@ -280,7 +280,7 @@ export default function MinisterForm() {
         <Card className="max-w-4xl mx-auto">
           <CardHeader>
             <CardTitle>
-              {id ? (isAdminEditing ? "Edit Minister Profile (Admin)" : "Edit Minister Profile") : "Create Minister Profile"}
+              {id ? (isAdminEditing ? "Edit Kingdom Leader Profile (Admin)" : "Edit Kingdom Leader Profile") : "Create Kingdom Leader Profile"}
             </CardTitle>
           </CardHeader>
           <CardContent>

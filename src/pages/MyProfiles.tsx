@@ -211,8 +211,8 @@ export default function MyProfiles() {
       if (error) throw error;
 
       toast({
-        title: "Minister profile deleted",
-        description: "Your minister profile has been deleted successfully",
+        title: "Kingdom leader profile deleted",
+        description: "Your kingdom leader profile has been deleted successfully",
       });
 
       setMinister(null);
@@ -220,7 +220,7 @@ export default function MyProfiles() {
       console.error("Error deleting minister:", error);
       toast({
         title: "Error",
-        description: "Failed to delete minister profile",
+        description: "Failed to delete kingdom leader profile",
         variant: "destructive",
       });
     }
@@ -305,7 +305,7 @@ export default function MyProfiles() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="My Profiles | MyEcclesia"
-        description="Manage your minister and organization profiles"
+        description="Manage your kingdom leader and organization profiles"
         canonicalUrl={`${window.location.origin}/my-profiles`}
       />
 
@@ -313,7 +313,7 @@ export default function MyProfiles() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">My Profiles</h1>
           <p className="text-muted-foreground">
-            Manage your personal, minister, and organization profiles
+            Manage your personal, kingdom leader, and organization profiles
           </p>
         </div>
 
@@ -361,7 +361,7 @@ export default function MyProfiles() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Minister Profile
+                Kingdom Leader Profile
                 {minister && getStatusBadge(minister.is_verified)}
               </CardTitle>
             </CardHeader>
@@ -415,9 +415,9 @@ export default function MyProfiles() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Minister Profile</AlertDialogTitle>
+                          <AlertDialogTitle>Delete Kingdom Leader Profile</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete your minister profile for "{minister.full_name}"? This will also remove all associated events and data. This action cannot be undone.
+                            Are you sure you want to delete your kingdom leader profile for "{minister.full_name}"? This will also remove all associated events and data. This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -436,14 +436,14 @@ export default function MyProfiles() {
               ) : (
                 <div className="text-center py-8">
                   <User className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Minister Profile</h3>
+                  <h3 className="font-semibold mb-2">No Kingdom Leader Profile</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Create a minister profile to showcase your ministry and connect with others.
+                    Create a kingdom leader profile to showcase your ministry and connect with others.
                   </p>
                   <Link to="/minister/new">
                     <Button>
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Minister Profile
+                      Create Kingdom Leader Profile
                     </Button>
                   </Link>
                 </div>
