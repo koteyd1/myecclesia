@@ -422,6 +422,7 @@ export type Database = {
           organization_id: string | null
           organizer: string | null
           price: number | null
+          registration_type: string
           requirements: string | null
           slug: string
           stripe_account_id: string | null
@@ -450,6 +451,7 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          registration_type?: string
           requirements?: string | null
           slug: string
           stripe_account_id?: string | null
@@ -478,6 +480,7 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          registration_type?: string
           requirements?: string | null
           slug?: string
           stripe_account_id?: string | null

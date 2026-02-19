@@ -14,13 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info, Users } from 'lucide-react';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TicketTypeManager } from '@/components/TicketTypeManager';
 import { Link } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-type RegistrationType = 'in_platform' | 'external_event' | 'external_tickets';
+type RegistrationType = 'in_platform' | 'external_event' | 'external_tickets' | 'rsvp';
 
 const eventSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -37,7 +37,7 @@ const eventSchema = z.object({
   denominations: z.string().optional(),
   duration: z.string().optional(),
   requirements: z.string().optional(),
-  registration_type: z.enum(['in_platform', 'external_event', 'external_tickets']).default('in_platform'),
+  registration_type: z.enum(['in_platform', 'external_event', 'external_tickets', 'rsvp']).default('in_platform'),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -142,7 +142,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
         time: formData.time,
         location: formData.location,
         category: formData.category || null,
-        price: formData.price,
+        price: formData.registration_type === 'rsvp' ? 0 : formData.price,
         available_tickets: formData.available_tickets,
         image: formData.image || null,
         external_url: formData.external_url || null,
@@ -150,6 +150,9 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
         denominations: formData.denominations || null,
         duration: formData.duration || null,
         requirements: formData.requirements || null,
+        registration_type: formData.registration_type === 'rsvp' ? 'rsvp' : 
+          formData.registration_type === 'external_tickets' ? 'external_ticket' :
+          formData.registration_type === 'external_event' ? 'external_page' : 'ticketed',
         created_by: user.id,
         organization_id: organizationId || null,
         minister_id: ministerId || null,
@@ -165,10 +168,22 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
 
       if (error) throw error;
 
+      const isRsvp = formData.registration_type === 'rsvp';
       toast({
         title: "Event created",
-        description: "Your event has been created successfully. Now add ticket types!",
+        description: isRsvp 
+          ? "Your RSVP event has been created. Attendees can now RSVP from the event page."
+          : "Your event has been created successfully. Now add ticket types!",
       });
+
+      // For RSVP events, skip the ticket type manager
+      if (isRsvp) {
+        form.reset();
+        setShowForm(false);
+        fetchUserEvents();
+        onEventCreated?.();
+        return;
+      }
 
       // Set the created event ID to show ticket type manager
       setCreatedEventId(data.id);
@@ -542,6 +557,20 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                         </div>
 
                         <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+                          <RadioGroupItem value="rsvp" id="rsvp" className="mt-1" />
+                          <div className="flex-1 space-y-1">
+                            <Label htmlFor="rsvp" className="flex items-center gap-2 font-medium cursor-pointer">
+                              <Users className="h-4 w-4 text-primary" />
+                              RSVP Only (Free)
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Simply collect RSVPs to know who's coming. No tickets or payments — just a 
+                              headcount and attendee list for your planning.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start space-x-3 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
                           <RadioGroupItem value="external_event" id="external_event" className="mt-1" />
                           <div className="flex-1 space-y-1">
                             <Label htmlFor="external_event" className="flex items-center gap-2 font-medium cursor-pointer">
@@ -604,6 +633,15 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                     </FormItem>
                   )}
                 />
+              )}
+
+              {registrationType === 'rsvp' && (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Attendees will see an "RSVP" button on your event page. You'll be able to view who has confirmed attendance from your event management dashboard.
+                  </AlertDescription>
+                </Alert>
               )}
 
               {registrationType === 'in_platform' && (
