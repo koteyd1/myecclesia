@@ -19,7 +19,8 @@ import {
   Calendar,
   Trash2,
   MapPin,
-  Ticket
+  Ticket,
+  Church
 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { EventManagement } from "@/components/EventManagement";
@@ -67,6 +68,18 @@ interface Organization {
   created_at: string;
 }
 
+interface ChurchData {
+  id: string;
+  name: string;
+  address: string;
+  country: string;
+  denomination: string | null;
+  is_verified: boolean;
+  slug: string;
+  logo_url: string | null;
+  created_at: string;
+}
+
 interface Event {
   id: string;
   title: string;
@@ -87,6 +100,7 @@ export default function MyProfiles() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [minister, setMinister] = useState<Minister | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [church, setChurch] = useState<ChurchData | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -127,6 +141,15 @@ export default function MyProfiles() {
         .maybeSingle();
 
       setOrganization(orgData);
+
+      // Fetch church profile
+      const { data: churchData } = await supabase
+        .from("churches")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setChurch(churchData);
 
       // Fetch user's events
       const { data: eventsData } = await supabase
@@ -253,6 +276,19 @@ export default function MyProfiles() {
     }
   };
 
+  const deleteChurch = async () => {
+    if (!church) return;
+    try {
+      const { error } = await supabase.from("churches").delete().eq("id", church.id);
+      if (error) throw error;
+      toast({ title: "Church profile deleted", description: "Your church profile has been deleted successfully" });
+      setChurch(null);
+    } catch (error) {
+      console.error("Error deleting church:", error);
+      toast({ title: "Error", description: "Failed to delete church profile", variant: "destructive" });
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
@@ -305,7 +341,7 @@ export default function MyProfiles() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="My Profiles | MyEcclesia"
-        description="Manage your kingdom leader and organization profiles"
+        description="Manage your kingdom leader, organization, and church profiles"
         canonicalUrl={`${window.location.origin}/my-profiles`}
       />
 
@@ -313,11 +349,11 @@ export default function MyProfiles() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">My Profiles</h1>
           <p className="text-muted-foreground">
-            Manage your personal, kingdom leader, and organization profiles
+            Manage your personal, kingdom leader, organization, and church profiles
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Personal Profile */}
           <Card>
             <CardHeader>
@@ -545,6 +581,72 @@ export default function MyProfiles() {
               )}
             </CardContent>
           </Card>
+
+          {/* Church Profile */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Church className="w-5 h-5" />
+                Church Profile
+                {church && getStatusBadge(church.is_verified)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {church ? (
+                <>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={church.logo_url || undefined} />
+                      <AvatarFallback>{church.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{church.name}</h3>
+                      <p className="text-sm text-muted-foreground">{church.address}</p>
+                      <p className="text-xs text-muted-foreground">{church.country}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {church.denomination && <Badge variant="outline">{church.denomination}</Badge>}
+                    <p className="text-xs text-muted-foreground">Created {new Date(church.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {church.is_verified && (
+                      <Link to={`/church/${church.slug}`}>
+                        <Button variant="outline" size="sm"><Eye className="w-4 h-4 mr-2" />View</Button>
+                      </Link>
+                    )}
+                    <Link to={`/church/edit/${church.id}`}>
+                      <Button variant="outline" size="sm"><Edit className="w-4 h-4 mr-2" />Edit</Button>
+                    </Link>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive"><Trash2 className="w-4 h-4 mr-2" />Delete</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Church Profile</AlertDialogTitle>
+                          <AlertDialogDescription>Are you sure you want to delete your church profile for "{church.name}"? This action cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteChurch} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Church className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-semibold mb-2">No Church Profile</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Create a church profile to showcase your church community.</p>
+                  <Link to="/church/new">
+                    <Button><Plus className="w-4 h-4 mr-2" />Create Church Profile</Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* My Events Section */}
@@ -661,7 +763,7 @@ export default function MyProfiles() {
         </Card>
 
         {/* Quick Stats */}
-        {(minister || organization || events.length > 0) && (
+        {(minister || organization || church || events.length > 0) && (
           <Card className="mt-8">
             <CardHeader>
               <CardTitle>Profile Summary</CardTitle>
@@ -670,24 +772,24 @@ export default function MyProfiles() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-primary">
-                    {(minister ? 1 : 0) + (organization ? 1 : 0)}
+                    {(minister ? 1 : 0) + (organization ? 1 : 0) + (church ? 1 : 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Active Profiles</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {(minister?.is_verified ? 1 : 0) + (organization?.is_verified ? 1 : 0)}
+                  <div className="text-2xl font-bold text-primary">
+                    {(minister?.is_verified ? 1 : 0) + (organization?.is_verified ? 1 : 0) + (church?.is_verified ? 1 : 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Verified Profiles</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {(!minister?.is_verified && minister ? 1 : 0) + (!organization?.is_verified && organization ? 1 : 0)}
+                  <div className="text-2xl font-bold text-primary">
+                    {(!minister?.is_verified && minister ? 1 : 0) + (!organization?.is_verified && organization ? 1 : 0) + (!church?.is_verified && church ? 1 : 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Pending Verification</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-primary">
                     {events.length}
                   </div>
                   <div className="text-sm text-muted-foreground">Events Created</div>

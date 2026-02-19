@@ -128,6 +128,110 @@ export type Database = {
         }
         Relationships: []
       }
+      church_followers: {
+        Row: {
+          church_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          church_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          church_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "church_followers_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      churches: {
+        Row: {
+          address: string
+          banner_url: string | null
+          country: string
+          created_at: string
+          denomination: string | null
+          email: string | null
+          id: string
+          is_verified: boolean | null
+          logo_url: string | null
+          mission_statement: string | null
+          name: string
+          pastor_name: string | null
+          phone: string | null
+          postcode: string
+          safeguarding_contact: string | null
+          service_times: string | null
+          services_offered: string[] | null
+          slug: string
+          social_media_links: Json | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          banner_url?: string | null
+          country?: string
+          created_at?: string
+          denomination?: string | null
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          mission_statement?: string | null
+          name: string
+          pastor_name?: string | null
+          phone?: string | null
+          postcode: string
+          safeguarding_contact?: string | null
+          service_times?: string | null
+          services_offered?: string[] | null
+          slug: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          banner_url?: string | null
+          country?: string
+          created_at?: string
+          denomination?: string | null
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo_url?: string | null
+          mission_statement?: string | null
+          name?: string
+          pastor_name?: string | null
+          phone?: string | null
+          postcode?: string
+          safeguarding_contact?: string | null
+          service_times?: string | null
+          services_offered?: string[] | null
+          slug?: string
+          social_media_links?: Json | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -301,6 +405,7 @@ export type Database = {
         Row: {
           available_tickets: number | null
           category: string | null
+          church_id: string | null
           created_at: string
           created_by: string | null
           date: string
@@ -328,6 +433,7 @@ export type Database = {
         Insert: {
           available_tickets?: number | null
           category?: string | null
+          church_id?: string | null
           created_at?: string
           created_by?: string | null
           date: string
@@ -355,6 +461,7 @@ export type Database = {
         Update: {
           available_tickets?: number | null
           category?: string | null
+          church_id?: string | null
           created_at?: string
           created_by?: string | null
           date?: string
@@ -380,6 +487,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "events_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_minister_id_fkey"
             columns: ["minister_id"]
