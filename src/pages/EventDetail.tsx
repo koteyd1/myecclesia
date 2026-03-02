@@ -710,7 +710,9 @@ const EventDetail = () => {
                     <span>
                       {event.registration_type === 'rsvp' 
                         ? `${rsvpCount} ${rsvpCount === 1 ? 'person' : 'people'} going`
-                        : `${event.availableTickets} spots available`
+                        : event.available_tickets != null
+                          ? `${event.available_tickets} spots available`
+                          : 'Open registration'
                       }
                     </span>
                   </div>
