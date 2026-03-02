@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,11 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Upload, User, Shield, Download, Trash2 } from "lucide-react";
+import { Upload, User, Shield, Download, Trash2, CreditCard } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { DataExportButton } from "@/components/DataExportButton";
 import { TwoFactorSetup } from "@/components/TwoFactorSetup";
+import { StripeConnectSetup } from "@/components/StripeConnectSetup";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Full name must be at least 2 characters"),
@@ -29,10 +30,27 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 export default function ProfileEdit() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+
+  // Handle Stripe Connect return
+  useEffect(() => {
+    const stripeConnect = searchParams.get('stripe_connect');
+    if (stripeConnect === 'success') {
+      toast({
+        title: "Payment Setup Complete",
+        description: "Your payment account has been set up successfully!",
+      });
+    } else if (stripeConnect === 'refresh') {
+      toast({
+        title: "Continue Setup",
+        description: "Please complete your payment account setup.",
+      });
+    }
+  }, [searchParams, toast]);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -269,6 +287,11 @@ export default function ProfileEdit() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Payment Account Section */}
+        <div className="max-w-2xl mx-auto">
+          <StripeConnectSetup />
+        </div>
 
         {/* Two-Factor Authentication Section */}
         <div className="max-w-2xl mx-auto">
