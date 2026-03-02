@@ -1,4 +1,4 @@
-import { User, Settings, LogOut, ChevronDown, Briefcase, Ticket, ScanLine, LayoutDashboard, Shield } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Briefcase, Ticket, ScanLine, LayoutDashboard, Shield, Bell, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,7 @@ const Header = () => {
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [featuredBlogs, setFeaturedBlogs] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const fetchFeaturedBlogs = async () => {
@@ -32,6 +33,24 @@ const Header = () => {
 
     fetchFeaturedBlogs();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", user.id)
+        .eq("is_read", false);
+      setUnreadCount(count || 0);
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleAuthAction = () => {
     if (user) {
@@ -213,6 +232,17 @@ const Header = () => {
                         </DropdownMenuItem>
                       </>
                     )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/messages" className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Messages
+                        {unreadCount > 0 && (
+                          <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleAuthAction} className="flex items-center gap-2 text-destructive focus:text-destructive">
                       <LogOut className="h-4 w-4" />

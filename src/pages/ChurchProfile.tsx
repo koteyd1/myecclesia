@@ -13,6 +13,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { EventManagement } from "@/components/EventManagement";
 import { Separator } from "@/components/ui/separator";
+import { SendMessageDialog } from "@/components/SendMessageDialog";
 
 interface Church {
   id: string;
@@ -172,6 +173,12 @@ export default function ChurchProfile() {
                       <Calendar className="h-4 w-4 mr-2" />
                       {showEventManagement ? 'Hide' : 'Manage Events'}
                     </Button>
+                  )}
+                  {!isOwner && church && (
+                    <SendMessageDialog
+                      recipientId={church.user_id}
+                      recipientName={church.name}
+                    />
                   )}
                   <SocialShare url={shareUrl} title={church.name} description={shareDescription} />
                 </div>

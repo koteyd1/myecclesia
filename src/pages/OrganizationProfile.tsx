@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { EventManagement } from '@/components/EventManagement';
+import { SendMessageDialog } from '@/components/SendMessageDialog';
 
 export default function OrganizationProfile() {
   const { slug } = useParams<{ slug: string }>();
@@ -152,6 +153,13 @@ export default function OrganizationProfile() {
                       <Calendar className="h-4 w-4 mr-2" />
                       {showEventManagement ? 'Hide' : 'Manage Events'}
                     </Button>
+                  )}
+                  
+                  {!isOwner && organization && (
+                    <SendMessageDialog
+                      recipientId={organization.user_id}
+                      recipientName={organization.name}
+                    />
                   )}
                   
                   <SocialShare
