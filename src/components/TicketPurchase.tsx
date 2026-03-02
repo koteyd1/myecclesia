@@ -291,6 +291,49 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
       );
     }
 
+    const handleLegacyPurchase = async () => {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+      setPaymentLoading(true);
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("user_id", user.id)
+          .single();
+
+        const response = await supabase.functions.invoke("create-ticket-payment", {
+          body: {
+            eventId: event.slug,
+            eventTitle: event.title,
+            price: event.price,
+            quantity: 1,
+            buyerEmail: profile?.email || user.email,
+            buyerName: profile?.full_name || "Guest",
+            eventDate: event.date,
+            eventTime: event.time,
+            eventLocation: event.location,
+          },
+        });
+
+        if (response.error) throw response.error;
+        if (response.data?.url) {
+          window.location.href = response.data.url;
+        }
+      } catch (error: any) {
+        console.error("Error creating payment:", error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to process. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setPaymentLoading(false);
+      }
+    };
+
     return (
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
@@ -307,7 +350,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             <p className="text-sm text-muted-foreground mb-4">per ticket</p>
             <Button
               className="w-full bg-gradient-primary hover:opacity-90"
-              onClick={handlePurchase}
+              onClick={handleLegacyPurchase}
               disabled={paymentLoading}
             >
               <CreditCard className="h-4 w-4 mr-2" />
