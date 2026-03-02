@@ -98,13 +98,13 @@ serve(async (req) => {
       logStep("Error updating account status", { error: updateError.message });
     }
 
-    // Calculate if in free period (6 months from first event)
+    // Calculate if in free period (3 months from first event)
     let inFreePeriod = true;
     if (accountData.first_event_date) {
       const firstEventDate = new Date(accountData.first_event_date);
-      const sixMonthsLater = new Date(firstEventDate);
-      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-      inFreePeriod = new Date() < sixMonthsLater;
+      const threeMonthsLater = new Date(firstEventDate);
+      threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+      inFreePeriod = new Date() < threeMonthsLater;
     }
 
     return new Response(JSON.stringify({

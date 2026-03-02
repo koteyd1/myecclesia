@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MapPin, Building2, User, Heart, BookOpen, Users, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,9 +33,9 @@ interface Opportunity {
 
 const serviceCategories = [
   { value: "all", label: "All Services", icon: null },
-  { value: "job", label: "Professional", icon: <BookOpen className="h-4 w-4" /> },
-  { value: "volunteer", label: "Community", icon: <Heart className="h-4 w-4" /> },
-  { value: "internship", label: "Mentorship", icon: <Users className="h-4 w-4" /> },
+  { value: "job", label: "Professional", icon: React.createElement(BookOpen, { className: "h-4 w-4" }) },
+  { value: "volunteer", label: "Community", icon: React.createElement(Heart, { className: "h-4 w-4" }) },
+  { value: "internship", label: "Mentorship", icon: React.createElement(Users, { className: "h-4 w-4" }) },
 ];
 
 const Opportunities = () => {

@@ -222,7 +222,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
             {status.in_free_period && (
               <Alert>
                 <AlertDescription className="flex items-center gap-2">
-                  🎉 <strong>Free Period Active:</strong> No platform fees for the first 6 months!
+                  🎉 <strong>Free Period Active:</strong> No platform fees for the first 3 months!
                 </AlertDescription>
               </Alert>
             )}
