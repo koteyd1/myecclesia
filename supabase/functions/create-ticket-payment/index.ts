@@ -118,6 +118,25 @@ serve(async (req) => {
 
     logStep("Customer handled", { customerId });
 
+    // Validate stock availability before creating checkout session
+    if (ticketTypeId) {
+      const { data: ticketType } = await supabaseService
+        .from("ticket_types")
+        .select("quantity_available, quantity_sold, is_active")
+        .eq("id", ticketTypeId)
+        .single();
+
+      if (ticketType) {
+        if (!ticketType.is_active) {
+          throw new Error("This ticket type is no longer available");
+        }
+        const available = ticketType.quantity_available - ticketType.quantity_sold;
+        if (available < (quantity || 1)) {
+          throw new Error(`Only ${available} ticket${available === 1 ? '' : 's'} remaining`);
+        }
+      }
+    }
+
     const totalAmount = Math.round(price * 100) * (quantity || 1); // Convert to pence
     
     // Build checkout session options
