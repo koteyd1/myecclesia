@@ -29,6 +29,7 @@ const EventDetail = () => {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
+  const [cancellingRsvp, setCancellingRsvp] = useState(false);
   
   // Track event views (only for authenticated users)
   useEventTracking(user ? event?.id : null);
@@ -97,9 +98,9 @@ const EventDetail = () => {
     if (event && user) {
       checkRegistrationStatus();
       checkCalendarStatus();
-      if (event.registration_type === 'rsvp') {
-        fetchRsvpCount();
-      }
+    }
+    if (event?.registration_type === 'rsvp') {
+      fetchRsvpCount();
     }
   }, [event, user]);
 
@@ -259,6 +260,37 @@ const EventDetail = () => {
       setRsvpCount(count || 0);
     } catch (error) {
       console.error("Error fetching RSVP count:", error);
+    }
+  };
+
+  const handleCancelRsvp = async () => {
+    if (!user || !event) return;
+    setCancellingRsvp(true);
+    try {
+      const { error } = await supabase
+        .from("event_registrations")
+        .update({ status: "cancelled" })
+        .eq("user_id", user.id)
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
+      if (error) throw error;
+
+      setIsRegistered(false);
+      fetchRsvpCount();
+      toast({
+        title: "RSVP Cancelled",
+        description: "Your RSVP has been cancelled. You can RSVP again anytime.",
+      });
+    } catch (error: any) {
+      console.error("Error cancelling RSVP:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel RSVP.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingRsvp(false);
     }
   };
 
@@ -812,6 +844,16 @@ const EventDetail = () => {
                             }
                           </p>
                           <div className="space-y-2">
+                            {event.registration_type === 'rsvp' && (
+                              <Button 
+                                variant="outline"
+                                className="w-full text-destructive hover:text-destructive"
+                                onClick={handleCancelRsvp}
+                                disabled={cancellingRsvp}
+                              >
+                                {cancellingRsvp ? "Cancelling..." : "Cancel RSVP"}
+                              </Button>
+                            )}
                             {event.registration_type !== 'rsvp' && (
                               <Button 
                                 variant="outline"
@@ -890,20 +932,33 @@ const EventDetail = () => {
                   ) : (
                     <div className="space-y-4">
                       <div className="p-4 bg-muted/50 border border-muted rounded-lg">
-                        <h4 className="font-semibold mb-2">Sign Up Required</h4>
+                        <h4 className="font-semibold mb-2">
+                          {event.registration_type === 'rsvp' ? 'RSVP to Attend' : 'Sign Up Required'}
+                        </h4>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Please create an account to register for events.
+                          {event.registration_type === 'rsvp'
+                            ? "Sign in to let the organizer know you're coming."
+                            : "Please create an account to register for events."
+                          }
                         </p>
                         <Button 
                           className="w-full"
-                          onClick={() => navigate("/auth")}
+                          onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
                         >
-                          Sign Up / Sign In
+                          {event.registration_type === 'rsvp' ? 'Sign In to RSVP' : 'Sign Up / Sign In'}
                         </Button>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      {event.registration_type === 'rsvp' && rsvpCount > 0 && (
+                        <p className="text-sm text-muted-foreground text-center">
+                          {rsvpCount} {rsvpCount === 1 ? 'person has' : 'people have'} already RSVP'd
+                        </p>
+                      )}
+                      <div className="text-xs text-muted-foreground text-center">
                         <p>
-                          Creating an account is quick and gives you access to all our events.
+                          {event.registration_type === 'rsvp'
+                            ? "Free event · No ticket required · Just confirm your attendance"
+                            : "Creating an account is quick and gives you access to all our events."
+                          }
                         </p>
                       </div>
                     </div>
