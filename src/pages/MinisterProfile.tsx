@@ -14,6 +14,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { StructuredData } from "@/components/StructuredData";
 import { EventManagement } from "@/components/EventManagement";
 import { Separator } from "@/components/ui/separator";
+import { SendMessageDialog } from "@/components/SendMessageDialog";
 
 interface Minister {
   id: string;
@@ -219,6 +220,13 @@ export default function MinisterProfile() {
                       <Calendar className="h-4 w-4 mr-2" />
                       {showEventManagement ? 'Hide' : 'Manage Events'}
                     </Button>
+                  )}
+                  
+                  {!isOwner && (
+                    <SendMessageDialog
+                      recipientId={minister.user_id}
+                      recipientName={minister.full_name}
+                    />
                   )}
                   
                   <SocialShare

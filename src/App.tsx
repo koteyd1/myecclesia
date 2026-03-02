@@ -48,6 +48,7 @@ import ChurchProfile from "./pages/ChurchProfile";
 import ChurchForm from "./pages/ChurchForm";
 import Churches from "./pages/Churches";
 
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 
@@ -107,6 +108,7 @@ const App = () => (
               <Route path="/church/new" element={<ChurchForm />} />
               <Route path="/church/edit/:id" element={<ChurchForm />} />
               <Route path="/church/:slug" element={<ChurchProfile />} />
+              <Route path="/messages" element={<Messages />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

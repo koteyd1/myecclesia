@@ -732,6 +732,53 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_admin_broadcast: boolean
+          is_read: boolean
+          parent_message_id: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_admin_broadcast?: boolean
+          is_read?: boolean
+          parent_message_id?: string | null
+          recipient_id: string
+          sender_id: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_admin_broadcast?: boolean
+          is_read?: boolean
+          parent_message_id?: string | null
+          recipient_id?: string
+          sender_id?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       minister_followers: {
         Row: {
           created_at: string
