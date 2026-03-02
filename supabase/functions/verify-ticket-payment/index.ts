@@ -224,6 +224,7 @@ serve(async (req) => {
         ticket_type_id: ticketTypeId,
         payment_metadata: {
           stripe_session_id: session.id,
+          stripe_payment_intent: session.payment_intent,
           amount_total: session.amount_total,
           currency: session.currency,
           customer_email: session.customer_details?.email,
@@ -258,15 +259,8 @@ serve(async (req) => {
       logStep("Warning: Could not create registration", { error: regError.message });
     }
 
-    // Update ticket_types quantity_sold if applicable
-    if (ticketTypeId) {
-      await supabaseService.rpc("increment_ticket_sold", {
-        p_ticket_type_id: ticketTypeId,
-        p_quantity: quantity,
-      }).catch(e => {
-        logStep("Warning: Could not update quantity_sold", { error: e.message });
-      });
-    }
+    // Note: quantity_sold is updated automatically by the update_ticket_type_quantity_sold trigger
+    // when a ticket is inserted with status 'confirmed' and a ticket_type_id
 
     // Send confirmation email
     const customerEmail = session.customer_details?.email || user.email;

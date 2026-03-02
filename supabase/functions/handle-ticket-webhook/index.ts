@@ -100,19 +100,46 @@ serve(async (req) => {
         });
       }
 
+      // Check if ticket already exists (may have been created by verify-ticket-payment)
+      const { data: existingTicket } = await supabaseService
+        .from("tickets")
+        .select("id")
+        .eq("event_id", eventId)
+        .eq("user_id", userId)
+        .eq("status", "confirmed")
+        .or(`payment_id.eq.${session.id},payment_id.eq.${session.payment_intent}`)
+        .limit(1);
+
+      if (existingTicket && existingTicket.length > 0) {
+        logStep("Ticket already exists, skipping creation", { ticketId: existingTicket[0].id });
+        return new Response(JSON.stringify({ 
+          success: true, 
+          ticketId: existingTicket[0].id,
+          message: "Ticket already created" 
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       // Create ticket record
+      const ticketTypeId = metadata.ticket_type_id || null;
       const { data: ticketData, error: ticketError } = await supabaseService
         .from("tickets")
         .insert({
           user_id: userId,
           event_id: eventId,
-          payment_id: session.payment_intent as string,
+          payment_id: session.id,
+          quantity,
           status: "confirmed",
+          ticket_type_id: ticketTypeId,
           payment_metadata: {
-            session_id: session.id,
+            stripe_session_id: session.id,
+            stripe_payment_intent: session.payment_intent,
             amount_total: session.amount_total,
             currency: session.currency,
             quantity,
+            ticket_type_name: metadata.ticket_type_name || null,
           },
         })
         .select()

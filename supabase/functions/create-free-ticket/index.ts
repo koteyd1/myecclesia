@@ -181,22 +181,8 @@ serve(async (req) => {
       logStep("Warning: Could not create registration", { error: regError.message });
     }
 
-    // Update ticket_types quantity_sold if applicable
-    if (ticketTypeId) {
-      await supabaseService
-        .from("ticket_types")
-        .select("quantity_sold")
-        .eq("id", ticketTypeId)
-        .single()
-        .then(async ({ data }) => {
-          if (data) {
-            await supabaseService
-              .from("ticket_types")
-              .update({ quantity_sold: (data.quantity_sold || 0) + (quantity || 1) })
-              .eq("id", ticketTypeId);
-          }
-        });
-    }
+    // Note: quantity_sold is updated automatically by the update_ticket_type_quantity_sold trigger
+    // when a ticket is inserted with status 'confirmed' and a ticket_type_id
 
     // Send confirmation email
     const resendKey = Deno.env.get("RESEND_API_KEY");
