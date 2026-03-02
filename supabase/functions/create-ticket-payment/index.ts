@@ -12,7 +12,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-TICKET-PAYMENT] ${step}${detailsStr}`);
 };
 
-// Platform fee percentage (0% for first 6 months, then configurable)
+// Platform fee percentage (0% for first 3 months, then configurable)
 const PLATFORM_FEE_PERCENT = 0;
 
 serve(async (req) => {
