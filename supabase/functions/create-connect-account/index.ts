@@ -93,8 +93,8 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://myecclesia.lovable.app";
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${origin}/dashboard?stripe_connect=refresh`,
-      return_url: `${origin}/dashboard?stripe_connect=success`,
+      refresh_url: `${origin}/profile/edit?stripe_connect=refresh`,
+      return_url: `${origin}/profile/edit?stripe_connect=success`,
       type: "account_onboarding",
     });
 
