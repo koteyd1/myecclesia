@@ -1323,6 +1323,7 @@ export type Database = {
           first_event_date: string | null
           id: string
           payouts_enabled: boolean | null
+          paypal_email: string | null
           stripe_account_id: string
           updated_at: string
           user_id: string
@@ -1335,6 +1336,7 @@ export type Database = {
           first_event_date?: string | null
           id?: string
           payouts_enabled?: boolean | null
+          paypal_email?: string | null
           stripe_account_id: string
           updated_at?: string
           user_id: string
@@ -1347,6 +1349,7 @@ export type Database = {
           first_event_date?: string | null
           id?: string
           payouts_enabled?: boolean | null
+          paypal_email?: string | null
           stripe_account_id?: string
           updated_at?: string
           user_id?: string
