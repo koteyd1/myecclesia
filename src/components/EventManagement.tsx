@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info, Users } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info, Users, ShieldCheck } from 'lucide-react';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TicketTypeManager } from '@/components/TicketTypeManager';
 import { Link } from 'react-router-dom';
@@ -38,6 +38,7 @@ const eventSchema = z.object({
   duration: z.string().optional(),
   requirements: z.string().optional(),
   registration_type: z.enum(['in_platform', 'external_event', 'external_tickets', 'rsvp']).default('in_platform'),
+  refund_policy: z.enum(['flexible', 'moderate', 'strict', 'donation_based']).default('moderate'),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -117,6 +118,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
       duration: '',
       requirements: '',
       registration_type: 'in_platform',
+      refund_policy: 'moderate',
     }
   });
 
@@ -135,7 +137,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
     setIsSubmitting(true);
 
     try {
-      const eventData = {
+      const eventData: any = {
         title: formData.title,
         description: formData.description || null,
         date: formData.date,
@@ -153,6 +155,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
         registration_type: formData.registration_type === 'rsvp' ? 'rsvp' : 
           formData.registration_type === 'external_tickets' ? 'external_ticket' :
           formData.registration_type === 'external_event' ? 'external_page' : 'ticketed',
+        refund_policy: formData.refund_policy,
         created_by: user.id,
         organization_id: organizationId || null,
         minister_id: ministerId || null,
@@ -654,6 +657,60 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                 </Alert>
               )}
             </div>
+
+            {/* Refund & Cancellation Policy */}
+            {registrationType !== 'external_event' && registrationType !== 'external_tickets' && (
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="refund_policy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4" />
+                        Refund & Cancellation Policy
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a policy" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="flexible">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">Flexible</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="moderate">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">Moderate</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="strict">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">Strict</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="donation_based">
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">Donation-Based</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {field.value === 'flexible' && 'Full refund up to 24 hours before the event.'}
+                        {field.value === 'moderate' && 'Full refund up to 7 days before. 50% refund within 7 days. No refund on the day.'}
+                        {field.value === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed.'}
+                        {field.value === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser.'}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <div className="flex gap-3">
               <Button type="submit" disabled={isSubmitting}>

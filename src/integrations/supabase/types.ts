@@ -422,6 +422,7 @@ export type Database = {
           organization_id: string | null
           organizer: string | null
           price: number | null
+          refund_policy: Database["public"]["Enums"]["refund_policy"] | null
           registration_type: string
           requirements: string | null
           slug: string
@@ -451,6 +452,7 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          refund_policy?: Database["public"]["Enums"]["refund_policy"] | null
           registration_type?: string
           requirements?: string | null
           slug: string
@@ -480,6 +482,7 @@ export type Database = {
           organization_id?: string | null
           organizer?: string | null
           price?: number | null
+          refund_policy?: Database["public"]["Enums"]["refund_policy"] | null
           registration_type?: string
           requirements?: string | null
           slug?: string
@@ -1695,6 +1698,7 @@ export type Database = {
       app_role: "admin" | "user"
       application_method: "external" | "in_app" | "both"
       opportunity_type: "job" | "volunteer" | "internship"
+      refund_policy: "flexible" | "moderate" | "strict" | "donation_based"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1825,6 +1829,7 @@ export const Constants = {
       app_role: ["admin", "user"],
       application_method: ["external", "in_app", "both"],
       opportunity_type: ["job", "volunteer", "internship"],
+      refund_policy: ["flexible", "moderate", "strict", "donation_based"],
     },
   },
 } as const
