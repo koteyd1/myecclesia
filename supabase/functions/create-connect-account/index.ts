@@ -107,9 +107,18 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    
+    // Detect Stripe Connect not enabled
+    const isConnectNotEnabled = errorMessage.includes("signed up for Connect");
+    
+    return new Response(JSON.stringify({ 
+      error: isConnectNotEnabled 
+        ? "Stripe Connect is not yet enabled on this platform. Please use PayPal as your payout method, or contact the site administrator."
+        : errorMessage,
+      code: isConnectNotEnabled ? "CONNECT_NOT_ENABLED" : "UNKNOWN_ERROR",
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: isConnectNotEnabled ? 400 : 500,
     });
   }
 });
