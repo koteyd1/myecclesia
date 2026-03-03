@@ -152,7 +152,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Tickets Group */}
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
@@ -176,6 +176,23 @@ const Dashboard = () => {
                   </Button>
                 </Link>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Attendees Group */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <span className="font-medium">Attendees</span>
+              </div>
+              <Link to="/my-attendees">
+                <Button variant="outline" size="sm" className="w-full">
+                  Manage Attendees
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -338,7 +355,7 @@ const Dashboard = () => {
                           {registration.events.external_url && (
                             <Button
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground"
                               onClick={() => window.open(registration.events.external_url, '_blank')}
                             >
                               <Ticket className="h-4 w-4 mr-2" />
