@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { renderMessageContent } from "@/utils/renderMessageContent";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -324,9 +325,9 @@ export default function Messages() {
                   </span>
                 </CardHeader>
                 <CardContent>
-                  <p className="whitespace-pre-wrap text-sm">
-                    {selectedMessage.content}
-                  </p>
+                  <div className="text-sm leading-relaxed">
+                    {renderMessageContent(selectedMessage.content)}
+                  </div>
 
                   {/* Reply section - only if received */}
                   {selectedMessage.recipient_id === user.id && (
