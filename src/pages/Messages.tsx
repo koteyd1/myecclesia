@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { renderMessageContent } from "@/utils/renderMessageContent";
+import { notifyMessageByEmail } from "@/utils/notifyMessageEmail";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -134,6 +135,19 @@ export default function Messages() {
       });
 
       if (error) throw error;
+
+      // Fire-and-forget email notification
+      const { data: senderProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .single();
+      notifyMessageByEmail({
+        recipientId: selectedMessage.sender_id,
+        senderName: senderProfile?.full_name || "Someone",
+        subject: `Re: ${selectedMessage.subject || "No Subject"}`,
+        contentPreview: replyContent.trim(),
+      });
 
       toast({ title: "Reply sent successfully" });
       setReplyContent("");

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { notifyMessageByEmail } from "@/utils/notifyMessageEmail";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,19 @@ export function SendMessageDialog({ recipientId, recipientName, children }: Send
       });
 
       if (error) throw error;
+
+      // Fire-and-forget email notification
+      const { data: senderProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .single();
+      notifyMessageByEmail({
+        recipientId: recipientId,
+        senderName: senderProfile?.full_name || "Someone",
+        subject: subject.trim() || undefined,
+        contentPreview: content.trim(),
+      });
 
       toast({ title: "Message sent", description: `Your message to ${recipientName} has been sent.` });
       setSubject("");
