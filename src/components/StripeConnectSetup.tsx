@@ -90,9 +90,22 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
       });
 
       if (error) {
-        if (JSON.stringify(error).includes('CONNECT_NOT_ENABLED') || JSON.stringify(error).includes('Stripe Connect is not yet enabled')) {
+        // Try to read the actual response body from the FunctionsHttpError
+        let errorBody: any = null;
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            errorBody = await error.context.json();
+          }
+        } catch { /* ignore parse errors */ }
+
+        if (
+          errorBody?.code === 'CONNECT_NOT_ENABLED' ||
+          JSON.stringify(error).includes('CONNECT_NOT_ENABLED') ||
+          JSON.stringify(error).includes('signed up for Connect')
+        ) {
           setConnectNotEnabled(true);
-          toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please choose PayPal instead.", variant: "destructive" });
+          setSelectedProvider('paypal');
+          toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please use PayPal instead.", variant: "destructive" });
           return;
         }
         throw error;
@@ -100,7 +113,8 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
 
       if (data?.code === 'CONNECT_NOT_ENABLED') {
         setConnectNotEnabled(true);
-        toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please choose PayPal instead.", variant: "destructive" });
+        setSelectedProvider('paypal');
+        toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please use PayPal instead.", variant: "destructive" });
         return;
       }
 
@@ -108,10 +122,11 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
         window.open(data.url, '_blank');
         toast({ title: "Redirecting to Stripe", description: "Complete the onboarding in the new tab, then return here and refresh." });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting onboarding:', error);
-      toast({ title: "Error", description: "Failed to start payment account setup. Try choosing PayPal instead.", variant: "destructive" });
       setConnectNotEnabled(true);
+      setSelectedProvider('paypal');
+      toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not available right now. Please use PayPal to receive payments.", variant: "destructive" });
     } finally {
       setActionLoading(false);
     }
