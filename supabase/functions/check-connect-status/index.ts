@@ -57,6 +57,28 @@ serve(async (req) => {
         details_submitted: false,
         first_event_date: null,
         in_free_period: false,
+        paypal_email: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // If this is a PayPal-only account, skip Stripe API call
+    const isPaypalOnly = accountData.stripe_account_id?.startsWith('paypal_only_');
+    
+    if (isPaypalOnly) {
+      logStep("PayPal-only account found");
+      return new Response(JSON.stringify({
+        has_account: true,
+        stripe_account_id: null,
+        account_status: 'active',
+        charges_enabled: false,
+        payouts_enabled: false,
+        details_submitted: false,
+        first_event_date: accountData.first_event_date,
+        in_free_period: true,
+        paypal_email: accountData.paypal_email,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -116,6 +138,7 @@ serve(async (req) => {
       details_submitted: account.details_submitted,
       first_event_date: accountData.first_event_date,
       in_free_period: inFreePeriod,
+      paypal_email: accountData.paypal_email,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
