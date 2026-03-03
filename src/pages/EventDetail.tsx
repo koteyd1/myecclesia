@@ -480,8 +480,12 @@ const EventDetail = () => {
       if (event.registration_type === 'rsvp') {
         fetchRsvpCount();
         
-        // Notify the organizer via in-app message
-        if (event.created_by && event.created_by !== user.id) {
+        // Notify the organizer only at milestone counts (1st, 10th, 50th, 100th, 200th, 500th, 1000th, etc.)
+        const newCount = (rsvpCount || 0) + 1;
+        const milestones = [1, 10, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+        const isMilestone = milestones.includes(newCount);
+        
+        if (isMilestone && event.created_by && event.created_by !== user.id) {
           try {
             const { data: profile } = await supabase
               .from("profiles")
@@ -490,11 +494,15 @@ const EventDetail = () => {
               .single();
             
             const userName = profile?.full_name || "Someone";
+            const milestoneMsg = newCount === 1
+              ? `${userName} has RSVP'd to your event **${event.title}** — your first attendee! 🎉`
+              : `🎉 Milestone reached! Your event **${event.title}** now has **${newCount}** confirmed attendees! The latest RSVP was from ${userName}.`;
+            
             await supabase.from("messages").insert({
               sender_id: user.id,
               recipient_id: event.created_by,
-              subject: `New RSVP: ${event.title}`,
-              content: `${userName} has RSVP'd to your event **${event.title}** on ${new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. You now have ${(rsvpCount || 0) + 1} confirmed attendee(s).`,
+              subject: newCount === 1 ? `New RSVP: ${event.title}` : `🎉 ${newCount} RSVPs: ${event.title}`,
+              content: milestoneMsg,
               is_admin_broadcast: false,
             });
           } catch (notifyError) {
