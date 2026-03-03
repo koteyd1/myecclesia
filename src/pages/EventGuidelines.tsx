@@ -17,6 +17,44 @@ const EventGuidelines = () => {
             </p>
           </div>
 
+          {/* Refund & Cancellation Policy */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Refund & Cancellation Policy
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Each event on MyEcclesia has a refund and cancellation policy set by the organiser. Please check the event details before registering or purchasing tickets. The following policies may apply:
+              </p>
+              <div className="grid gap-4">
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 whitespace-nowrap">Flexible</Badge>
+                  <p className="text-sm">Full refund up to 24 hours before the event. If the organiser cancels, a full refund will be provided.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 whitespace-nowrap">Moderate</Badge>
+                  <p className="text-sm">Full refund up to 7 days before the event. No refund after that. If the organiser cancels, a full refund will be provided.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 whitespace-nowrap">Strict</Badge>
+                  <p className="text-sm">No refunds after purchase. Ticket transfers may be allowed. If the organiser cancels, a full refund will be provided.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 whitespace-nowrap">Donation Based</Badge>
+                  <p className="text-sm">No refund — ticket purchase is treated as a donation to the organiser. If the organiser cancels, a full refund will be provided.</p>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-primary/10 rounded-lg">
+                <p className="text-sm font-medium text-primary">
+                  Important: If an organiser cancels an event, attendees are entitled to a full refund regardless of the policy selected.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* General Guidelines */}
           <Card className="mb-8">
             <CardHeader>
