@@ -505,6 +505,15 @@ const EventDetail = () => {
               content: milestoneMsg,
               is_admin_broadcast: false,
             });
+
+            // Fire-and-forget email notification
+            const { notifyMessageByEmail } = await import("@/utils/notifyMessageEmail");
+            notifyMessageByEmail({
+              recipientId: event.created_by,
+              senderName: userName,
+              subject: newCount === 1 ? `New RSVP: ${event.title}` : `🎉 ${newCount} RSVPs: ${event.title}`,
+              contentPreview: milestoneMsg,
+            });
           } catch (notifyError) {
             console.error("Failed to notify organizer:", notifyError);
           }
@@ -787,17 +796,14 @@ const EventDetail = () => {
                     <MapPin className="h-5 w-5 mr-3 text-primary" />
                     <span>{event.location}</span>
                   </div>
-                  <div className="flex items-center text-muted-foreground">
-                    <Users className="h-5 w-5 mr-3 text-primary" />
-                    <span>
-                      {event.registration_type === 'rsvp' 
-                        ? `${rsvpCount} ${rsvpCount === 1 ? 'person' : 'people'} going`
-                        : event.available_tickets != null
-                          ? `${event.available_tickets} spots available`
-                          : 'Open registration'
-                      }
-                    </span>
-                  </div>
+                  {event.registration_type === 'rsvp' && (
+                    <div className="flex items-center text-muted-foreground">
+                      <Users className="h-5 w-5 mr-3 text-primary" />
+                      <span>
+                        {`${rsvpCount} ${rsvpCount === 1 ? 'person' : 'people'} going`}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Organizer RSVP Export */}

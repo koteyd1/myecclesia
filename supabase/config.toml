@@ -88,3 +88,6 @@ verify_jwt = false
 
 [functions.create-connect-login-link]
 verify_jwt = false
+
+[functions.notify-message-email]
+verify_jwt = false
