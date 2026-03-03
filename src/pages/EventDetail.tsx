@@ -875,6 +875,19 @@ const EventDetail = () => {
                       {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
                       {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
                       {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
+                      {(event as any).refund_policy && (
+                        <div className="mt-3 p-3 bg-muted/50 rounded-lg border">
+                          <p className="font-semibold text-sm flex items-center gap-2 mb-1">
+                            <span>🛡️</span> Refund & Cancellation Policy
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {(event as any).refund_policy === 'flexible' && 'Full refund up to 24 hours before the event.'}
+                            {(event as any).refund_policy === 'moderate' && 'Full refund up to 7 days before. 50% refund within 7 days. No refund on the day.'}
+                            {(event as any).refund_policy === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed.'}
+                            {(event as any).refund_policy === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser.'}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

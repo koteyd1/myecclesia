@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { EventMediaUpload } from "@/components/EventMediaUpload";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowLeft, Save, Image, Calendar, MapPin, Clock } from "lucide-react";
@@ -33,6 +33,7 @@ const eventSchema = z.object({
   duration: z.string().optional(),
   requirements: z.string().optional(),
   registration_type: z.string().default("ticketed"),
+  refund_policy: z.string().default("moderate"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -70,6 +71,7 @@ export default function EventEdit() {
       duration: "",
       requirements: "",
       registration_type: "ticketed",
+      refund_policy: "moderate",
     },
   });
 
@@ -121,6 +123,7 @@ export default function EventEdit() {
         duration: data.duration || "",
         requirements: data.requirements || "",
         registration_type: data.registration_type || "ticketed",
+        refund_policy: (data as any).refund_policy || "moderate",
       });
     } catch (error) {
       console.error("Error fetching event:", error);
@@ -158,8 +161,9 @@ export default function EventEdit() {
           duration: data.duration || null,
           requirements: data.requirements || null,
           registration_type: data.registration_type || "ticketed",
+          refund_policy: data.refund_policy || "moderate",
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq("id", id);
 
       if (error) throw error;
@@ -491,6 +495,35 @@ export default function EventEdit() {
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="refund_policy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Refund & Cancellation Policy</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a policy" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="flexible">Flexible</SelectItem>
+                          <SelectItem value="moderate">Moderate</SelectItem>
+                          <SelectItem value="strict">Strict</SelectItem>
+                          <SelectItem value="donation_based">Donation-Based</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {field.value === 'flexible' && 'Full refund up to 24 hours before the event.'}
+                        {field.value === 'moderate' && 'Full refund up to 7 days before. 50% refund within 7 days. No refund on the day.'}
+                        {field.value === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed.'}
+                        {field.value === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser.'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
