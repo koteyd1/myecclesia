@@ -104,8 +104,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
           JSON.stringify(error).includes('signed up for Connect')
         ) {
           setConnectNotEnabled(true);
-          setSelectedProvider('paypal');
-          toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please use PayPal instead.", variant: "destructive" });
+          toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. You can still use PayPal.", variant: "destructive" });
           return;
         }
         throw error;
@@ -113,8 +112,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
 
       if (data?.code === 'CONNECT_NOT_ENABLED') {
         setConnectNotEnabled(true);
-        setSelectedProvider('paypal');
-        toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. Please use PayPal instead.", variant: "destructive" });
+        toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not enabled yet. You can still use PayPal.", variant: "destructive" });
         return;
       }
 
@@ -125,8 +123,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
     } catch (error: any) {
       console.error('Error starting onboarding:', error);
       setConnectNotEnabled(true);
-      setSelectedProvider('paypal');
-      toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not available right now. Please use PayPal to receive payments.", variant: "destructive" });
+      toast({ title: "Stripe Connect Unavailable", description: "Stripe Connect is not available right now. You can still use PayPal.", variant: "destructive" });
     } finally {
       setActionLoading(false);
     }
@@ -268,10 +265,13 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Stripe Connect is not available at this time. Please use PayPal to receive payments.
+              Stripe Connect is not available at this time. You can try again later or use PayPal below.
             </AlertDescription>
           </Alert>
-          {renderPaypalSection()}
+          <Button variant="outline" onClick={() => { setConnectNotEnabled(false); startOnboarding(); }} disabled={actionLoading} className="w-full">
+            {actionLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Retry Stripe Setup
+          </Button>
         </div>
       );
     }
