@@ -423,16 +423,15 @@ const EventDetail = () => {
 
     setRegistering(true);
     try {
-      // Check if already registered before attempting insert
+      // Check if any registration exists (including cancelled)
       const { data: existingRegistration } = await supabase
         .from("event_registrations")
-        .select("id")
+        .select("id, status")
         .eq("user_id", user.id)
         .eq("event_id", event.id)
-        .eq("status", "registered")
         .single();
 
-      if (existingRegistration) {
+      if (existingRegistration && existingRegistration.status === "registered") {
         setIsRegistered(true);
         toast({
           title: "Already Registered",
@@ -441,14 +440,21 @@ const EventDetail = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from("event_registrations")
-        .insert([
-          {
-            user_id: user.id,
-            event_id: event.id,
-          },
-        ]);
+      let error;
+      if (existingRegistration && existingRegistration.status === "cancelled") {
+        // Re-register by updating the cancelled registration
+        const result = await supabase
+          .from("event_registrations")
+          .update({ status: "registered", registered_at: new Date().toISOString() })
+          .eq("id", existingRegistration.id);
+        error = result.error;
+      } else {
+        // New registration
+        const result = await supabase
+          .from("event_registrations")
+          .insert([{ user_id: user.id, event_id: event.id }]);
+        error = result.error;
+      }
 
       if (error) {
         // Handle duplicate key constraint specifically
