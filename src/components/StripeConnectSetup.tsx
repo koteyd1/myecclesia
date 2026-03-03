@@ -249,15 +249,15 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
   const renderStripeSection = () => {
     if (connectNotEnabled) {
       return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Stripe Connect is not available at this time. Please switch to PayPal to receive payments.
-          </AlertDescription>
-          <Button variant="outline" size="sm" className="mt-2" onClick={() => setSelectedProvider('paypal')}>
-            Switch to PayPal
-          </Button>
-        </Alert>
+        <div className="space-y-3">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Stripe Connect is not available at this time. Please use PayPal to receive payments.
+            </AlertDescription>
+          </Alert>
+          {renderPaypalSection()}
+        </div>
       );
     }
 
