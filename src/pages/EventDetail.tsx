@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TicketPurchase } from "@/components/TicketPurchase";
 import { useToast } from "@/hooks/use-toast";
@@ -263,6 +263,52 @@ const EventDetail = () => {
     }
   };
 
+  const handleExportRsvp = async () => {
+    if (!event?.id) return;
+    try {
+      const { data: registrations, error } = await supabase
+        .from("event_registrations")
+        .select("registered_at, user_id")
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
+      if (error) throw error;
+
+      const userIds = registrations?.map(r => r.user_id) || [];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+      const csvRows = [
+        ["Name", "Email", "RSVP Date"].join(","),
+        ...(registrations || []).map(r => {
+          const profile = profileMap.get(r.user_id);
+          return [
+            `"${profile?.full_name || 'Unknown'}"`,
+            `"${profile?.email || ''}"`,
+            `"${new Date(r.registered_at).toLocaleDateString()}"`,
+          ].join(",");
+        }),
+      ];
+
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `rsvp-${event.slug || event.id}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({ title: "Export Complete", description: `Exported ${registrations?.length || 0} attendees.` });
+    } catch (error: any) {
+      console.error("Error exporting RSVPs:", error);
+      toast({ title: "Export Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handleCancelRsvp = async () => {
     if (!user || !event) return;
     setCancellingRsvp(true);
@@ -427,6 +473,28 @@ const EventDetail = () => {
       
       if (event.registration_type === 'rsvp') {
         fetchRsvpCount();
+        
+        // Notify the organizer via in-app message
+        if (event.created_by && event.created_by !== user.id) {
+          try {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("user_id", user.id)
+              .single();
+            
+            const userName = profile?.full_name || "Someone";
+            await supabase.from("messages").insert({
+              sender_id: user.id,
+              recipient_id: event.created_by,
+              subject: `New RSVP: ${event.title}`,
+              content: `${userName} has RSVP'd to your event **${event.title}** on ${new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}. You now have ${(rsvpCount || 0) + 1} confirmed attendee(s).`,
+              is_admin_broadcast: false,
+            });
+          } catch (notifyError) {
+            console.error("Failed to notify organizer:", notifyError);
+          }
+        }
       }
     } catch (error: any) {
       console.error("Error registering for event:", error);
@@ -718,6 +786,21 @@ const EventDetail = () => {
                   </div>
                 </div>
 
+                {/* Organizer RSVP Export */}
+                {event.registration_type === 'rsvp' && user && event.created_by === user.id && rsvpCount > 0 && (
+                  <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-foreground">RSVP Attendees</h4>
+                        <p className="text-sm text-muted-foreground">{rsvpCount} confirmed {rsvpCount === 1 ? 'attendee' : 'attendees'}</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={handleExportRsvp}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 {(event.organizer || event.organizations || event.ministers || event.requirements || event.denominations) && (
                   <div className="bg-muted/30 p-4 rounded-lg">
                     <h3 className="font-semibold text-foreground mb-2">Event Details</h3>
