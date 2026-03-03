@@ -881,10 +881,10 @@ const EventDetail = () => {
                             <span>🛡️</span> Refund & Cancellation Policy
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {(event as any).refund_policy === 'flexible' && 'Full refund up to 24 hours before the event.'}
-                            {(event as any).refund_policy === 'moderate' && 'Full refund up to 7 days before. 50% refund within 7 days. No refund on the day.'}
-                            {(event as any).refund_policy === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed.'}
-                            {(event as any).refund_policy === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser.'}
+                            {(event as any).refund_policy === 'flexible' && 'Full refund up to 24 hours before the event. If the organiser cancels, a full refund will be provided.'}
+                            {(event as any).refund_policy === 'moderate' && 'Full refund up to 7 days before the event. No refund after that. If the organiser cancels, a full refund will be provided.'}
+                            {(event as any).refund_policy === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed. If the organiser cancels, a full refund will be provided.'}
+                            {(event as any).refund_policy === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser. If the organiser cancels, a full refund will be provided.'}
                           </p>
                         </div>
                       )}

@@ -700,10 +700,10 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        {field.value === 'flexible' && 'Full refund up to 24 hours before the event.'}
-                        {field.value === 'moderate' && 'Full refund up to 7 days before. 50% refund within 7 days. No refund on the day.'}
-                        {field.value === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed.'}
-                        {field.value === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser.'}
+                        {field.value === 'flexible' && 'Full refund up to 24 hours before the event. If the organiser cancels, a full refund will be provided.'}
+                        {field.value === 'moderate' && 'Full refund up to 7 days before the event. No refund after that. If the organiser cancels, a full refund will be provided.'}
+                        {field.value === 'strict' && 'No refunds after purchase. Ticket transfers may be allowed. If the organiser cancels, a full refund will be provided.'}
+                        {field.value === 'donation_based' && 'No refund — ticket purchase is treated as a donation to the organiser. If the organiser cancels, a full refund will be provided.'}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
