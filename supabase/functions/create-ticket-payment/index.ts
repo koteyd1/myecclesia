@@ -37,10 +37,10 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation, ticketTypeId, ticketTypeName, donationAmount, giftAid } = await req.json();
-    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail, ticketTypeId, donationAmount, giftAid });
+    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation, ticketTypeId, ticketTypeName, donationAmount, giftAid, isGuest } = await req.json();
+    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail, ticketTypeId, donationAmount, giftAid, isGuest });
 
-    // Get user from auth header
+    // Get user from auth header (optional for guest checkout)
     let user = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
@@ -49,8 +49,9 @@ serve(async (req) => {
       user = userData.user;
     }
 
-    if (!user) {
-      throw new Error("Authentication required to purchase tickets");
+    // For paid tickets, guest checkout is allowed (email required)
+    if (!user && !buyerEmail) {
+      throw new Error("Email is required for guest checkout");
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -96,8 +97,9 @@ serve(async (req) => {
     }
 
     // Check if customer exists
+    const customerEmail = buyerEmail || (user ? user.email : '');
     const customers = await stripe.customers.list({ 
-      email: buyerEmail, 
+      email: customerEmail, 
       limit: 1 
     });
     
@@ -107,10 +109,11 @@ serve(async (req) => {
     } else {
       // Create new customer
       const customer = await stripe.customers.create({
-        email: buyerEmail,
-        name: buyerName,
+        email: customerEmail,
+        name: buyerName || "Guest",
         metadata: {
-          user_id: user.id,
+          user_id: user?.id || 'guest',
+          is_guest: String(!user),
         },
       });
       customerId = customer.id;
@@ -187,14 +190,15 @@ serve(async (req) => {
         event_date: eventData?.date || eventDate || '',
         event_time: eventData?.time || eventTime || '',
         event_location: eventData?.location || eventLocation || '',
-        user_id: user.id,
-        user_email: buyerEmail,
-        user_name: buyerName,
+        user_id: user?.id || 'guest',
+        user_email: customerEmail,
+        user_name: buyerName || 'Guest',
         quantity: String(quantity || 1),
         ticket_type_id: ticketTypeId || '',
         ticket_type_name: ticketTypeName || '',
         donation_amount: String(donationAmountPence),
         gift_aid: String(giftAid || false),
+        is_guest: String(!user),
       },
     };
 

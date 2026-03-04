@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Ticket, Minus, Plus, CreditCard, ShoppingCart } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Ticket, Minus, Plus, CreditCard, ShoppingCart, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TicketDonation } from "@/components/TicketDonation";
 
@@ -35,13 +36,6 @@ interface TicketPurchaseProps {
   event: Event;
 }
 
-interface SelectedTicket {
-  ticketTypeId: string;
-  quantity: number;
-  price: number;
-  name: string;
-}
-
 export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -54,6 +48,11 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
   const [donationAmount, setDonationAmount] = useState(0);
   const [giftAidEnabled, setGiftAidEnabled] = useState(false);
   const [showDonation, setShowDonation] = useState(false);
+  // Legacy quantity for single-price events
+  const [legacyQuantity, setLegacyQuantity] = useState(1);
+  // Guest checkout fields
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestName, setGuestName] = useState("");
 
   useEffect(() => {
     fetchTicketTypes();
@@ -64,7 +63,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
   const checkExistingFreeTicket = async () => {
     if (!user) return;
-    
     try {
       const { data, error } = await supabase
         .from("tickets")
@@ -73,7 +71,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         .eq("user_id", user.id)
         .neq("status", "cancelled")
         .limit(1);
-
       if (error) throw error;
       setHasExistingFreeTicket(data && data.length > 0);
     } catch (error) {
@@ -89,7 +86,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         .eq("event_id", event.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
-
       if (error) throw error;
       setTicketTypes(data || []);
     } catch (error) {
@@ -122,10 +118,40 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     return Object.values(selectedTickets).reduce((sum, qty) => sum + qty, 0);
   };
 
+  const getGuestInfo = () => {
+    if (user) return null;
+    if (!guestEmail || !guestEmail.includes("@")) {
+      toast({
+        title: "Email Required",
+        description: "Please enter a valid email address to purchase tickets.",
+        variant: "destructive",
+      });
+      return null;
+    }
+    return { email: guestEmail, name: guestName || "Guest" };
+  };
+
+  const getBuyerInfo = async () => {
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("user_id", user.id)
+        .single();
+      return {
+        email: profile?.email || user.email || "",
+        name: profile?.full_name || "Guest",
+      };
+    }
+    const guest = getGuestInfo();
+    if (!guest) return null;
+    return guest;
+  };
+
   // Handle free ticket for events without ticket types
   const handleFreeTicket = async () => {
     if (!user) {
-      navigate("/auth");
+      navigate("/auth", { state: { from: `/events/${event.slug}` } });
       return;
     }
 
@@ -133,11 +159,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     try {
       // If there's a donation, route through paid flow
       if (donationAmount > 0) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email, full_name")
-          .eq("user_id", user.id)
-          .single();
+        const buyer = await getBuyerInfo();
+        if (!buyer) { setPaymentLoading(false); return; }
 
         const response = await supabase.functions.invoke("create-ticket-payment", {
           body: {
@@ -145,8 +168,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             eventTitle: event.title,
             price: 0,
             quantity: 1,
-            buyerEmail: profile?.email || user.email,
-            buyerName: profile?.full_name || "Guest",
+            buyerEmail: buyer.email,
+            buyerName: buyer.name,
             eventDate: event.date,
             eventTime: event.time,
             eventLocation: event.location,
@@ -196,11 +219,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
   };
 
   const handlePurchase = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
     const totalTickets = getTotalTickets();
     if (totalTickets === 0) {
       toast({
@@ -211,15 +229,11 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
       return;
     }
 
+    const buyer = await getBuyerInfo();
+    if (!buyer) return;
+
     setPaymentLoading(true);
     try {
-      // Get user profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email, full_name")
-        .eq("user_id", user.id)
-        .single();
-
       const selectedEntries = Object.entries(selectedTickets).filter(([_, qty]) => qty > 0);
       
       if (selectedEntries.length === 1) {
@@ -228,8 +242,13 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         
         if (!ticketType) throw new Error("Ticket type not found");
 
-        // Handle FREE tickets
+        // Handle FREE tickets without donation
         if (ticketType.price === 0 && donationAmount === 0) {
+          if (!user) {
+            navigate("/auth", { state: { from: `/events/${event.slug}` } });
+            setPaymentLoading(false);
+            return;
+          }
           const response = await supabase.functions.invoke("create-free-ticket", {
             body: {
               eventId: event.id,
@@ -246,44 +265,15 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           });
 
           if (response.error) throw response.error;
-
           toast({
             title: "Ticket Confirmed! 🎉",
             description: "Your free ticket has been reserved. Check My Tickets to view it.",
           });
-          
           navigate("/my-tickets");
           return;
         }
 
-        // Handle FREE tickets with donation (route through payment)
-        if (ticketType.price === 0 && donationAmount > 0) {
-          const response = await supabase.functions.invoke("create-ticket-payment", {
-            body: {
-              eventId: event.slug,
-              eventTitle: event.title,
-              price: 0,
-              quantity,
-              ticketTypeId,
-              ticketTypeName: ticketType.name,
-              buyerEmail: profile?.email || user.email,
-              buyerName: profile?.full_name || "Guest",
-              eventDate: event.date,
-              eventTime: event.time,
-              eventLocation: event.location,
-              donationAmount,
-              giftAid: giftAidEnabled,
-            },
-          });
-
-          if (response.error) throw response.error;
-          if (response.data?.url) {
-            window.location.href = response.data.url;
-          }
-          return;
-        }
-
-        // Handle PAID tickets
+        // Handle FREE tickets with donation or PAID tickets
         const response = await supabase.functions.invoke("create-ticket-payment", {
           body: {
             eventId: event.slug,
@@ -292,18 +282,18 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             quantity,
             ticketTypeId,
             ticketTypeName: ticketType.name,
-            buyerEmail: profile?.email || user.email,
-            buyerName: profile?.full_name || "Guest",
+            buyerEmail: buyer.email,
+            buyerName: buyer.name,
             eventDate: event.date,
             eventTime: event.time,
             eventLocation: event.location,
             donationAmount,
             giftAid: giftAidEnabled,
+            isGuest: !user,
           },
         });
 
         if (response.error) throw response.error;
-
         if (response.data?.url) {
           window.location.href = response.data.url;
         }
@@ -326,80 +316,105 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
     }
   };
 
+  const handleLegacyPurchase = async () => {
+    const buyer = await getBuyerInfo();
+    if (!buyer) return;
+
+    setPaymentLoading(true);
+    try {
+      const response = await supabase.functions.invoke("create-ticket-payment", {
+        body: {
+          eventId: event.slug,
+          eventTitle: event.title,
+          price: event.price,
+          quantity: legacyQuantity,
+          buyerEmail: buyer.email,
+          buyerName: buyer.name,
+          eventDate: event.date,
+          eventTime: event.time,
+          eventLocation: event.location,
+          donationAmount,
+          giftAid: giftAidEnabled,
+          isGuest: !user,
+        },
+      });
+
+      if (response.error) throw response.error;
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error: any) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Guest checkout form component
+  const GuestCheckoutForm = () => {
+    if (user) return null;
+    return (
+      <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+        <Label className="text-sm font-medium flex items-center gap-2">
+          <Mail className="h-4 w-4" />
+          Guest Checkout
+        </Label>
+        <div className="space-y-2">
+          <Input
+            type="email"
+            placeholder="Email address *"
+            value={guestEmail}
+            onChange={(e) => setGuestEmail(e.target.value)}
+            required
+          />
+          <Input
+            type="text"
+            placeholder="Full name (optional)"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Your ticket will be sent to this email. <button className="text-primary underline" onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}>Sign in</button> to manage tickets in your account.
+        </p>
+      </div>
+    );
+  };
+
+  // Quantity selector for legacy events
+  const LegacyQuantitySelector = () => (
+    <div className="flex items-center justify-center gap-3 mb-4">
+      <Label className="text-sm text-muted-foreground">Qty:</Label>
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => setLegacyQuantity(Math.max(1, legacyQuantity - 1))}
+        disabled={legacyQuantity <= 1}
+      >
+        <Minus className="h-4 w-4" />
+      </Button>
+      <span className="w-8 text-center font-semibold">{legacyQuantity}</span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => setLegacyQuantity(Math.min(10, legacyQuantity + 1))}
+        disabled={legacyQuantity >= 10}
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
   // If no ticket types and paid event, show legacy single price purchase
   if (!loading && ticketTypes.length === 0 && event.price > 0) {
-    // Prompt unauthenticated users to sign in
-    if (!user) {
-      return (
-        <Card className="border-primary/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Ticket className="h-5 w-5 text-primary" />
-              Purchase Tickets
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-4">
-              <div className="text-3xl font-bold text-primary mb-2">
-                £{event.price.toFixed(2)}
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">Sign in to purchase tickets</p>
-              <Button
-                className="w-full bg-gradient-primary hover:opacity-90"
-                onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
-              >
-                Sign In to Buy Ticket
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    const handleLegacyPurchase = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setPaymentLoading(true);
-      try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email, full_name")
-          .eq("user_id", user.id)
-          .single();
-
-        const response = await supabase.functions.invoke("create-ticket-payment", {
-          body: {
-            eventId: event.slug,
-            eventTitle: event.title,
-            price: event.price,
-            quantity: 1,
-            buyerEmail: profile?.email || user.email,
-            buyerName: profile?.full_name || "Guest",
-            eventDate: event.date,
-            eventTime: event.time,
-            eventLocation: event.location,
-            donationAmount,
-            giftAid: giftAidEnabled,
-          },
-        });
-
-        if (response.error) throw response.error;
-        if (response.data?.url) {
-          window.location.href = response.data.url;
-        }
-      } catch (error: any) {
-        console.error("Error creating payment:", error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to process. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setPaymentLoading(false);
-      }
-    };
+    const legacyTotal = event.price * legacyQuantity;
 
     return (
       <Card className="border-primary/20">
@@ -410,18 +425,48 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4">
-            <div className="text-3xl font-bold text-primary mb-2">
-              £{event.price.toFixed(2)}
+          <div className="py-4 space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary mb-1">
+                £{event.price.toFixed(2)}
+              </div>
+              <p className="text-sm text-muted-foreground">per ticket</p>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">per ticket</p>
+            
+            <LegacyQuantitySelector />
+
+            {legacyQuantity > 1 && (
+              <div className="text-center text-sm text-muted-foreground">
+                {legacyQuantity} tickets × £{event.price.toFixed(2)} = <span className="font-semibold text-foreground">£{legacyTotal.toFixed(2)}</span>
+              </div>
+            )}
+
+            <GuestCheckoutForm />
+
+            <TicketDonation
+              donationAmount={donationAmount}
+              giftAidEnabled={giftAidEnabled}
+              onDonationChange={setDonationAmount}
+              onGiftAidChange={setGiftAidEnabled}
+              isFreeEvent={false}
+              showDonation={showDonation}
+              onShowDonationChange={setShowDonation}
+            />
+
+            {donationAmount > 0 && (
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">Total: </span>
+                <span className="font-bold">£{(legacyTotal + donationAmount).toFixed(2)}</span>
+              </div>
+            )}
+
             <Button
               className="w-full bg-gradient-primary hover:opacity-90"
               onClick={handleLegacyPurchase}
               disabled={paymentLoading}
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              {paymentLoading ? "Processing..." : "Buy Ticket"}
+              {paymentLoading ? "Processing..." : `Buy ${legacyQuantity > 1 ? `${legacyQuantity} Tickets` : "Ticket"} — £${(legacyTotal + donationAmount).toFixed(2)}`}
             </Button>
           </div>
         </CardContent>
@@ -471,7 +516,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
       );
     }
 
-    // Prompt unauthenticated users to sign in
+    // Free ticket - requires sign in
     if (!user) {
       return (
         <Card className="border-primary/20">
@@ -483,9 +528,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-center py-4">
-              <div className="text-3xl font-bold text-emerald-600 mb-2">
-                Free
-              </div>
+              <div className="text-3xl font-bold text-emerald-600 mb-2">Free</div>
               <p className="text-sm text-muted-foreground mb-4">Sign in to get your free ticket</p>
               <Button
                 className="w-full bg-gradient-primary hover:opacity-90"
@@ -509,9 +552,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <div className="text-3xl font-bold text-emerald-600 mb-2">
-              Free
-            </div>
+            <div className="text-3xl font-bold text-emerald-600 mb-2">Free</div>
             <p className="text-sm text-muted-foreground mb-4">This event is free to attend</p>
             
             <TicketDonation
@@ -544,60 +585,6 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
   const totalAmount = getTotalAmount();
   const totalTickets = getTotalTickets();
-
-  // Prompt unauthenticated users to sign in for multi-ticket events
-  if (!user) {
-    return (
-      <Card className="border-primary/20">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Ticket className="h-5 w-5 text-primary" />
-            Select Tickets
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {ticketTypes.map((ticketType) => {
-            const available = ticketType.quantity_available - ticketType.quantity_sold;
-            const isSoldOut = available <= 0;
-
-            return (
-              <div
-                key={ticketType.id}
-                className={`p-4 border rounded-lg ${isSoldOut ? "opacity-50 bg-muted" : "bg-card"}`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{ticketType.name}</span>
-                      {isSoldOut && <Badge variant="destructive">Sold Out</Badge>}
-                    </div>
-                    {ticketType.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{ticketType.description}</p>
-                    )}
-                    <div className="text-lg font-semibold mt-2">
-                      {ticketType.price === 0 ? "Free" : `£${ticketType.price.toFixed(2)}`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          
-          <div className="border-t pt-4">
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Sign in to select and purchase tickets
-            </p>
-            <Button
-              className="w-full bg-gradient-primary hover:opacity-90"
-              onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
-            >
-              Sign In to Get Tickets
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="border-primary/20">
@@ -665,6 +652,9 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           );
         })}
 
+        {/* Guest Checkout Form */}
+        {totalTickets > 0 && <GuestCheckoutForm />}
+
         {/* Donation & Gift Aid */}
         {totalTickets > 0 && (
           <TicketDonation
@@ -696,7 +686,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
                 <span className="font-medium">£{donationAmount.toFixed(2)}</span>
               </div>
             )}
-            {(totalAmount > 0 || donationAmount > 0) && donationAmount > 0 && (
+            {donationAmount > 0 && (
               <div className="flex justify-between items-center mb-4 border-t pt-2">
                 <span className="font-semibold">Total</span>
                 <span className="text-xl font-bold">£{(totalAmount + donationAmount).toFixed(2)}</span>

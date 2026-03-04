@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TicketPurchase } from "@/components/TicketPurchase";
+import { YouMightAlsoLike } from "@/components/YouMightAlsoLike";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -1085,6 +1086,15 @@ const EventDetail = () => {
               </Card>
             </div>
           </div>
+
+          {/* You Might Also Like */}
+          {event && (
+            <YouMightAlsoLike
+              currentEventId={event.id}
+              category={event.category}
+              location={event.location}
+            />
+          )}
         </main>
       </div>
     </>
