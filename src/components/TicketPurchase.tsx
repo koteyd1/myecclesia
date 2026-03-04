@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Ticket, Minus, Plus, CreditCard, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TicketDonation } from "@/components/TicketDonation";
 
 interface TicketType {
   id: string;
@@ -50,6 +51,9 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [hasExistingFreeTicket, setHasExistingFreeTicket] = useState(false);
+  const [donationAmount, setDonationAmount] = useState(0);
+  const [giftAidEnabled, setGiftAidEnabled] = useState(false);
+  const [showDonation, setShowDonation] = useState(false);
 
   useEffect(() => {
     fetchTicketTypes();
@@ -127,6 +131,37 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
     setPaymentLoading(true);
     try {
+      // If there's a donation, route through paid flow
+      if (donationAmount > 0) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("user_id", user.id)
+          .single();
+
+        const response = await supabase.functions.invoke("create-ticket-payment", {
+          body: {
+            eventId: event.slug,
+            eventTitle: event.title,
+            price: 0,
+            quantity: 1,
+            buyerEmail: profile?.email || user.email,
+            buyerName: profile?.full_name || "Guest",
+            eventDate: event.date,
+            eventTime: event.time,
+            eventLocation: event.location,
+            donationAmount,
+            giftAid: giftAidEnabled,
+          },
+        });
+
+        if (response.error) throw response.error;
+        if (response.data?.url) {
+          window.location.href = response.data.url;
+        }
+        return;
+      }
+
       const response = await supabase.functions.invoke("create-free-ticket", {
         body: {
           eventId: event.id,
@@ -136,6 +171,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           eventDate: event.date,
           eventTime: event.time,
           eventLocation: event.location,
+          giftAid: giftAidEnabled,
         },
       });
 
@@ -193,7 +229,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         if (!ticketType) throw new Error("Ticket type not found");
 
         // Handle FREE tickets
-        if (ticketType.price === 0) {
+        if (ticketType.price === 0 && donationAmount === 0) {
           const response = await supabase.functions.invoke("create-free-ticket", {
             body: {
               eventId: event.id,
@@ -205,6 +241,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
               eventDate: event.date,
               eventTime: event.time,
               eventLocation: event.location,
+              giftAid: giftAidEnabled,
             },
           });
 
@@ -215,8 +252,34 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             description: "Your free ticket has been reserved. Check My Tickets to view it.",
           });
           
-          // Navigate to tickets page
           navigate("/my-tickets");
+          return;
+        }
+
+        // Handle FREE tickets with donation (route through payment)
+        if (ticketType.price === 0 && donationAmount > 0) {
+          const response = await supabase.functions.invoke("create-ticket-payment", {
+            body: {
+              eventId: event.slug,
+              eventTitle: event.title,
+              price: 0,
+              quantity,
+              ticketTypeId,
+              ticketTypeName: ticketType.name,
+              buyerEmail: profile?.email || user.email,
+              buyerName: profile?.full_name || "Guest",
+              eventDate: event.date,
+              eventTime: event.time,
+              eventLocation: event.location,
+              donationAmount,
+              giftAid: giftAidEnabled,
+            },
+          });
+
+          if (response.error) throw response.error;
+          if (response.data?.url) {
+            window.location.href = response.data.url;
+          }
           return;
         }
 
@@ -234,6 +297,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             eventDate: event.date,
             eventTime: event.time,
             eventLocation: event.location,
+            donationAmount,
+            giftAid: giftAidEnabled,
           },
         });
 
@@ -315,6 +380,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             eventDate: event.date,
             eventTime: event.time,
             eventLocation: event.location,
+            donationAmount,
+            giftAid: giftAidEnabled,
           },
         });
 
@@ -446,13 +513,24 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
               Free
             </div>
             <p className="text-sm text-muted-foreground mb-4">This event is free to attend</p>
+            
+            <TicketDonation
+              donationAmount={donationAmount}
+              giftAidEnabled={giftAidEnabled}
+              onDonationChange={setDonationAmount}
+              onGiftAidChange={setGiftAidEnabled}
+              isFreeEvent={true}
+              showDonation={showDonation}
+              onShowDonationChange={setShowDonation}
+            />
+
             <Button
-              className="w-full bg-gradient-primary hover:opacity-90"
+              className="w-full bg-gradient-primary hover:opacity-90 mt-4"
               onClick={handleFreeTicket}
               disabled={paymentLoading}
             >
               <Ticket className="h-4 w-4 mr-2" />
-              {paymentLoading ? "Processing..." : "Get Free Ticket"}
+              {paymentLoading ? "Processing..." : donationAmount > 0 ? `Get Ticket + Donate £${donationAmount.toFixed(2)}` : "Get Free Ticket"}
             </Button>
           </div>
         </CardContent>
@@ -587,25 +665,51 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
           );
         })}
 
+        {/* Donation & Gift Aid */}
+        {totalTickets > 0 && (
+          <TicketDonation
+            donationAmount={donationAmount}
+            giftAidEnabled={giftAidEnabled}
+            onDonationChange={setDonationAmount}
+            onGiftAidChange={setGiftAidEnabled}
+            isFreeEvent={totalAmount === 0}
+            showDonation={showDonation}
+            onShowDonationChange={setShowDonation}
+          />
+        )}
+
         {/* Order Summary */}
         {totalTickets > 0 && (
           <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">{totalTickets} ticket{totalTickets > 1 ? "s" : ""}</span>
               </div>
-              <div className="text-xl font-bold">
+              <div className="text-lg font-semibold">
                 {totalAmount === 0 ? "Free" : `£${totalAmount.toFixed(2)}`}
               </div>
             </div>
+            {donationAmount > 0 && (
+              <div className="flex justify-between items-center mb-2 text-sm">
+                <span className="text-muted-foreground">Donation</span>
+                <span className="font-medium">£{donationAmount.toFixed(2)}</span>
+              </div>
+            )}
+            {(totalAmount > 0 || donationAmount > 0) && donationAmount > 0 && (
+              <div className="flex justify-between items-center mb-4 border-t pt-2">
+                <span className="font-semibold">Total</span>
+                <span className="text-xl font-bold">£{(totalAmount + donationAmount).toFixed(2)}</span>
+              </div>
+            )}
+            {!(donationAmount > 0) && <div className="mb-4" />}
             <Button
               className="w-full bg-gradient-primary hover:opacity-90"
               onClick={handlePurchase}
               disabled={paymentLoading}
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              {paymentLoading ? "Processing..." : totalAmount === 0 ? "Get Free Tickets" : `Pay £${totalAmount.toFixed(2)}`}
+              {paymentLoading ? "Processing..." : totalAmount === 0 && donationAmount === 0 ? "Get Free Tickets" : `Pay £${(totalAmount + donationAmount).toFixed(2)}`}
             </Button>
           </div>
         )}

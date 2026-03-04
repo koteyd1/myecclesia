@@ -37,8 +37,8 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation, ticketTypeId, ticketTypeName } = await req.json();
-    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail, ticketTypeId });
+    const { eventId, eventTitle, price, quantity, buyerEmail, buyerName, eventDate, eventTime, eventLocation, ticketTypeId, ticketTypeName, donationAmount, giftAid } = await req.json();
+    logStep("Request received", { eventId, eventTitle, price, quantity, buyerEmail, ticketTypeId, donationAmount, giftAid });
 
     // Get user from auth header
     let user = null;
@@ -138,23 +138,45 @@ serve(async (req) => {
     }
 
     const totalAmount = Math.round(price * 100) * (quantity || 1); // Convert to pence
+    const donationAmountPence = donationAmount ? Math.round(donationAmount * 100) : 0;
     
+    // Build line items
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    
+    // Add ticket line item (only if price > 0)
+    if (price > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "gbp",
+          product_data: { 
+            name: `Ticket: ${eventTitle}`,
+            description: ticketTypeName ? `${ticketTypeName} - ${eventTitle}` : `Event ticket for ${eventTitle}`,
+          },
+          unit_amount: Math.round(price * 100),
+        },
+        quantity: quantity || 1,
+      });
+    }
+    
+    // Add donation line item if present
+    if (donationAmountPence > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "gbp",
+          product_data: { 
+            name: `Donation to ${eventTitle}`,
+            description: giftAid ? "Donation (Gift Aid eligible)" : "Voluntary donation to event organiser",
+          },
+          unit_amount: donationAmountPence,
+        },
+        quantity: 1,
+      });
+    }
+
     // Build checkout session options
     const sessionOptions: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
-      line_items: [
-        {
-          price_data: {
-            currency: "gbp",
-            product_data: { 
-              name: `Ticket: ${eventTitle}`,
-              description: ticketTypeName ? `${ticketTypeName} - ${eventTitle}` : `Event ticket for ${eventTitle}`,
-            },
-            unit_amount: Math.round(price * 100),
-          },
-          quantity: quantity || 1,
-        },
-      ],
+      line_items: lineItems,
       mode: 'payment',
       success_url: `${req.headers.get("origin")}/events/${eventId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/events/${eventId}?payment=canceled`,
@@ -171,6 +193,8 @@ serve(async (req) => {
         quantity: String(quantity || 1),
         ticket_type_id: ticketTypeId || '',
         ticket_type_name: ticketTypeName || '',
+        donation_amount: String(donationAmountPence),
+        gift_aid: String(giftAid || false),
       },
     };
 
@@ -178,8 +202,9 @@ serve(async (req) => {
     if (connectedAccountId) {
       logStep("Using Stripe Connect for payment", { connectedAccountId });
       
-      // Calculate application fee (0% during free period)
-      const applicationFee = Math.round(totalAmount * (PLATFORM_FEE_PERCENT / 100));
+      // Calculate application fee on total (tickets + donation)
+      const fullTotal = totalAmount + donationAmountPence;
+      const applicationFee = Math.round(fullTotal * (PLATFORM_FEE_PERCENT / 100));
       
       sessionOptions.payment_intent_data = {
         application_fee_amount: applicationFee,
