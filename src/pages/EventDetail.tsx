@@ -876,7 +876,7 @@ const EventDetail = () => {
                       {event.denominations && <p><strong>Denomination:</strong> {event.denominations}</p>}
                       {event.requirements && <p><strong>Requirements:</strong> {event.requirements}</p>}
                       {event.duration && <p><strong>Duration:</strong> {event.duration}</p>}
-                      {(event as any).refund_policy && (
+                      {(event as any).refund_policy && event.registration_type !== 'external_ticket' && event.registration_type !== 'external_page' && (
                         <div className="mt-3 p-3 bg-muted/50 rounded-lg border">
                           <p className="font-semibold text-sm flex items-center gap-2 mb-1">
                             <span>🛡️</span> Refund & Cancellation Policy
