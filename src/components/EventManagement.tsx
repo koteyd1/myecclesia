@@ -14,11 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info, Users, ShieldCheck } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Plus, Ticket, ScanLine, ExternalLink, Globe, TicketCheck, Info, Users, ShieldCheck, Heart, Gift } from 'lucide-react';
 import { ImageUpload } from '@/components/ImageUpload';
 import { TicketTypeManager } from '@/components/TicketTypeManager';
 import { Link } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type RegistrationType = 'in_platform' | 'external_event' | 'external_tickets' | 'rsvp';
 
@@ -39,6 +40,8 @@ const eventSchema = z.object({
   requirements: z.string().optional(),
   registration_type: z.enum(['in_platform', 'external_event', 'external_tickets', 'rsvp']).default('in_platform'),
   refund_policy: z.enum(['flexible', 'moderate', 'strict', 'donation_based']).default('moderate'),
+  accept_donations: z.boolean().default(false),
+  accept_gift_aid: z.boolean().default(false),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -119,6 +122,8 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
       requirements: '',
       registration_type: 'in_platform',
       refund_policy: 'moderate',
+      accept_donations: false,
+      accept_gift_aid: false,
     }
   });
 
@@ -156,6 +161,8 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
           formData.registration_type === 'external_tickets' ? 'external_ticket' :
           formData.registration_type === 'external_event' ? 'external_page' : 'ticketed',
         refund_policy: formData.refund_policy,
+        accept_donations: formData.accept_donations,
+        accept_gift_aid: formData.accept_gift_aid,
         created_by: user.id,
         organization_id: organizationId || null,
         minister_id: ministerId || null,
@@ -657,6 +664,65 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                 </Alert>
               )}
             </div>
+
+            {/* Donation & Gift Aid Options */}
+            {registrationType !== 'external_event' && registrationType !== 'external_tickets' && (
+              <div className="space-y-4">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  Donations & Gift Aid
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Allow attendees to add a voluntary donation when booking tickets.
+                </p>
+                <FormField
+                  control={form.control}
+                  name="accept_donations"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">Accept Donations</FormLabel>
+                        <FormDescription>
+                          Attendees will see an option to add a donation (£2, £5, £10 or custom) when booking tickets. Donations are paid to you via Stripe.
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('accept_donations') && (
+                  <FormField
+                    control={form.control}
+                    name="accept_gift_aid"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 ml-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer flex items-center gap-2">
+                            <Gift className="h-3 w-3" />
+                            Enable Gift Aid Declaration
+                          </FormLabel>
+                          <FormDescription>
+                            Show a Gift Aid checkbox so UK taxpayers can increase their donation by 25% at no extra cost. You are responsible for submitting Gift Aid claims to HMRC.
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            )}
 
             {/* Refund & Cancellation Policy */}
             {registrationType !== 'external_event' && registrationType !== 'external_tickets' && (

@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { EventMediaUpload } from "@/components/EventMediaUpload";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowLeft, Save, Image, Calendar, MapPin, Clock } from "lucide-react";
+import { ArrowLeft, Save, Image, Calendar, MapPin, Clock, Heart, Gift } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const eventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -34,6 +35,8 @@ const eventSchema = z.object({
   requirements: z.string().optional(),
   registration_type: z.string().default("ticketed"),
   refund_policy: z.string().default("moderate"),
+  accept_donations: z.boolean().default(false),
+  accept_gift_aid: z.boolean().default(false),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -72,6 +75,8 @@ export default function EventEdit() {
       requirements: "",
       registration_type: "ticketed",
       refund_policy: "moderate",
+      accept_donations: false,
+      accept_gift_aid: false,
     },
   });
 
@@ -124,6 +129,8 @@ export default function EventEdit() {
         requirements: data.requirements || "",
         registration_type: data.registration_type || "ticketed",
         refund_policy: (data as any).refund_policy || "moderate",
+        accept_donations: (data as any).accept_donations || false,
+        accept_gift_aid: (data as any).accept_gift_aid || false,
       });
     } catch (error) {
       console.error("Error fetching event:", error);
@@ -162,6 +169,8 @@ export default function EventEdit() {
           requirements: data.requirements || null,
           registration_type: data.registration_type || "ticketed",
           refund_policy: data.refund_policy || "moderate",
+          accept_donations: data.accept_donations || false,
+          accept_gift_aid: data.accept_gift_aid || false,
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", id);
@@ -566,6 +575,66 @@ export default function EventEdit() {
                 />
               </CardContent>
             </Card>
+
+            {/* Donations & Gift Aid */}
+            {form.watch("registration_type") !== "external_ticket" && form.watch("registration_type") !== "external_page" && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Heart className="h-5 w-5" />
+                    Donations & Gift Aid
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="accept_donations"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer">Accept Donations</FormLabel>
+                          <FormDescription>
+                            Attendees can add a voluntary donation (£2, £5, £10 or custom) when booking. Donations are paid to you via Stripe.
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("accept_donations") && (
+                    <FormField
+                      control={form.control}
+                      name="accept_gift_aid"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 ml-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="cursor-pointer flex items-center gap-2">
+                              <Gift className="h-3 w-3" />
+                              Enable Gift Aid Declaration
+                            </FormLabel>
+                            <FormDescription>
+                              Show a Gift Aid checkbox so UK taxpayers can increase their donation by 25% at no extra cost. You are responsible for submitting Gift Aid claims to HMRC.
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">

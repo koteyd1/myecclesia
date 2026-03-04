@@ -403,6 +403,8 @@ export type Database = {
       }
       events: {
         Row: {
+          accept_donations: boolean
+          accept_gift_aid: boolean
           available_tickets: number | null
           category: string | null
           church_id: string | null
@@ -433,6 +435,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accept_donations?: boolean
+          accept_gift_aid?: boolean
           available_tickets?: number | null
           category?: string | null
           church_id?: string | null
@@ -463,6 +467,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accept_donations?: boolean
+          accept_gift_aid?: boolean
           available_tickets?: number | null
           category?: string | null
           church_id?: string | null
