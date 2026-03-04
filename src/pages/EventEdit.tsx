@@ -386,80 +386,116 @@ export default function EventEdit() {
               </CardContent>
             </Card>
 
-            {/* Tickets & Pricing */}
+            {/* Registration Type & Tickets */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Tickets & Pricing</CardTitle>
+                <CardTitle className="text-lg">Registration & Tickets</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Price (£)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="available_tickets"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Available Tickets</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
                   control={form.control}
-                  name="ticket_url"
+                  name="registration_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>External Ticket URL (optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
-                      </FormControl>
+                      <FormLabel>Registration Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select registration type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ticketed">In-Platform Ticketing</SelectItem>
+                          <SelectItem value="rsvp">Free RSVP</SelectItem>
+                          <SelectItem value="external_ticket">External Ticketing</SelectItem>
+                          <SelectItem value="external_page">External Event Page</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {field.value === 'ticketed' && 'Sell tickets directly on MyEcclesia via Stripe.'}
+                        {field.value === 'rsvp' && 'Free event — attendees can RSVP with one click.'}
+                        {field.value === 'external_ticket' && 'Link to an external ticketing platform.'}
+                        {field.value === 'external_page' && 'Link to an external event website.'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="external_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Event Website (optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {(form.watch("registration_type") === "ticketed" || !form.watch("registration_type")) && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price (£)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="available_tickets"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Available Tickets</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {(form.watch("registration_type") === "external_ticket") && (
+                  <FormField
+                    control={form.control}
+                    name="ticket_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>External Ticket URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {(form.watch("registration_type") === "external_page" || form.watch("registration_type") === "external_ticket") && (
+                  <FormField
+                    control={form.control}
+                    name="external_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Event Website (optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </CardContent>
             </Card>
 
