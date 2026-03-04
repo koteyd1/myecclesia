@@ -92,6 +92,8 @@ interface Event {
   available_tickets: number | null;
   created_at: string;
   tickets_sold: number;
+  is_verified: boolean;
+  registration_type: string;
 }
 
 export default function MyProfiles() {
@@ -154,7 +156,7 @@ export default function MyProfiles() {
       // Fetch user's events
       const { data: eventsData } = await supabase
         .from("events")
-        .select("id, title, date, time, location, category, slug, price, available_tickets, created_at")
+        .select("id, title, date, time, location, category, slug, price, available_tickets, created_at, is_verified, registration_type")
         .eq("created_by", user.id)
         .order("date", { ascending: true });
 
@@ -691,8 +693,19 @@ export default function MyProfiles() {
                 {events.map((event) => (
                   <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h4 className="font-semibold">{event.title}</h4>
+                        {event.is_verified ? (
+                          <Badge variant="default" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Approved
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs border-amber-300 text-amber-600 dark:text-amber-400">
+                            <Clock className="w-3 h-3 mr-1" />
+                            Pending Review
+                          </Badge>
+                        )}
                         {event.category && (
                           <Badge variant="secondary" className="text-xs">{event.category}</Badge>
                         )}
