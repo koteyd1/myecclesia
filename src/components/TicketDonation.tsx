@@ -14,6 +14,7 @@ interface TicketDonationProps {
   isFreeEvent?: boolean;
   showDonation: boolean;
   onShowDonationChange: (show: boolean) => void;
+  showGiftAid?: boolean;
 }
 
 const PRESET_AMOUNTS = [2, 5, 10];
@@ -26,6 +27,7 @@ export const TicketDonation = ({
   isFreeEvent = false,
   showDonation,
   onShowDonationChange,
+  showGiftAid = true,
 }: TicketDonationProps) => {
   const [customAmount, setCustomAmount] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
@@ -141,23 +143,25 @@ export const TicketDonation = ({
       )}
 
       {/* Gift Aid */}
-      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border">
-        <Checkbox
-          id="gift-aid"
-          checked={giftAidEnabled}
-          onCheckedChange={(checked) => onGiftAidChange(checked === true)}
-          className="mt-0.5"
-        />
-        <div className="space-y-1">
-          <Label htmlFor="gift-aid" className="flex items-center gap-1.5 text-sm font-medium cursor-pointer">
-            <Gift className="h-3.5 w-3.5 text-primary" />
-            Add Gift Aid
-          </Label>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year, it is my responsibility to pay any difference. The charity can claim 25p for every £1 donated.
-          </p>
+      {showGiftAid && (
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border">
+          <Checkbox
+            id="gift-aid"
+            checked={giftAidEnabled}
+            onCheckedChange={(checked) => onGiftAidChange(checked === true)}
+            className="mt-0.5"
+          />
+          <div className="space-y-1">
+            <Label htmlFor="gift-aid" className="flex items-center gap-1.5 text-sm font-medium cursor-pointer">
+              <Gift className="h-3.5 w-3.5 text-primary" />
+              Add Gift Aid
+            </Label>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              I am a UK taxpayer and understand that if I pay less Income Tax and/or Capital Gains Tax than the amount of Gift Aid claimed on all my donations in that tax year, it is my responsibility to pay any difference. The charity can claim 25p for every £1 donated.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

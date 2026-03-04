@@ -30,6 +30,8 @@ interface Event {
   date: string;
   time: string;
   location: string;
+  accept_donations?: boolean;
+  accept_gift_aid?: boolean;
 }
 
 interface TicketPurchaseProps {
@@ -443,15 +445,18 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
 
             <GuestCheckoutForm />
 
-            <TicketDonation
-              donationAmount={donationAmount}
-              giftAidEnabled={giftAidEnabled}
-              onDonationChange={setDonationAmount}
-              onGiftAidChange={setGiftAidEnabled}
-              isFreeEvent={false}
-              showDonation={showDonation}
-              onShowDonationChange={setShowDonation}
-            />
+            {event.accept_donations && (
+              <TicketDonation
+                donationAmount={donationAmount}
+                giftAidEnabled={giftAidEnabled}
+                onDonationChange={setDonationAmount}
+                onGiftAidChange={setGiftAidEnabled}
+                isFreeEvent={false}
+                showDonation={showDonation}
+                onShowDonationChange={setShowDonation}
+                showGiftAid={event.accept_gift_aid}
+              />
+            )}
 
             {donationAmount > 0 && (
               <div className="text-center text-sm">
@@ -555,15 +560,18 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             <div className="text-3xl font-bold text-emerald-600 mb-2">Free</div>
             <p className="text-sm text-muted-foreground mb-4">This event is free to attend</p>
             
-            <TicketDonation
-              donationAmount={donationAmount}
-              giftAidEnabled={giftAidEnabled}
-              onDonationChange={setDonationAmount}
-              onGiftAidChange={setGiftAidEnabled}
-              isFreeEvent={true}
-              showDonation={showDonation}
-              onShowDonationChange={setShowDonation}
-            />
+            {event.accept_donations && (
+              <TicketDonation
+                donationAmount={donationAmount}
+                giftAidEnabled={giftAidEnabled}
+                onDonationChange={setDonationAmount}
+                onGiftAidChange={setGiftAidEnabled}
+                isFreeEvent={true}
+                showDonation={showDonation}
+                onShowDonationChange={setShowDonation}
+                showGiftAid={event.accept_gift_aid}
+              />
+            )}
 
             <Button
               className="w-full bg-gradient-primary hover:opacity-90 mt-4"
@@ -656,7 +664,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
         {totalTickets > 0 && <GuestCheckoutForm />}
 
         {/* Donation & Gift Aid */}
-        {totalTickets > 0 && (
+        {totalTickets > 0 && event.accept_donations && (
           <TicketDonation
             donationAmount={donationAmount}
             giftAidEnabled={giftAidEnabled}
@@ -665,6 +673,7 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             isFreeEvent={totalAmount === 0}
             showDonation={showDonation}
             onShowDonationChange={setShowDonation}
+            showGiftAid={event.accept_gift_aid}
           />
         )}
 

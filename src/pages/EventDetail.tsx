@@ -1035,6 +1035,8 @@ const EventDetail = () => {
                               date: event.date,
                               time: event.time,
                               location: event.location,
+                              accept_donations: (event as any).accept_donations || false,
+                              accept_gift_aid: (event as any).accept_gift_aid || false,
                             }}
                           />
                           <div className="text-xs text-muted-foreground">
