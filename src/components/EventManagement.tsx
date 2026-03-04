@@ -578,7 +578,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                           <div className="flex-1 space-y-1">
                             <Label htmlFor="external_event" className="flex items-center gap-2 font-medium cursor-pointer">
                               <Globe className="h-4 w-4 text-muted-foreground" />
-                              External Event Page
+                              External Website Page
                             </Label>
                             <p className="text-sm text-muted-foreground">
                               Link to an external website for all event details. The event will display on MyEcclesia 
@@ -624,7 +624,7 @@ export function EventManagement({ organizationId, ministerId, churchId, onEventC
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <ExternalLink className="h-4 w-4" />
-                        External Event Page URL *
+                        External Website Page URL *
                       </FormLabel>
                       <FormControl>
                         <Input placeholder="https://yourchurch.com/revival-night" {...field} />
