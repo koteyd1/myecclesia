@@ -408,7 +408,7 @@ export default function EventEdit() {
                           <SelectItem value="ticketed">In-Platform Ticketing</SelectItem>
                           <SelectItem value="rsvp">Free RSVP</SelectItem>
                           <SelectItem value="external_ticket">External Ticketing</SelectItem>
-                          <SelectItem value="external_page">External Event Page</SelectItem>
+                          <SelectItem value="external_page">External Website Page</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
