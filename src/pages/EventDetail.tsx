@@ -259,14 +259,92 @@ const EventDetail = () => {
   const fetchRsvpCount = async () => {
     if (!event?.id) return;
     try {
-      const { count } = await supabase
+      // Count authenticated RSVPs
+      const { count: authCount } = await supabase
         .from("event_registrations")
         .select("id", { count: "exact", head: true })
         .eq("event_id", event.id)
         .eq("status", "registered");
-      setRsvpCount(count || 0);
+
+      // Count guest RSVPs
+      const { count: guestCount } = await supabase
+        .from("guest_rsvps")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
+      setRsvpCount((authCount || 0) + (guestCount || 0));
     } catch (error) {
       console.error("Error fetching RSVP count:", error);
+    }
+  };
+
+  const handleGuestRsvp = async () => {
+    if (!event?.id || !guestName.trim() || !guestEmail.trim()) {
+      toast({ title: "Missing Info", description: "Please enter your name and email.", variant: "destructive" });
+      return;
+    }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+
+    setGuestRsvpSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("guest_rsvps")
+        .insert({ event_id: event.id, full_name: guestName.trim(), email: guestEmail.trim() });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({ title: "Already RSVP'd", description: "This email has already been used to RSVP for this event." });
+          setGuestRsvpDone(true);
+          return;
+        }
+        throw error;
+      }
+
+      setGuestRsvpDone(true);
+      fetchRsvpCount();
+      toast({ title: "RSVP Confirmed! 🎉", description: "You're on the list! See you there." });
+
+      // Notify organizer at milestones
+      const newCount = (rsvpCount || 0) + 1;
+      const milestones = [1, 10, 50, 100, 200, 500, 1000];
+      if (milestones.includes(newCount) && event.created_by) {
+        try {
+          // Use a system-level approach: find an admin to send from
+          const { data: adminRole } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "admin")
+            .limit(1)
+            .single();
+
+          if (adminRole) {
+            const milestoneMsg = newCount === 1
+              ? `${guestName.trim()} has RSVP'd to your event **${event.title}** — your first attendee! 🎉`
+              : `🎉 Milestone reached! Your event **${event.title}** now has **${newCount}** confirmed attendees!`;
+            
+            await supabase.from("messages").insert({
+              sender_id: adminRole.user_id,
+              recipient_id: event.created_by,
+              subject: newCount === 1 ? `New RSVP: ${event.title}` : `🎉 ${newCount} RSVPs: ${event.title}`,
+              content: milestoneMsg,
+              is_admin_broadcast: true,
+            });
+          }
+        } catch (notifyError) {
+          console.error("Failed to notify organizer:", notifyError);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error submitting guest RSVP:", error);
+      toast({ title: "RSVP Failed", description: error.message || "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setGuestRsvpSubmitting(false);
     }
   };
 
