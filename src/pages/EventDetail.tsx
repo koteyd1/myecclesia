@@ -33,6 +33,10 @@ const EventDetail = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [cancellingRsvp, setCancellingRsvp] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestRsvpSubmitting, setGuestRsvpSubmitting] = useState(false);
+  const [guestRsvpDone, setGuestRsvpDone] = useState(false);
   
   // Track event views (only for authenticated users)
   useEventTracking(user ? event?.id : null);
