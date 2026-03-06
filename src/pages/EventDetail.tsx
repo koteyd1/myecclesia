@@ -43,16 +43,16 @@ const EventDetail = () => {
 
   const [verifyingPayment, setVerifyingPayment] = useState(false);
 
-  // Redirect to auth if not signed in
+  // Redirect to auth if not signed in (skip for RSVP events — guests can view & RSVP)
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && event && event.registration_type !== 'rsvp') {
       toast({
         title: "Sign In Required",
         description: "Please sign in to view event details.",
       });
       navigate(`/auth?redirect=/events/${slug}`);
     }
-  }, [authLoading, user, navigate, slug, toast]);
+  }, [authLoading, user, navigate, slug, toast, event]);
 
   // Handle payment success/cancel - verify payment and create ticket
   useEffect(() => {
