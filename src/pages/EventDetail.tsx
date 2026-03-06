@@ -96,10 +96,10 @@ const EventDetail = () => {
   }, [searchParams, user, slug]);
 
   useEffect(() => {
-    if (slug && user) {
+    if (slug) {
       fetchEvent();
     }
-  }, [slug, user]);
+  }, [slug]);
 
   useEffect(() => {
     if (event && user) {
