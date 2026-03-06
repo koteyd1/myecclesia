@@ -5,7 +5,9 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User, Download } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowLeft, CheckCircle, CalendarPlus, CalendarMinus, CreditCard, Ticket, Building2, User, Download, Mail, UserPlus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { TicketPurchase } from "@/components/TicketPurchase";
 import { YouMightAlsoLike } from "@/components/YouMightAlsoLike";
@@ -31,22 +33,26 @@ const EventDetail = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [cancellingRsvp, setCancellingRsvp] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestRsvpSubmitting, setGuestRsvpSubmitting] = useState(false);
+  const [guestRsvpDone, setGuestRsvpDone] = useState(false);
   
   // Track event views (only for authenticated users)
   useEventTracking(user ? event?.id : null);
 
   const [verifyingPayment, setVerifyingPayment] = useState(false);
 
-  // Redirect to auth if not signed in
+  // Redirect to auth if not signed in (skip for RSVP events — guests can view & RSVP)
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !user && event && event.registration_type !== 'rsvp') {
       toast({
         title: "Sign In Required",
         description: "Please sign in to view event details.",
       });
       navigate(`/auth?redirect=/events/${slug}`);
     }
-  }, [authLoading, user, navigate, slug, toast]);
+  }, [authLoading, user, navigate, slug, toast, event]);
 
   // Handle payment success/cancel - verify payment and create ticket
   useEffect(() => {
@@ -90,10 +96,10 @@ const EventDetail = () => {
   }, [searchParams, user, slug]);
 
   useEffect(() => {
-    if (slug && user) {
+    if (slug) {
       fetchEvent();
     }
-  }, [slug, user]);
+  }, [slug]);
 
   useEffect(() => {
     if (event && user) {
@@ -253,20 +259,99 @@ const EventDetail = () => {
   const fetchRsvpCount = async () => {
     if (!event?.id) return;
     try {
-      const { count } = await supabase
+      // Count authenticated RSVPs
+      const { count: authCount } = await supabase
         .from("event_registrations")
         .select("id", { count: "exact", head: true })
         .eq("event_id", event.id)
         .eq("status", "registered");
-      setRsvpCount(count || 0);
+
+      // Count guest RSVPs
+      const { count: guestCount } = await supabase
+        .from("guest_rsvps")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
+      setRsvpCount((authCount || 0) + (guestCount || 0));
     } catch (error) {
       console.error("Error fetching RSVP count:", error);
+    }
+  };
+
+  const handleGuestRsvp = async () => {
+    if (!event?.id || !guestName.trim() || !guestEmail.trim()) {
+      toast({ title: "Missing Info", description: "Please enter your name and email.", variant: "destructive" });
+      return;
+    }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+
+    setGuestRsvpSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("guest_rsvps")
+        .insert({ event_id: event.id, full_name: guestName.trim(), email: guestEmail.trim() });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({ title: "Already RSVP'd", description: "This email has already been used to RSVP for this event." });
+          setGuestRsvpDone(true);
+          return;
+        }
+        throw error;
+      }
+
+      setGuestRsvpDone(true);
+      fetchRsvpCount();
+      toast({ title: "RSVP Confirmed! 🎉", description: "You're on the list! See you there." });
+
+      // Notify organizer at milestones
+      const newCount = (rsvpCount || 0) + 1;
+      const milestones = [1, 10, 50, 100, 200, 500, 1000];
+      if (milestones.includes(newCount) && event.created_by) {
+        try {
+          // Use a system-level approach: find an admin to send from
+          const { data: adminRole } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "admin")
+            .limit(1)
+            .single();
+
+          if (adminRole) {
+            const milestoneMsg = newCount === 1
+              ? `${guestName.trim()} has RSVP'd to your event **${event.title}** — your first attendee! 🎉`
+              : `🎉 Milestone reached! Your event **${event.title}** now has **${newCount}** confirmed attendees!`;
+            
+            await supabase.from("messages").insert({
+              sender_id: adminRole.user_id,
+              recipient_id: event.created_by,
+              subject: newCount === 1 ? `New RSVP: ${event.title}` : `🎉 ${newCount} RSVPs: ${event.title}`,
+              content: milestoneMsg,
+              is_admin_broadcast: true,
+            });
+          }
+        } catch (notifyError) {
+          console.error("Failed to notify organizer:", notifyError);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error submitting guest RSVP:", error);
+      toast({ title: "RSVP Failed", description: error.message || "Something went wrong. Please try again.", variant: "destructive" });
+    } finally {
+      setGuestRsvpSubmitting(false);
     }
   };
 
   const handleExportRsvp = async () => {
     if (!event?.id) return;
     try {
+      // Fetch authenticated RSVPs
       const { data: registrations, error } = await supabase
         .from("event_registrations")
         .select("registered_at, user_id")
@@ -279,22 +364,37 @@ const EventDetail = () => {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, full_name, email")
-        .in("user_id", userIds);
+        .in("user_id", userIds.length > 0 ? userIds : ['00000000-0000-0000-0000-000000000000']);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
+      // Fetch guest RSVPs
+      const { data: guestRsvps } = await supabase
+        .from("guest_rsvps")
+        .select("full_name, email, created_at")
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
       const csvRows = [
-        ["Name", "Email", "RSVP Date"].join(","),
+        ["Name", "Email", "RSVP Date", "Type"].join(","),
         ...(registrations || []).map(r => {
           const profile = profileMap.get(r.user_id);
           return [
             `"${profile?.full_name || 'Unknown'}"`,
             `"${profile?.email || ''}"`,
             `"${new Date(r.registered_at).toLocaleDateString()}"`,
+            `"Member"`,
           ].join(",");
         }),
+        ...(guestRsvps || []).map(g => [
+          `"${g.full_name}"`,
+          `"${g.email}"`,
+          `"${new Date(g.created_at).toLocaleDateString()}"`,
+          `"Guest"`,
+        ].join(",")),
       ];
 
+      const totalCount = (registrations?.length || 0) + (guestRsvps?.length || 0);
       const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -303,7 +403,7 @@ const EventDetail = () => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast({ title: "Export Complete", description: `Exported ${registrations?.length || 0} attendees.` });
+      toast({ title: "Export Complete", description: `Exported ${totalCount} attendees.` });
     } catch (error: any) {
       console.error("Error exporting RSVPs:", error);
       toast({ title: "Export Failed", description: error.message, variant: "destructive" });
@@ -1050,37 +1150,112 @@ const EventDetail = () => {
                         </div>
                       )}
                     </div>
+                  ) : event.registration_type === 'rsvp' ? (
+                    /* Guest RSVP — no account needed */
+                    <div className="space-y-4">
+                      {guestRsvpDone ? (
+                        <div className="space-y-4">
+                          <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-5 w-5 text-success" />
+                              <h4 className="font-semibold text-success">You're on the list!</h4>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Your RSVP has been confirmed. The organiser has been notified.
+                            </p>
+                          </div>
+
+                          {/* Sign-up prompt after guest RSVP */}
+                          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <UserPlus className="h-5 w-5 text-primary" />
+                              <h4 className="font-semibold text-foreground">Want to discover more events?</h4>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Create a free account to save events, get personalised recommendations, and manage all your RSVPs in one place.
+                            </p>
+                            <Button
+                              className="w-full"
+                              onClick={() => navigate("/auth?mode=signup")}
+                            >
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Sign Up Free
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="w-full mt-1"
+                              onClick={() => navigate("/auth")}
+                            >
+                              Already have an account? <span className="font-semibold ml-1">Log in</span>
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="guest-name">Your Name</Label>
+                            <Input
+                              id="guest-name"
+                              placeholder="Full name"
+                              value={guestName}
+                              onChange={(e) => setGuestName(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="guest-email">Email Address</Label>
+                            <Input
+                              id="guest-email"
+                              type="email"
+                              placeholder="you@example.com"
+                              value={guestEmail}
+                              onChange={(e) => setGuestEmail(e.target.value)}
+                            />
+                          </div>
+                          <Button
+                            className="w-full"
+                            size="lg"
+                            onClick={handleGuestRsvp}
+                            disabled={guestRsvpSubmitting || !guestName.trim() || !guestEmail.trim()}
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            {guestRsvpSubmitting ? "Confirming..." : "RSVP – I'm Coming"}
+                          </Button>
+                          {rsvpCount > 0 && (
+                            <p className="text-sm text-muted-foreground text-center">
+                              {rsvpCount} {rsvpCount === 1 ? 'person has' : 'people have'} already RSVP'd
+                            </p>
+                          )}
+                          <div className="text-xs text-muted-foreground text-center">
+                            <p>Free event · No account required · Just let the organiser know you'll be there</p>
+                          </div>
+                          <div className="text-center">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
+                            >
+                              Have an account? Sign in to RSVP
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="p-4 bg-muted/50 border border-muted rounded-lg">
-                        <h4 className="font-semibold mb-2">
-                          {event.registration_type === 'rsvp' ? 'RSVP to Attend' : 'Sign Up Required'}
-                        </h4>
+                        <h4 className="font-semibold mb-2">Sign Up Required</h4>
                         <p className="text-sm text-muted-foreground mb-4">
-                          {event.registration_type === 'rsvp'
-                            ? "Sign in to let the organizer know you're coming."
-                            : "Please create an account to register for events."
-                          }
+                          Please create an account to register for events.
                         </p>
                         <Button 
                           className="w-full"
                           onClick={() => navigate("/auth", { state: { from: `/events/${event.slug}` } })}
                         >
-                          {event.registration_type === 'rsvp' ? 'Sign In to RSVP' : 'Sign Up / Sign In'}
+                          Sign Up / Sign In
                         </Button>
                       </div>
-                      {event.registration_type === 'rsvp' && rsvpCount > 0 && (
-                        <p className="text-sm text-muted-foreground text-center">
-                          {rsvpCount} {rsvpCount === 1 ? 'person has' : 'people have'} already RSVP'd
-                        </p>
-                      )}
                       <div className="text-xs text-muted-foreground text-center">
-                        <p>
-                          {event.registration_type === 'rsvp'
-                            ? "Free event · No ticket required · Just confirm your attendance"
-                            : "Creating an account is quick and gives you access to all our events."
-                          }
-                        </p>
+                        <p>Creating an account is quick and gives you access to all our events.</p>
                       </div>
                     </div>
                   )}

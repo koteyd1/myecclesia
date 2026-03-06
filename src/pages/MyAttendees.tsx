@@ -105,6 +105,13 @@ const MyAttendees = () => {
 
       if (regsErr) throw regsErr;
 
+      // 2b. Fetch guest RSVPs
+      const { data: guestRegs } = await supabase
+        .from("guest_rsvps")
+        .select("id, event_id, full_name, email, status, created_at")
+        .in("event_id", eventIds)
+        .order("created_at", { ascending: false });
+
       // 3. Fetch tickets
       const { data: tix, error: tixErr } = await supabase
         .from("tickets")
@@ -131,13 +138,24 @@ const MyAttendees = () => {
         profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
       }
 
-      setRegistrations(
-        (regs || []).map((r) => ({
-          ...r,
-          event: eventMap.get(r.event_id),
-          profile: profileMap.get(r.user_id),
-        }))
-      );
+      // Combine authenticated registrations and guest RSVPs
+      const authRegs: RegistrationRecord[] = (regs || []).map((r) => ({
+        ...r,
+        event: eventMap.get(r.event_id),
+        profile: profileMap.get(r.user_id),
+      }));
+
+      const guestRegsFormatted: RegistrationRecord[] = (guestRegs || []).map((g) => ({
+        id: g.id,
+        event_id: g.event_id,
+        user_id: `guest-${g.id}`,
+        registered_at: g.created_at,
+        status: g.status,
+        event: eventMap.get(g.event_id),
+        profile: { full_name: `${g.full_name} (Guest)`, email: g.email },
+      }));
+
+      setRegistrations([...authRegs, ...guestRegsFormatted]);
 
       setTickets(
         (tix || []).map((t) => ({
