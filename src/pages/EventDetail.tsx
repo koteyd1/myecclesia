@@ -351,6 +351,7 @@ const EventDetail = () => {
   const handleExportRsvp = async () => {
     if (!event?.id) return;
     try {
+      // Fetch authenticated RSVPs
       const { data: registrations, error } = await supabase
         .from("event_registrations")
         .select("registered_at, user_id")
@@ -363,22 +364,37 @@ const EventDetail = () => {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, full_name, email")
-        .in("user_id", userIds);
+        .in("user_id", userIds.length > 0 ? userIds : ['00000000-0000-0000-0000-000000000000']);
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
+      // Fetch guest RSVPs
+      const { data: guestRsvps } = await supabase
+        .from("guest_rsvps")
+        .select("full_name, email, created_at")
+        .eq("event_id", event.id)
+        .eq("status", "registered");
+
       const csvRows = [
-        ["Name", "Email", "RSVP Date"].join(","),
+        ["Name", "Email", "RSVP Date", "Type"].join(","),
         ...(registrations || []).map(r => {
           const profile = profileMap.get(r.user_id);
           return [
             `"${profile?.full_name || 'Unknown'}"`,
             `"${profile?.email || ''}"`,
             `"${new Date(r.registered_at).toLocaleDateString()}"`,
+            `"Member"`,
           ].join(",");
         }),
+        ...(guestRsvps || []).map(g => [
+          `"${g.full_name}"`,
+          `"${g.email}"`,
+          `"${new Date(g.created_at).toLocaleDateString()}"`,
+          `"Guest"`,
+        ].join(",")),
       ];
 
+      const totalCount = (registrations?.length || 0) + (guestRsvps?.length || 0);
       const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -387,7 +403,7 @@ const EventDetail = () => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast({ title: "Export Complete", description: `Exported ${registrations?.length || 0} attendees.` });
+      toast({ title: "Export Complete", description: `Exported ${totalCount} attendees.` });
     } catch (error: any) {
       console.error("Error exporting RSVPs:", error);
       toast({ title: "Export Failed", description: error.message, variant: "destructive" });
