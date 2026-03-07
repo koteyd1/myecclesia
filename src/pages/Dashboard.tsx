@@ -281,6 +281,10 @@ const Dashboard = () => {
               <Bell className="h-3 w-3" />
               Alerts
             </TabsTrigger>
+            <TabsTrigger value="finance" className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              Finance
+            </TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
