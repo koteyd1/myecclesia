@@ -207,8 +207,8 @@ export function AdminPayments() {
           <CardDescription>Configure global payment settings for the platform</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Platform Fee */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Platform Fee % */}
             <div className="space-y-2">
               <Label htmlFor="platform-fee">Platform Fee (%)</Label>
               <div className="flex gap-2">
@@ -222,9 +222,28 @@ export function AdminPayments() {
                   onChange={(e) => setPlatformFeePercent(e.target.value)}
                   className="w-24"
                 />
-                <span className="text-sm text-muted-foreground self-center">% per transaction</span>
+                <span className="text-sm text-muted-foreground self-center">%</span>
               </div>
-              <p className="text-xs text-muted-foreground">Deducted from each ticket sale as application fee</p>
+              <p className="text-xs text-muted-foreground">Percentage of ticket price</p>
+            </div>
+
+            {/* Fixed Fee per Ticket */}
+            <div className="space-y-2">
+              <Label htmlFor="platform-fee-fixed">Per-Ticket Fee (pence)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="platform-fee-fixed"
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="1"
+                  value={platformFeeFixedPence}
+                  onChange={(e) => setPlatformFeeFixedPence(e.target.value)}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground self-center">p per ticket</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Fixed fee added per ticket sold</p>
             </div>
 
             {/* PayPal Toggle */}
