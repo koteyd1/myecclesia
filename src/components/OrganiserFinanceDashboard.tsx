@@ -283,12 +283,15 @@ export function OrganiserFinanceDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <DollarSign className="h-5 w-5 text-purple-600" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <DollarSign className="h-5 w-5 text-accent-foreground" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Platform Fees</p>
-                <p className="text-2xl font-bold">£{platformFees.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Total Fees</p>
+                <p className="text-2xl font-bold">£{totalFees.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">
+                  Platform: £{platformFees.toFixed(2)} · Processing: £{stripeProcessingFees.toFixed(2)}
+                </p>
               </div>
             </div>
           </CardContent>
