@@ -252,23 +252,25 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
           </div>
         </label>
 
-        <label
-          htmlFor="provider-paypal"
-          className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-            selectedProvider === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30'
-          }`}
-        >
-          <RadioGroupItem value="paypal" id="provider-paypal" className="mt-0.5" />
-          <div className="flex-1">
-            <div className="flex items-center gap-2 font-medium">
-              <Wallet className="h-4 w-4" />
-              PayPal
+        {paypalGloballyEnabled && (
+          <label
+            htmlFor="provider-paypal"
+            className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+              selectedProvider === 'paypal' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/30'
+            }`}
+          >
+            <RadioGroupItem value="paypal" id="provider-paypal" className="mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 font-medium">
+                <Wallet className="h-4 w-4" />
+                PayPal
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Receive payments to your PayPal account. Just enter your PayPal email.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Receive payments to your PayPal account. Just enter your PayPal email.
-            </p>
-          </div>
-        </label>
+          </label>
+        )}
       </RadioGroup>
     </div>
   );
