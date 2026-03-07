@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CreditCard, CheckCircle, Clock, AlertCircle, ExternalLink, Loader2, RefreshCw, Mail, Wallet } from 'lucide-react';
+import { PaymentComplianceText } from './PaymentComplianceText';
 
 interface ConnectStatus {
   has_account: boolean;
@@ -446,6 +447,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
             )}
           </>
         )}
+        <PaymentComplianceText />
       </CardContent>
     </Card>
   );

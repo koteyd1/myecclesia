@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { EventAnalytics } from "@/components/EventAnalytics";
 import SavedEvents from "@/components/SavedEvents";
 import { EventRecommendations } from "@/components/EventRecommendations";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { OrganiserFinanceDashboard } from "@/components/OrganiserFinanceDashboard";
 import { SEOHead } from "@/components/SEOHead";
 
 
@@ -280,6 +281,10 @@ const Dashboard = () => {
               <Bell className="h-3 w-3" />
               Alerts
             </TabsTrigger>
+            <TabsTrigger value="finance" className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              Finance
+            </TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -439,6 +444,10 @@ const Dashboard = () => {
 
           <TabsContent value="notifications">
             <NotificationPreferences />
+          </TabsContent>
+
+          <TabsContent value="finance">
+            <OrganiserFinanceDashboard />
           </TabsContent>
 
           <TabsContent value="analytics">

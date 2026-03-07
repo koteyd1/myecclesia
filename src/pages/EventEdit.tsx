@@ -15,7 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { EventMediaUpload } from "@/components/EventMediaUpload";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowLeft, Save, Image, Calendar, MapPin, Clock, Heart, Gift } from "lucide-react";
+import { PaymentComplianceText } from "@/components/PaymentComplianceText";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Save, Image, Calendar, MapPin, Clock, Heart, Gift, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const eventSchema = z.object({
@@ -55,6 +57,7 @@ export default function EventEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [eventSlug, setEventSlug] = useState<string>("");
+  const [hasPaymentAccount, setHasPaymentAccount] = useState<boolean | null>(null);
 
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -83,8 +86,24 @@ export default function EventEdit() {
   useEffect(() => {
     if (id && user) {
       fetchEvent();
+      checkPaymentAccount();
     }
   }, [id, user]);
+
+  const checkPaymentAccount = async () => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const { data } = await supabase.functions.invoke('check-connect-status', {
+        headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
+      });
+      const hasStripe = data?.has_account && !data?.stripe_account_id?.startsWith('paypal_only_') && data?.account_status === 'active';
+      const hasPaypal = !!data?.paypal_email;
+      setHasPaymentAccount(hasStripe || hasPaypal);
+    } catch {
+      setHasPaymentAccount(null);
+    }
+  };
 
   const fetchEvent = async () => {
     if (!id || !user) return;
@@ -230,6 +249,17 @@ export default function EventEdit() {
             <p className="text-muted-foreground text-sm">Update your event details</p>
           </div>
         </div>
+
+        {/* Payment Account Warning */}
+        {hasPaymentAccount === false && (form.watch("registration_type") === "ticketed") && (form.watch("price") > 0) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please connect your Stripe or PayPal account to receive payments for your event.{' '}
+              <a href="/profile/edit" className="underline font-medium">Set up payment account →</a>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -634,6 +664,11 @@ export default function EventEdit() {
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {/* Compliance Text */}
+            {form.watch("registration_type") === "ticketed" && (
+              <PaymentComplianceText />
             )}
 
             {/* Action Buttons */}
