@@ -15,6 +15,7 @@ import { EventAnalytics } from "@/components/EventAnalytics";
 import SavedEvents from "@/components/SavedEvents";
 import { EventRecommendations } from "@/components/EventRecommendations";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
+import { OrganiserFinanceDashboard } from "@/components/OrganiserFinanceDashboard";
 import { SEOHead } from "@/components/SEOHead";
 
 
