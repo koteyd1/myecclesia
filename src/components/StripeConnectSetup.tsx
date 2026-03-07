@@ -446,6 +446,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
             )}
           </>
         )}
+        <PaymentComplianceText />
       </CardContent>
     </Card>
   );

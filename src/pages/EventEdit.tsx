@@ -666,6 +666,11 @@ export default function EventEdit() {
               </Card>
             )}
 
+            {/* Compliance Text */}
+            {form.watch("registration_type") === "ticketed" && (
+              <PaymentComplianceText />
+            )}
+
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <Button
