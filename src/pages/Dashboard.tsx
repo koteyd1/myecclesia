@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Ticket, User, Settings, BarChart3, CalendarIcon, Heart, Bell, QrCode, ScanLine, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
