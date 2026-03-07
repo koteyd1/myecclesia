@@ -124,9 +124,15 @@ export function AdminPayments() {
         toast({ title: 'Invalid fee', description: 'Fee must be between 0 and 50%', variant: 'destructive' });
         return;
       }
+      const fixedVal = parseInt(platformFeeFixedPence);
+      if (isNaN(fixedVal) || fixedVal < 0 || fixedVal > 500) {
+        toast({ title: 'Invalid fixed fee', description: 'Fixed fee must be between 0 and 500p', variant: 'destructive' });
+        return;
+      }
 
       const updates = [
         { key: 'platform_fee_percent', value: feeVal },
+        { key: 'platform_fee_fixed_pence', value: fixedVal },
         { key: 'paypal_enabled', value: paypalEnabled },
         { key: 'apple_google_pay_enabled', value: appleGooglePayEnabled },
       ];
