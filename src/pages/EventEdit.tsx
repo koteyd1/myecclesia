@@ -57,6 +57,7 @@ export default function EventEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [eventSlug, setEventSlug] = useState<string>("");
+  const [hasPaymentAccount, setHasPaymentAccount] = useState<boolean | null>(null);
 
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
