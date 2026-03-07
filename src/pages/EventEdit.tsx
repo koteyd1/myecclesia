@@ -15,7 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { EventMediaUpload } from "@/components/EventMediaUpload";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowLeft, Save, Image, Calendar, MapPin, Clock, Heart, Gift } from "lucide-react";
+import { PaymentComplianceText } from "@/components/PaymentComplianceText";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Save, Image, Calendar, MapPin, Clock, Heart, Gift, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const eventSchema = z.object({
