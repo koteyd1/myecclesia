@@ -108,6 +108,10 @@ const AdminDashboard = () => {
             <AdminTickets />
           </TabsContent>
 
+          <TabsContent value="payments">
+            <AdminPayments />
+          </TabsContent>
+
           <TabsContent value="review">
             <AdminEventReview user={user} />
           </TabsContent>
