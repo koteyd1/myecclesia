@@ -139,7 +139,7 @@ export function OrganiserFinanceDashboard() {
   const confirmedTransactions = filteredTransactions.filter(t => t.status === 'confirmed');
   const totalRevenue = confirmedTransactions.reduce((sum, t) => sum + t.amount_total, 0);
   const totalTicketsSold = confirmedTransactions.reduce((sum, t) => sum + t.quantity, 0);
-  const platformFees = totalRevenue * (PLATFORM_FEE_PERCENT / 100);
+  const platformFees = totalRevenue * (platformFeePercent / 100);
   const netPayout = totalRevenue - platformFees;
 
   const exportCSV = () => {
