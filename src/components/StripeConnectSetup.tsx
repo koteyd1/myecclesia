@@ -283,7 +283,11 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Stripe Connect is not available at this time. You can try again later or use PayPal below.
+              Stripe Connect is not yet enabled on the platform. The platform administrator needs to enable Stripe Connect at{' '}
+              <a href="https://dashboard.stripe.com/connect" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+                dashboard.stripe.com/connect
+              </a>{' '}
+              before organisers can connect their accounts. In the meantime, you can use PayPal to receive payments.
             </AlertDescription>
           </Alert>
           <Button variant="outline" onClick={() => { setConnectNotEnabled(false); startOnboarding(); }} disabled={actionLoading} className="w-full">
