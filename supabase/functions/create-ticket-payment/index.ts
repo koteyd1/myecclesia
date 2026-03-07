@@ -220,16 +220,19 @@ serve(async (req) => {
       } else {
         logStep("Using Stripe Connect for payment", { connectedAccountId });
 
-        // Read platform fee from settings
+        // Read platform fee settings from DB
         let platformFeePercent = DEFAULT_PLATFORM_FEE_PERCENT;
-        const { data: feeSetting } = await supabaseService
+        let platformFeeFixedPence = 0;
+        const { data: feeSettings } = await supabaseService
           .from("platform_settings")
-          .select("value")
-          .eq("key", "platform_fee_percent")
-          .single();
+          .select("key, value")
+          .in("key", ["platform_fee_percent", "platform_fee_fixed_pence"]);
         
-        if (feeSetting?.value !== undefined && feeSetting?.value !== null) {
-          platformFeePercent = Number(feeSetting.value);
+        if (feeSettings) {
+          for (const s of feeSettings) {
+            if (s.key === "platform_fee_percent") platformFeePercent = Number(s.value);
+            if (s.key === "platform_fee_fixed_pence") platformFeeFixedPence = Number(s.value);
+          }
         }
 
         // Check if organiser is in free period
@@ -246,14 +249,25 @@ serve(async (req) => {
             threeMonths.setMonth(threeMonths.getMonth() + 3);
             if (new Date() < threeMonths) {
               platformFeePercent = 0;
+              platformFeeFixedPence = 0;
               logStep("Organiser in free period - 0% fee");
             }
           }
         }
 
-        // Calculate application fee on total (tickets + donation)
+        // Calculate platform fee: percentage of total + fixed fee per ticket
+        const ticketQuantity = quantity || 1;
         const fullTotal = totalAmount + donationAmountPence;
-        const applicationFee = Math.round(fullTotal * (platformFeePercent / 100));
+        const percentageFee = Math.round(fullTotal * (platformFeePercent / 100));
+        const fixedFee = platformFeeFixedPence * ticketQuantity;
+        
+        // Stripe processing fee estimate: 1.4% + 20p (UK cards) / 2.9% + 20p (intl)
+        // We use 2.9% + 30p as conservative estimate to cover processing costs
+        const stripeProcessingFee = Math.round(fullTotal * 0.029) + 30;
+        
+        // Total application fee = platform fee + per-ticket fee + Stripe processing
+        // This means the organiser absorbs all fees; buyer pays face value
+        const applicationFee = percentageFee + fixedFee + stripeProcessingFee;
         
         sessionOptions.payment_intent_data = {
           application_fee_amount: applicationFee,
@@ -264,8 +278,12 @@ serve(async (req) => {
         
         logStep("Payment routing configured", { 
           totalAmount, 
+          percentageFee,
+          fixedFee,
+          stripeProcessingFee,
           applicationFee,
           platformFeePercent,
+          platformFeeFixedPence,
           destinationAccount: connectedAccountId 
         });
       }

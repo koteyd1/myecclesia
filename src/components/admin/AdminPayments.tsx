@@ -43,7 +43,8 @@ export function AdminPayments() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Platform settings
-  const [platformFeePercent, setPlatformFeePercent] = useState('0');
+  const [platformFeePercent, setPlatformFeePercent] = useState('2.5');
+  const [platformFeeFixedPence, setPlatformFeeFixedPence] = useState('20');
   const [paypalEnabled, setPaypalEnabled] = useState(true);
   const [appleGooglePayEnabled, setAppleGooglePayEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -108,7 +109,8 @@ export function AdminPayments() {
     }
 
     const settingsMap = Object.fromEntries((data || []).map(s => [s.key, s.value]));
-    setPlatformFeePercent(String(settingsMap['platform_fee_percent'] ?? '0'));
+    setPlatformFeePercent(String(settingsMap['platform_fee_percent'] ?? '2.5'));
+    setPlatformFeeFixedPence(String(settingsMap['platform_fee_fixed_pence'] ?? '20'));
     setPaypalEnabled(settingsMap['paypal_enabled'] !== false);
     setAppleGooglePayEnabled(settingsMap['apple_google_pay_enabled'] !== false);
     setSettingsLoaded(true);
@@ -122,9 +124,15 @@ export function AdminPayments() {
         toast({ title: 'Invalid fee', description: 'Fee must be between 0 and 50%', variant: 'destructive' });
         return;
       }
+      const fixedVal = parseInt(platformFeeFixedPence);
+      if (isNaN(fixedVal) || fixedVal < 0 || fixedVal > 500) {
+        toast({ title: 'Invalid fixed fee', description: 'Fixed fee must be between 0 and 500p', variant: 'destructive' });
+        return;
+      }
 
       const updates = [
         { key: 'platform_fee_percent', value: feeVal },
+        { key: 'platform_fee_fixed_pence', value: fixedVal },
         { key: 'paypal_enabled', value: paypalEnabled },
         { key: 'apple_google_pay_enabled', value: appleGooglePayEnabled },
       ];
@@ -199,8 +207,8 @@ export function AdminPayments() {
           <CardDescription>Configure global payment settings for the platform</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Platform Fee */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Platform Fee % */}
             <div className="space-y-2">
               <Label htmlFor="platform-fee">Platform Fee (%)</Label>
               <div className="flex gap-2">
@@ -214,9 +222,28 @@ export function AdminPayments() {
                   onChange={(e) => setPlatformFeePercent(e.target.value)}
                   className="w-24"
                 />
-                <span className="text-sm text-muted-foreground self-center">% per transaction</span>
+                <span className="text-sm text-muted-foreground self-center">%</span>
               </div>
-              <p className="text-xs text-muted-foreground">Deducted from each ticket sale as application fee</p>
+              <p className="text-xs text-muted-foreground">Percentage of ticket price</p>
+            </div>
+
+            {/* Fixed Fee per Ticket */}
+            <div className="space-y-2">
+              <Label htmlFor="platform-fee-fixed">Per-Ticket Fee (pence)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="platform-fee-fixed"
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="1"
+                  value={platformFeeFixedPence}
+                  onChange={(e) => setPlatformFeeFixedPence(e.target.value)}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground self-center">p per ticket</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Fixed fee added per ticket sold</p>
             </div>
 
             {/* PayPal Toggle */}
@@ -244,6 +271,13 @@ export function AdminPayments() {
               </div>
               <p className="text-xs text-muted-foreground">Via Stripe Checkout (requires Stripe dashboard config)</p>
             </div>
+          </div>
+
+          <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Current fee structure per ticket sale:</p>
+            <p>• <strong>{platformFeePercent}%</strong> of ticket price + <strong>{platformFeeFixedPence}p</strong> per ticket (platform fee)</p>
+            <p>• <strong>~2.9% + 30p</strong> Stripe processing fee (passed to organiser)</p>
+            <p className="text-xs mt-1">Organisers in their first 3 months pay no platform fees. Stripe processing fees always apply.</p>
           </div>
 
           <Button onClick={savePlatformSettings} disabled={savingSettings}>

@@ -44,6 +44,7 @@ export function OrganiserFinanceDashboard() {
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
   const [platformFeePercent, setPlatformFeePercent] = useState(0);
+  const [platformFeeFixedPence, setPlatformFeeFixedPence] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -61,11 +62,14 @@ export function OrganiserFinanceDashboard() {
         supabase.functions.invoke('check-connect-status', {
           headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
         }),
-        supabase.from('platform_settings').select('value').eq('key', 'platform_fee_percent').single(),
+        supabase.from('platform_settings').select('key, value').in('key', ['platform_fee_percent', 'platform_fee_fixed_pence']),
       ]);
       setConnectStatus(statusResult.data);
-      if (feeResult.data?.value !== undefined) {
-        setPlatformFeePercent(Number(feeResult.data.value));
+      if (feeResult.data) {
+        for (const s of feeResult.data) {
+          if (s.key === 'platform_fee_percent') setPlatformFeePercent(Number(s.value));
+          if (s.key === 'platform_fee_fixed_pence') setPlatformFeeFixedPence(Number(s.value));
+        }
       }
 
       // Fetch organiser's events
@@ -145,8 +149,12 @@ export function OrganiserFinanceDashboard() {
   const confirmedTransactions = filteredTransactions.filter(t => t.status === 'confirmed');
   const totalRevenue = confirmedTransactions.reduce((sum, t) => sum + t.amount_total, 0);
   const totalTicketsSold = confirmedTransactions.reduce((sum, t) => sum + t.quantity, 0);
-  const platformFees = totalRevenue * (platformFeePercent / 100);
-  const netPayout = totalRevenue - platformFees;
+  const percentageFees = totalRevenue * (platformFeePercent / 100);
+  const fixedFees = (platformFeeFixedPence / 100) * totalTicketsSold;
+  const stripeProcessingFees = totalRevenue * 0.029 + (0.30 * totalTicketsSold);
+  const platformFees = percentageFees + fixedFees;
+  const totalFees = platformFees + stripeProcessingFees;
+  const netPayout = totalRevenue - totalFees;
 
   const exportCSV = () => {
     const headers = ['Date', 'Event', 'Buyer Name', 'Buyer Email', 'Quantity', 'Amount (£)', 'Status', 'Check-in'];
@@ -275,12 +283,15 @@ export function OrganiserFinanceDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <DollarSign className="h-5 w-5 text-purple-600" />
+              <div className="p-2 rounded-lg bg-accent/10">
+                <DollarSign className="h-5 w-5 text-accent-foreground" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Platform Fees</p>
-                <p className="text-2xl font-bold">£{platformFees.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Total Fees</p>
+                <p className="text-2xl font-bold">£{totalFees.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">
+                  Platform: £{platformFees.toFixed(2)} · Processing: £{stripeProcessingFees.toFixed(2)}
+                </p>
               </div>
             </div>
           </CardContent>
