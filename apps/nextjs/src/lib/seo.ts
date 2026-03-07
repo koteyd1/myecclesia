@@ -1,4 +1,6 @@
-const defaultSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://myecclesia.org.uk";
+import { env } from "@/env";
+
+const defaultSiteUrl = env.NEXT_PUBLIC_SITE_URL;
 
 export const siteMetadata = {
   name: "MyEcclesia",
