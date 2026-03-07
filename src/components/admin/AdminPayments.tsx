@@ -43,7 +43,8 @@ export function AdminPayments() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Platform settings
-  const [platformFeePercent, setPlatformFeePercent] = useState('0');
+  const [platformFeePercent, setPlatformFeePercent] = useState('2.5');
+  const [platformFeeFixedPence, setPlatformFeeFixedPence] = useState('20');
   const [paypalEnabled, setPaypalEnabled] = useState(true);
   const [appleGooglePayEnabled, setAppleGooglePayEnabled] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
