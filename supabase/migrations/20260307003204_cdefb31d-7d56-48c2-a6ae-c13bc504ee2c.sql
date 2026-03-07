@@ -1,0 +1,1 @@
+UPDATE public.events SET created_by = '9f018a39-c4f2-4add-a5c7-860cd900e389' WHERE id = '94f96acc-22de-44f8-8801-e982daf69ac6';
