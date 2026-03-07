@@ -149,8 +149,12 @@ export function OrganiserFinanceDashboard() {
   const confirmedTransactions = filteredTransactions.filter(t => t.status === 'confirmed');
   const totalRevenue = confirmedTransactions.reduce((sum, t) => sum + t.amount_total, 0);
   const totalTicketsSold = confirmedTransactions.reduce((sum, t) => sum + t.quantity, 0);
-  const platformFees = totalRevenue * (platformFeePercent / 100);
-  const netPayout = totalRevenue - platformFees;
+  const percentageFees = totalRevenue * (platformFeePercent / 100);
+  const fixedFees = (platformFeeFixedPence / 100) * totalTicketsSold;
+  const stripeProcessingFees = totalRevenue * 0.029 + (0.30 * totalTicketsSold);
+  const platformFees = percentageFees + fixedFees;
+  const totalFees = platformFees + stripeProcessingFees;
+  const netPayout = totalRevenue - totalFees;
 
   const exportCSV = () => {
     const headers = ['Date', 'Event', 'Buyer Name', 'Buyer Email', 'Quantity', 'Amount (£)', 'Status', 'Check-in'];
