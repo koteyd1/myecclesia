@@ -446,6 +446,10 @@ const Dashboard = () => {
             <NotificationPreferences />
           </TabsContent>
 
+          <TabsContent value="finance">
+            <OrganiserFinanceDashboard />
+          </TabsContent>
+
           <TabsContent value="analytics">
             <EventAnalytics />
           </TabsContent>
