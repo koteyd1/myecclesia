@@ -12,6 +12,7 @@ import AdminOrganizations from "@/components/admin/AdminOrganizations";
 import { AdminEventReview } from "@/components/admin/AdminEventReview";
 import { AdminTickets } from "@/components/admin/AdminTickets";
 import { AdminBroadcast } from "@/components/admin/AdminBroadcast";
+import { AdminPayments } from "@/components/admin/AdminPayments";
 
 const AdminDashboard = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
