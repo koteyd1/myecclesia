@@ -104,6 +104,9 @@ serve(async (req) => {
       accountStatus = "pending_verification";
     }
 
+    // Check if status just transitioned to active
+    const justBecameActive = accountStatus === "active" && accountData.account_status !== "active";
+
     // Update database with latest status
     const { error: updateError } = await supabaseClient
       .from("stripe_connected_accounts")
@@ -118,6 +121,54 @@ serve(async (req) => {
 
     if (updateError) {
       logStep("Error updating account status", { error: updateError.message });
+    }
+
+    // Send activation email if account just became active
+    if (justBecameActive && user.email) {
+      logStep("Account just became active, sending notification email");
+      try {
+        const resendKey = Deno.env.get("RESEND_API_KEY");
+        if (resendKey) {
+          const profileName = user.user_metadata?.full_name || "there";
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${resendKey}`,
+            },
+            body: JSON.stringify({
+              from: "MyEcclesia <notifications@myecclesia.org.uk>",
+              to: [user.email],
+              subject: "Your payment account is now active! ✅",
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h1 style="color: #1a1a2e; font-size: 24px;">Payment Account Activated 🎉</h1>
+                  <p>Hi ${profileName},</p>
+                  <p>Great news — your Stripe payment account has been verified and is now <strong>fully active</strong>!</p>
+                  <p>You can now:</p>
+                  <ul>
+                    <li>Create paid events and sell tickets</li>
+                    <li>Receive payments directly to your bank account</li>
+                    <li>Track your revenue in the Finance dashboard</li>
+                  </ul>
+                  <p>Your first 3 months are <strong>fee-free</strong> — no platform commission on your ticket sales during this period.</p>
+                  <div style="margin: 30px 0;">
+                    <a href="https://myecclesia.org.uk/dashboard" style="background-color: #1a1a2e; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Go to Dashboard</a>
+                  </div>
+                  <p style="color: #666; font-size: 14px;">If you have any questions, visit our <a href="https://myecclesia.org.uk/help-centre">Help Centre</a> or <a href="https://myecclesia.org.uk/contact">contact us</a>.</p>
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                  <p style="color: #999; font-size: 12px;">— The MyEcclesia Team</p>
+                </div>
+              `,
+            }),
+          });
+          logStep("Activation email sent successfully");
+        } else {
+          logStep("RESEND_API_KEY not set, skipping email");
+        }
+      } catch (emailErr) {
+        logStep("Error sending activation email (non-fatal)", { error: String(emailErr) });
+      }
     }
 
     // Calculate if in free period (3 months from first event)
