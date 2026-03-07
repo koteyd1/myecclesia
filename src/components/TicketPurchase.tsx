@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Ticket, Minus, Plus, CreditCard, ShoppingCart, Mail, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TicketDonation } from "@/components/TicketDonation";
+import { PaymentComplianceText } from "@/components/PaymentComplianceText";
 
 interface TicketType {
   id: string;
