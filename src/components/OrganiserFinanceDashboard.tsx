@@ -44,6 +44,7 @@ export function OrganiserFinanceDashboard() {
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
   const [platformFeePercent, setPlatformFeePercent] = useState(0);
+  const [platformFeeFixedPence, setPlatformFeeFixedPence] = useState(0);
 
   useEffect(() => {
     if (user) {

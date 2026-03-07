@@ -273,6 +273,13 @@ export function AdminPayments() {
             </div>
           </div>
 
+          <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Current fee structure per ticket sale:</p>
+            <p>• <strong>{platformFeePercent}%</strong> of ticket price + <strong>{platformFeeFixedPence}p</strong> per ticket (platform fee)</p>
+            <p>• <strong>~2.9% + 30p</strong> Stripe processing fee (passed to organiser)</p>
+            <p className="text-xs mt-1">Organisers in their first 3 months pay no platform fees. Stripe processing fees always apply.</p>
+          </div>
+
           <Button onClick={savePlatformSettings} disabled={savingSettings}>
             {savingSettings ? 'Saving...' : 'Save Settings'}
           </Button>
