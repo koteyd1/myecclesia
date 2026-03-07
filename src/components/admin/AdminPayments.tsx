@@ -109,7 +109,8 @@ export function AdminPayments() {
     }
 
     const settingsMap = Object.fromEntries((data || []).map(s => [s.key, s.value]));
-    setPlatformFeePercent(String(settingsMap['platform_fee_percent'] ?? '0'));
+    setPlatformFeePercent(String(settingsMap['platform_fee_percent'] ?? '2.5'));
+    setPlatformFeeFixedPence(String(settingsMap['platform_fee_fixed_pence'] ?? '20'));
     setPaypalEnabled(settingsMap['paypal_enabled'] !== false);
     setAppleGooglePayEnabled(settingsMap['apple_google_pay_enabled'] !== false);
     setSettingsLoaded(true);
