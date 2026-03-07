@@ -45,6 +45,14 @@ export function OrganiserFinanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
+  const [platformFeePercent, setPlatformFeePercent] = useState(0);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [transactions, setTransactions] = useState<TicketTransaction[]>([]);
+  const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState('all');
+  const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
 
   useEffect(() => {
     if (user) {

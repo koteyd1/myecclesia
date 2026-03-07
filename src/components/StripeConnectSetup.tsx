@@ -38,12 +38,27 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
   const [paypalEmail, setPaypalEmail] = useState('');
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<'stripe' | 'paypal' | null>(null);
+  const [paypalGloballyEnabled, setPaypalGloballyEnabled] = useState(true);
 
   useEffect(() => {
     if (user) {
       checkConnectStatus();
+      checkPaypalEnabled();
     }
   }, [user]);
+
+  const checkPaypalEnabled = async () => {
+    try {
+      const { data } = await supabase
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'paypal_enabled')
+        .single();
+      setPaypalGloballyEnabled(data?.value !== false);
+    } catch {
+      // default to enabled
+    }
+  };
 
   useEffect(() => {
     onStatusChange?.(status);
