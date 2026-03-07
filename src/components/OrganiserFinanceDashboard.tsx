@@ -55,12 +55,18 @@ export function OrganiserFinanceDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetch connect status
+      // Fetch connect status and platform fee in parallel
       const { data: sessionData } = await supabase.auth.getSession();
-      const { data: statusData } = await supabase.functions.invoke('check-connect-status', {
-        headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
-      });
-      setConnectStatus(statusData);
+      const [statusResult, feeResult] = await Promise.all([
+        supabase.functions.invoke('check-connect-status', {
+          headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
+        }),
+        supabase.from('platform_settings').select('value').eq('key', 'platform_fee_percent').single(),
+      ]);
+      setConnectStatus(statusResult.data);
+      if (feeResult.data?.value !== undefined) {
+        setPlatformFeePercent(Number(feeResult.data.value));
+      }
 
       // Fetch organiser's events
       const { data: myEvents } = await supabase
