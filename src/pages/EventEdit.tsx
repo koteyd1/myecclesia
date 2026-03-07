@@ -86,8 +86,24 @@ export default function EventEdit() {
   useEffect(() => {
     if (id && user) {
       fetchEvent();
+      checkPaymentAccount();
     }
   }, [id, user]);
+
+  const checkPaymentAccount = async () => {
+    if (!user) return;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const { data } = await supabase.functions.invoke('check-connect-status', {
+        headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
+      });
+      const hasStripe = data?.has_account && !data?.stripe_account_id?.startsWith('paypal_only_') && data?.account_status === 'active';
+      const hasPaypal = !!data?.paypal_email;
+      setHasPaymentAccount(hasStripe || hasPaypal);
+    } catch {
+      setHasPaymentAccount(null);
+    }
+  };
 
   const fetchEvent = async () => {
     if (!id || !user) return;
