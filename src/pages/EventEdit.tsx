@@ -250,6 +250,17 @@ export default function EventEdit() {
           </div>
         </div>
 
+        {/* Payment Account Warning */}
+        {hasPaymentAccount === false && (form.watch("registration_type") === "ticketed") && (form.watch("price") > 0) && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please connect your Stripe or PayPal account to receive payments for your event.{' '}
+              <a href="/profile/edit" className="underline font-medium">Set up payment account →</a>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Event Image - Prominent placement */}
