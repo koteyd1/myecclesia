@@ -713,6 +713,8 @@ export const TicketPurchase = ({ event }: TicketPurchaseProps) => {
             </Button>
           </div>
         )}
+
+        <PaymentComplianceText compact />
       </CardContent>
     </Card>
   );
