@@ -1275,6 +1275,33 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1370,6 +1397,9 @@ export type Database = {
           first_event_date: string | null
           id: string
           payouts_enabled: boolean | null
+          payouts_paused: boolean
+          payouts_paused_at: string | null
+          payouts_paused_reason: string | null
           paypal_email: string | null
           stripe_account_id: string
           updated_at: string
@@ -1383,6 +1413,9 @@ export type Database = {
           first_event_date?: string | null
           id?: string
           payouts_enabled?: boolean | null
+          payouts_paused?: boolean
+          payouts_paused_at?: string | null
+          payouts_paused_reason?: string | null
           paypal_email?: string | null
           stripe_account_id: string
           updated_at?: string
@@ -1396,6 +1429,9 @@ export type Database = {
           first_event_date?: string | null
           id?: string
           payouts_enabled?: boolean | null
+          payouts_paused?: boolean
+          payouts_paused_at?: string | null
+          payouts_paused_reason?: string | null
           paypal_email?: string | null
           stripe_account_id?: string
           updated_at?: string

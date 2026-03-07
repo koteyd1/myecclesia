@@ -12,8 +12,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-TICKET-PAYMENT] ${step}${detailsStr}`);
 };
 
-// Platform fee percentage (0% for first 3 months, then configurable)
-const PLATFORM_FEE_PERCENT = 0;
+// Platform fee is now read from platform_settings table
+// Fallback default if DB read fails
+const DEFAULT_PLATFORM_FEE_PERCENT = 0;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -202,26 +203,72 @@ serve(async (req) => {
       },
     };
 
-    // If there's a connected account, route payment to them
+    // If there's a connected account, check if payouts are paused and route payment
     if (connectedAccountId) {
-      logStep("Using Stripe Connect for payment", { connectedAccountId });
-      
-      // Calculate application fee on total (tickets + donation)
-      const fullTotal = totalAmount + donationAmountPence;
-      const applicationFee = Math.round(fullTotal * (PLATFORM_FEE_PERCENT / 100));
-      
-      sessionOptions.payment_intent_data = {
-        application_fee_amount: applicationFee,
-        transfer_data: {
-          destination: connectedAccountId,
-        },
-      };
-      
-      logStep("Payment routing configured", { 
-        totalAmount, 
-        applicationFee, 
-        destinationAccount: connectedAccountId 
-      });
+      // Check if organiser's payouts are paused
+      const { data: accountCheck } = await supabaseService
+        .from("stripe_connected_accounts")
+        .select("payouts_paused")
+        .eq("stripe_account_id", connectedAccountId)
+        .single();
+
+      const payoutsPaused = (accountCheck as any)?.payouts_paused === true;
+
+      if (payoutsPaused) {
+        logStep("Payouts paused for this organiser - payment goes to platform", { connectedAccountId });
+        // Don't route to organiser, payment stays with platform
+      } else {
+        logStep("Using Stripe Connect for payment", { connectedAccountId });
+
+        // Read platform fee from settings
+        let platformFeePercent = DEFAULT_PLATFORM_FEE_PERCENT;
+        const { data: feeSetting } = await supabaseService
+          .from("platform_settings")
+          .select("value")
+          .eq("key", "platform_fee_percent")
+          .single();
+        
+        if (feeSetting?.value !== undefined && feeSetting?.value !== null) {
+          platformFeePercent = Number(feeSetting.value);
+        }
+
+        // Check if organiser is in free period
+        if (eventData?.created_by) {
+          const { data: orgAccount } = await supabaseService
+            .from("stripe_connected_accounts")
+            .select("first_event_date")
+            .eq("stripe_account_id", connectedAccountId)
+            .single();
+
+          if (orgAccount?.first_event_date) {
+            const firstDate = new Date(orgAccount.first_event_date);
+            const threeMonths = new Date(firstDate);
+            threeMonths.setMonth(threeMonths.getMonth() + 3);
+            if (new Date() < threeMonths) {
+              platformFeePercent = 0;
+              logStep("Organiser in free period - 0% fee");
+            }
+          }
+        }
+
+        // Calculate application fee on total (tickets + donation)
+        const fullTotal = totalAmount + donationAmountPence;
+        const applicationFee = Math.round(fullTotal * (platformFeePercent / 100));
+        
+        sessionOptions.payment_intent_data = {
+          application_fee_amount: applicationFee,
+          transfer_data: {
+            destination: connectedAccountId,
+          },
+        };
+        
+        logStep("Payment routing configured", { 
+          totalAmount, 
+          applicationFee,
+          platformFeePercent,
+          destinationAccount: connectedAccountId 
+        });
+      }
     } else {
       logStep("No connected account - payment goes to platform");
     }

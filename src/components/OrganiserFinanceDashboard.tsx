@@ -35,8 +35,6 @@ interface ConnectStatus {
   paypal_email: string | null;
 }
 
-const PLATFORM_FEE_PERCENT = 0; // Currently 0% during free period
-
 export function OrganiserFinanceDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -45,6 +43,7 @@ export function OrganiserFinanceDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [events, setEvents] = useState<{ id: string; title: string }[]>([]);
+  const [platformFeePercent, setPlatformFeePercent] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -56,12 +55,18 @@ export function OrganiserFinanceDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetch connect status
+      // Fetch connect status and platform fee in parallel
       const { data: sessionData } = await supabase.auth.getSession();
-      const { data: statusData } = await supabase.functions.invoke('check-connect-status', {
-        headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
-      });
-      setConnectStatus(statusData);
+      const [statusResult, feeResult] = await Promise.all([
+        supabase.functions.invoke('check-connect-status', {
+          headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
+        }),
+        supabase.from('platform_settings').select('value').eq('key', 'platform_fee_percent').single(),
+      ]);
+      setConnectStatus(statusResult.data);
+      if (feeResult.data?.value !== undefined) {
+        setPlatformFeePercent(Number(feeResult.data.value));
+      }
 
       // Fetch organiser's events
       const { data: myEvents } = await supabase
@@ -140,7 +145,7 @@ export function OrganiserFinanceDashboard() {
   const confirmedTransactions = filteredTransactions.filter(t => t.status === 'confirmed');
   const totalRevenue = confirmedTransactions.reduce((sum, t) => sum + t.amount_total, 0);
   const totalTicketsSold = confirmedTransactions.reduce((sum, t) => sum + t.quantity, 0);
-  const platformFees = totalRevenue * (PLATFORM_FEE_PERCENT / 100);
+  const platformFees = totalRevenue * (platformFeePercent / 100);
   const netPayout = totalRevenue - platformFees;
 
   const exportCSV = () => {
