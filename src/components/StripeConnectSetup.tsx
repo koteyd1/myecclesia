@@ -454,7 +454,7 @@ export function StripeConnectSetup({ onStatusChange }: StripeConnectSetupProps) 
             )}
 
             {/* Show secondary provider if one is already active */}
-            {(hasStripe || hasPaypal) && (
+            {(hasStripe || hasPaypal) && (hasStripe ? paypalGloballyEnabled : true) && (
               <div className="border-t pt-4">
                 <h4 className="text-sm font-medium text-muted-foreground mb-3">
                   {hasStripe ? 'Also accept PayPal' : 'Also set up Stripe'}
