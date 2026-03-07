@@ -12,8 +12,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-TICKET-PAYMENT] ${step}${detailsStr}`);
 };
 
-// Platform fee percentage (0% for first 3 months, then configurable)
-const PLATFORM_FEE_PERCENT = 0;
+// Platform fee is now read from platform_settings table
+// Fallback default if DB read fails
+const DEFAULT_PLATFORM_FEE_PERCENT = 0;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
