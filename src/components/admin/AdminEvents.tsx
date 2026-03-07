@@ -99,7 +99,6 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
     try {
       const eventData = {
         ...formData,
-        created_by: user.id,
         price: parseFloat(formData.price.toString())
       };
 
@@ -107,8 +106,8 @@ export const AdminEvents = ({ user }: AdminEventsProps) => {
       let createdEvent = null;
       
       if (editingEvent) {
-        // For updates, exclude slug as it should not be changed manually
-        const { slug, ...updateData } = eventData as any;
+        // For updates, exclude slug and created_by to preserve original ownership
+        const { slug, created_by, ...updateData } = eventData as any;
         result = await supabase
           .from("events")
           .update(updateData)
